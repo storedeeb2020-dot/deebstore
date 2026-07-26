@@ -57,7 +57,7 @@ export default function AdminSettingsPage() {
     sizeCharts: [],
     instagramUrl: "https://www.instagram.com/eldeeb_st0re?igsh=MTh3dDBheWJ1MjNneg==",
     facebookUrl: "https://www.facebook.com/share/1BeVGnopec/",
-    tiktokUrl: "https://www.tiktok.com/@eldeeb_st0re",
+    tiktokUrl: "https://www.tiktok.com/@eldeeb.stoer?_r=1&_t=ZS-98MVHwLnOtM",
     currency: "EGP",
     aboutTitle: "عن ديب ستور — About DEEP STORE",
     aboutSubtitle: "نحدد أسلوب الأناقة العصرية من خلال الموضة الفاخرة وخامات الستريت وير الممتازة والتصاميم الاستثنائية.",

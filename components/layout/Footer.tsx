@@ -54,7 +54,7 @@ export function Footer() {
     {
       icon: TiktokIcon,
       label: "TikTok",
-      href: settings?.tiktokUrl || "https://www.tiktok.com/@eldeeb_st0re",
+      href: settings?.tiktokUrl || "https://www.tiktok.com/@eldeeb.stoer?_r=1&_t=ZS-98MVHwLnOtM",
     },
   ];
 

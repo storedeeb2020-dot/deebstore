@@ -10,8 +10,8 @@ interface Logo3DProps {
   src?: string;
 }
 
-export function Logo3D({ className, layers = 14, src }: Logo3DProps) {
-  const actualLayers = Math.min(layers, 16);
+export function Logo3D({ className, layers = 22, src }: Logo3DProps) {
+  const actualLayers = Math.min(layers, 28);
   const [logoSrc, setLogoSrc] = useState(src || "/logo.png");
 
   useEffect(() => {
@@ -28,10 +28,10 @@ export function Logo3D({ className, layers = 14, src }: Logo3DProps) {
     <div
       className={`relative flex items-center justify-center select-none py-1 px-2 ${className}`}
       style={{
-        perspective: "1000px",
+        perspective: "1200px",
       }}
     >
-      {/* 3D Floating Tilt & Rotation Container */}
+      {/* 360-Degree Continuous Self-Rotating Container */}
       <motion.div
         className="relative flex flex-col items-center justify-center cursor-pointer py-1 px-1"
         style={{
@@ -39,30 +39,34 @@ export function Logo3D({ className, layers = 14, src }: Logo3DProps) {
           willChange: "transform",
         }}
         animate={{
-          rotateY: [-28, 28, -28],
-          rotateX: [10, -10, 10],
-          y: [-4, 4, -4],
+          rotateY: [0, 360],
+          rotateX: [6, 2, 6],
         }}
         transition={{
           repeat: Infinity,
-          duration: 5.5,
-          ease: "easeInOut",
+          duration: 8.5,
+          ease: "linear",
         }}
       >
-        {/* Floating Crown on Top */}
+        {/* Crown on Top */}
         <motion.div
           animate={{ scale: [1, 1.15, 1] }}
           transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-          className="text-lg sm:text-2xl text-amber-400 drop-shadow-[0_0_15px_rgba(255,215,0,0.9)] -mb-2 z-30"
+          className="text-lg sm:text-2xl text-amber-400 drop-shadow-[0_0_15px_rgba(255,215,0,0.9)] -mb-2 z-40"
+          style={{ transform: "translateZ(10px)" }}
         >
           👑
         </motion.div>
 
-        {/* 3D Extruded Stacked Image Layers */}
-        <div className="relative flex items-center justify-center" style={{ transformStyle: "preserve-3d" }}>
+        {/* 3D Extruded Glued Tightly Stacked Image Block */}
+        <div
+          className="relative flex items-center justify-center"
+          style={{ transformStyle: "preserve-3d" }}
+        >
           {Array.from({ length: actualLayers }).map((_, i) => {
             const isFront = i === 0;
-            const zOffset = -i * 1.25; // 3D depth step per layer
+            const isBack = i === actualLayers - 1;
+            const zOffset = -i * 0.85; // Dense subpixel 3D extrusion step
 
             return (
               <div
@@ -72,17 +76,19 @@ export function Logo3D({ className, layers = 14, src }: Logo3DProps) {
                   top: isFront ? "auto" : 0,
                   left: isFront ? "auto" : 0,
                   transform: `translateZ(${zOffset}px)`,
-                  backfaceVisibility: "hidden",
+                  backfaceVisibility: "visible",
                   filter: isFront
-                    ? "drop-shadow(0 0 25px rgba(255,215,0,0.85))"
-                    : `brightness(${Math.max(0.2, 0.85 - i * 0.05)}) contrast(1.2)`,
-                  opacity: isFront ? 1 : 0.95,
+                    ? "drop-shadow(0 0 25px rgba(255,215,0,0.9))"
+                    : isBack
+                    ? "drop-shadow(0 0 15px rgba(255,215,0,0.6))"
+                    : `brightness(${Math.max(0.2, 0.9 - i * 0.035)}) contrast(1.2)`,
+                  opacity: 1,
                 }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={logoSrc}
-                  alt="DEEP STORE 3D Logo"
+                  alt="DEEP STORE 3D Logo Emblem"
                   className="h-10 sm:h-14 md:h-16 w-auto object-contain drop-shadow-2xl"
                 />
               </div>

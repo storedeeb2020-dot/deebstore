@@ -5,17 +5,17 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard,
-  Package,
-  ShoppingCart,
-  Users,
-  Tag,
-  Settings,
-  MessageSquare,
+  LayoutGrid,
+  Boxes,
+  ShoppingBag,
+  UserCheck,
+  FolderTree,
+  SlidersHorizontal,
+  MessageSquareQuote,
   LogOut,
   ChevronLeft,
   ShieldCheck,
-  AlertTriangle,
+  ShieldAlert,
   Truck,
   Menu,
   X,
@@ -26,15 +26,15 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { Spinner } from "@/components/ui/Spinner";
 
 const navItems = [
-  { href: "/admin", label: "لوحة التحكم والتحليلات", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "إدارة الطلبات", icon: ShoppingCart },
+  { href: "/admin", label: "لوحة التحكم والتحليلات", icon: LayoutGrid },
+  { href: "/admin/orders", label: "إدارة الطلبات المباشرة", icon: ShoppingBag },
   { href: "/admin/shipping", label: "أسعار الشحن والمحافظات", icon: Truck },
-  { href: "/admin/products", label: "إدارة المنتجات", icon: Package },
-  { href: "/admin/categories", label: "الفئات والأقسام", icon: Tag },
-  { href: "/admin/messages", label: "الرسائل والشكاوى", icon: MessageSquare },
-  { href: "/admin/errors", label: "أخطاء وسجلات النظام", icon: AlertTriangle },
-  { href: "/admin/customers", label: "قاعدة العملاء", icon: Users },
-  { href: "/admin/settings", label: "إعدادات المتجر الهوية", icon: Settings },
+  { href: "/admin/products", label: "إدارة قائمة المنتجات", icon: Boxes },
+  { href: "/admin/categories", label: "الفئات والأقسام الفرعية", icon: FolderTree },
+  { href: "/admin/messages", label: "الرسائل والشكاوى الواردة", icon: MessageSquareQuote },
+  { href: "/admin/errors", label: "أخطاء وسجلات النظام", icon: ShieldAlert },
+  { href: "/admin/customers", label: "قاعدة بيانات العملاء", icon: UserCheck },
+  { href: "/admin/settings", label: "إعدادات المتجر والهوية", icon: SlidersHorizontal },
 ];
 
 export default function AdminLayout({
@@ -80,7 +80,7 @@ export default function AdminLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-white font-sans dir-rtl" dir="rtl">
+      <div className="min-h-screen bg-black flex items-center justify-center text-white font-['Tajawal',sans-serif] dir-rtl" dir="rtl">
         <div className="text-center space-y-4">
           <Spinner size="lg" className="border-amber-400 border-t-transparent" />
           <p className="text-xs text-amber-400 font-bold tracking-[0.2em] uppercase">جاري تحميل لوحة التحكم الفاخرة...</p>
@@ -94,12 +94,12 @@ export default function AdminLayout({
   }
 
   const SidebarContent = (
-    <aside className="w-64 bg-zinc-950 border-l border-zinc-800/80 flex flex-col h-full shadow-2xl text-white font-sans dir-rtl" dir="rtl">
+    <aside className="w-64 bg-zinc-950 border-l border-zinc-800/80 flex flex-col h-full shadow-2xl text-white font-['Tajawal',sans-serif] dir-rtl" dir="rtl">
       {/* Brand Header */}
       <div className="px-6 py-6 border-b border-zinc-800/80 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2.5 group">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="DEEP STORE Logo" className="h-7 w-auto object-contain drop-shadow-[0_0_10px_rgba(212,175,55,0.5)] group-hover:scale-105 transition-transform" />
+          <img src="/logo.png" alt="DEEP STORE Logo" className="h-8 w-auto object-contain drop-shadow-[0_0_12px_rgba(212,175,55,0.6)] group-hover:scale-105 transition-transform" />
           <span className="text-sm font-black text-amber-400 tracking-wider">DEEP STORE</span>
         </Link>
         <button
@@ -113,11 +113,11 @@ export default function AdminLayout({
       {/* Admin User Info Capsule */}
       <div className="px-4 py-4 border-b border-zinc-800/80 bg-zinc-900/50">
         <div className="flex items-center gap-3 px-2">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-black flex items-center justify-center text-xs font-black shadow-lg shadow-amber-500/20">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-black flex items-center justify-center text-xs font-black shadow-lg shadow-amber-500/20">
             👑
           </div>
           <div className="overflow-hidden">
-            <p className="text-xs font-bold truncate text-amber-300">حساب المشرف العام</p>
+            <p className="text-xs font-black truncate text-amber-300">حساب المشرف العام</p>
             <p className="text-[11px] text-zinc-400 truncate font-mono">{user?.email || "storedeeb2020@gmail.com"}</p>
           </div>
         </div>
@@ -135,7 +135,7 @@ export default function AdminLayout({
             <Link
               key={href}
               href={href}
-              className={`group flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold transition-all duration-300 relative ${
+              className={`group flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all duration-300 relative ${
                 isActive
                   ? "bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-lg shadow-amber-500/20 font-black"
                   : "text-zinc-400 hover:bg-zinc-900 hover:text-amber-300"
@@ -144,7 +144,7 @@ export default function AdminLayout({
               <Icon
                 size={18}
                 className={`transition-transform duration-300 group-hover:scale-110 ${
-                  isActive ? "text-black" : "text-zinc-400 group-hover:text-amber-400"
+                  isActive ? "text-black font-black" : "text-amber-400/80 group-hover:text-amber-400"
                 }`}
               />
               <span>{label}</span>
@@ -157,7 +157,7 @@ export default function AdminLayout({
       <div className="px-3 pb-6 border-t border-zinc-800/80 pt-4">
         <button
           onClick={handleSignOut}
-          className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold text-zinc-400 hover:bg-red-950/50 hover:text-red-400 transition-all duration-300 cursor-pointer"
+          className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-extrabold text-zinc-400 hover:bg-red-950/50 hover:text-red-400 transition-all duration-300 cursor-pointer"
         >
           <LogOut size={18} className="text-zinc-400 group-hover:text-red-400" />
           <span>تسجيل الخروج</span>
@@ -167,7 +167,7 @@ export default function AdminLayout({
   );
 
   return (
-    <div className="min-h-screen bg-black flex text-white font-sans selection:bg-amber-500 selection:text-black dir-rtl" dir="rtl">
+    <div className="min-h-screen bg-black flex text-white font-['Tajawal',sans-serif] selection:bg-amber-500 selection:text-black dir-rtl" dir="rtl">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block fixed top-0 bottom-0 right-0 z-30 w-64 border-l border-zinc-800/80">
         {SidebarContent}
@@ -211,16 +211,16 @@ export default function AdminLayout({
             </button>
 
             <div className="flex items-center gap-2 text-zinc-400 text-xs font-medium">
-              <span className="font-bold text-amber-400 uppercase tracking-wider text-[11px] hidden sm:inline">لوحة الإدارة</span>
+              <span className="font-black text-amber-400 uppercase tracking-wider text-[11px] hidden sm:inline">لوحة الإدارة</span>
               <ChevronLeft size={14} className="hidden sm:inline text-zinc-600" />
-              <span className="text-zinc-200 font-bold truncate max-w-[180px] sm:max-w-none">
+              <span className="text-zinc-200 font-extrabold truncate max-w-[180px] sm:max-w-none">
                 {navItems.find((item) => pathname.startsWith(item.href) && item.href !== "/admin")?.label || "نظرة عامة والتحليلات"}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-wider shadow-sm">
+            <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3.5 py-1.5 rounded-full text-[11px] font-extrabold tracking-wider shadow-sm">
               <ShieldCheck size={14} className="text-amber-400" />
               <span>لوحة الإدارة المشفرة والآمنة 👑</span>
             </div>
@@ -228,7 +228,7 @@ export default function AdminLayout({
         </header>
 
         {/* Content Wrapper */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto overflow-x-hidden bg-black text-white">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto overflow-x-hidden bg-black text-white font-['Tajawal',sans-serif]">
           <motion.div
             key={pathname}
             initial={{ opacity: 0, y: 12 }}
