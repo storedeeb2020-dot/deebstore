@@ -220,9 +220,9 @@ export default function AdminProductsPage() {
                         {/* Tags */}
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-1">
-                            {product.featured && (
-                              <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-md text-[10px] font-bold">
-                                مميز
+                            {product.bestSeller && (
+                              <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-md text-[10px] font-bold">
+                                الأكثر مبيعاً
                               </span>
                             )}
                             {product.isNewArrival && (

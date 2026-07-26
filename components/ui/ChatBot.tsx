@@ -47,7 +47,7 @@ function FormattedMessageText({
   return (
     <div className="space-y-2">
       <div className="whitespace-pre-line">
-        {parts.map((p, idx) => (p.type === "text" ? p.content : null))}
+        {parts.map((p, index) => (p.type === "text" ? <span key={index}>{p.content}</span> : null))}
       </div>
       <div className="flex flex-wrap gap-2 pt-1">
         {links.map((link, idx) => (
