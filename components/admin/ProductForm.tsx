@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Trash2, Palette, Upload, Ruler, AlertCircle } from "lucide-react";
+import { Trash2, Palette, Upload, Ruler, AlertCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { createProduct, updateProduct, getSiteSettings, type GlobalSizeChart } from "@/lib/firebase/firestore";
 import { generateSlug, generateSKU } from "@/lib/utils";
@@ -18,6 +18,8 @@ interface ProductFormProps {
   productId?: string;
 }
 
+const QUICK_SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "38", "40", "42", "44", "46"];
+
 export function ProductForm({ initialData, productId }: ProductFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -26,6 +28,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
   // Custom states for variant adding inputs
   const [newColorName, setNewColorName] = useState("");
   const [newColorHex, setNewColorHex] = useState("#000000");
+  const [customSizeInputs, setCustomSizeInputs] = useState<Record<number, string>>({});
 
   useEffect(() => {
     getSiteSettings()
@@ -160,6 +163,16 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
     updatedVariants[variantIndex] = { ...variant, sizes: updatedSizes };
     
     setValue("variants", updatedVariants, { shouldValidate: true });
+  };
+
+  const handleAddCustomSize = (vIdx: number) => {
+    const sizeText = (customSizeInputs[vIdx] || "").trim();
+    if (!sizeText) {
+      toast.error("أدخل اسم أو قيمة المقاس أولاً");
+      return;
+    }
+    addSizeToVariant(vIdx, sizeText);
+    setCustomSizeInputs((prev) => ({ ...prev, [vIdx]: "" }));
   };
 
   const removeSizeFromVariant = (variantIndex: number, sizeIndex: number) => {
@@ -442,7 +455,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
             <h2 className="font-extrabold text-sm text-amber-400 uppercase tracking-wider">
               4. الألوان والمخزون المتوفر
             </h2>
-            <p className="text-xs text-zinc-400 mt-0.5">إضافة الألوان المتاحة والمخزون لكل لون ومقاس</p>
+            <p className="text-xs text-zinc-400 mt-0.5">إضافة الألوان المتاحة وإدارة/إضافة المقاسات والمخزون لكل لون بحرية</p>
           </div>
         </div>
 
@@ -476,7 +489,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
         </div>
 
         {/* Variants List */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {watchedVariants.map((variant, vIdx) => (
             <div key={vIdx} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
@@ -487,15 +500,15 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
                 <button
                   type="button"
                   onClick={() => removeColorVariant(vIdx)}
-                  className="text-zinc-400 hover:text-red-400 transition-colors"
+                  className="text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
                 >
                   <Trash2 size={16} />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-400 mb-1">صورة هذا اللون</label>
+                  <label className="block text-[11px] font-bold text-zinc-400 mb-2">صورة هذا اللون</label>
                   <div className="flex items-center gap-3">
                     <div className="w-16 h-16 rounded-xl bg-black border border-zinc-800 overflow-hidden flex items-center justify-center p-1">
                       {variant.image ? (
@@ -517,27 +530,86 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
                   </div>
                 </div>
 
-                <div className="md:col-span-2 space-y-2">
-                  <label className="block text-[11px] font-bold text-zinc-400">المقاسات وكميات المخزون المتوفرة</label>
-                  <div className="flex flex-wrap gap-2">
-                    {variant.sizes?.map((sizeItem, sIdx) => (
-                      <div key={sIdx} className="flex items-center gap-1.5 bg-zinc-950 border border-zinc-800 px-3 py-1.5 rounded-xl text-xs">
-                        <span className="font-bold text-amber-400">{sizeItem.size}</span>
-                        <input
-                          type="number"
-                          value={sizeItem.stock}
-                          onChange={(e) => updateSizeStock(vIdx, sIdx, parseInt(e.target.value) || 0)}
-                          className="w-12 px-1 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-center text-xs text-white"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeSizeFromVariant(vIdx, sIdx)}
-                          className="text-zinc-500 hover:text-red-400"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
+                <div className="md:col-span-2 space-y-4">
+                  {/* Current Active Sizes List */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-zinc-300 mb-2">المقاسات الحالية وكميات المخزون المتوفرة لهذا اللون:</label>
+                    <div className="flex flex-wrap gap-2">
+                      {variant.sizes?.map((sizeItem, sIdx) => (
+                        <div key={sIdx} className="flex items-center gap-1.5 bg-zinc-950 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs shadow-sm">
+                          <span className="font-extrabold text-amber-400">{sizeItem.size}</span>
+                          <span className="text-zinc-500 text-[10px]">الكمية:</span>
+                          <input
+                            type="number"
+                            value={sizeItem.stock}
+                            onChange={(e) => updateSizeStock(vIdx, sIdx, parseInt(e.target.value) || 0)}
+                            className="w-12 px-1 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-center text-xs text-white font-mono focus:outline-none focus:border-amber-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeSizeFromVariant(vIdx, sIdx)}
+                            className="text-zinc-500 hover:text-red-400 font-bold px-1"
+                            title="حذف هذا المقاس"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Add Sizes Options */}
+                  <div className="p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 space-y-3">
+                    <label className="block text-[11px] font-bold text-amber-400 uppercase tracking-wider">
+                      إضافة مقاسات جديدة لهذا اللون (بمزاجك):
+                    </label>
+
+                    {/* Quick Size Badges */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {QUICK_SIZES.map((sz) => {
+                        const alreadyHas = variant.sizes?.some((s) => s.size.toLowerCase() === sz.toLowerCase());
+                        return (
+                          <button
+                            key={sz}
+                            type="button"
+                            disabled={alreadyHas}
+                            onClick={() => addSizeToVariant(vIdx, sz)}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                              alreadyHas
+                                ? "bg-zinc-900 text-zinc-600 border border-zinc-850 cursor-not-allowed opacity-50"
+                                : "bg-zinc-900 text-amber-300 border border-zinc-800 hover:bg-amber-500 hover:text-black cursor-pointer active:scale-95"
+                            }`}
+                          >
+                            + {sz}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Custom Size Input */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="text"
+                        placeholder="أدخل أي مقاس مخصص بيدك (مثلاً: 50، Oversize 1، 4XL)..."
+                        value={customSizeInputs[vIdx] || ""}
+                        onChange={(e) => setCustomSizeInputs((prev) => ({ ...prev, [vIdx]: e.target.value }))}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddCustomSize(vIdx);
+                          }
+                        }}
+                        className="flex-1 px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleAddCustomSize(vIdx)}
+                        className="inline-flex items-center gap-1 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-xl transition-all shadow-sm cursor-pointer"
+                      >
+                        <Plus size={14} />
+                        إضافة المقاس
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
