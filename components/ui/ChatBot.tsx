@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, Bot, User, Sparkles } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import Link from "next/link";
+import { MessageSquare, X, Send, Bot, User, Sparkles, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getProducts } from "@/lib/firebase/firestore";
+import type { Product } from "@/types/product";
 
 interface ChatMessage {
   id: string;
@@ -10,18 +13,85 @@ interface ChatMessage {
   text: string;
 }
 
+// Component to render clickable product links inside chatbot messages
+function FormattedMessageText({
+  text,
+  onCloseChat,
+}: {
+  text: string;
+  onCloseChat: () => void;
+}) {
+  const parts: Array<{ type: "text" | "link"; content?: string; title?: string; url?: string }> = [];
+  const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: "text", content: text.substring(lastIndex, match.index) });
+    }
+    parts.push({ type: "link", title: match[1], url: match[2] });
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({ type: "text", content: text.substring(lastIndex) });
+  }
+
+  const links = parts.filter((p) => p.type === "link");
+
+  if (links.length === 0) {
+    return <span className="whitespace-pre-line">{text}</span>;
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="whitespace-pre-line">
+        {parts.map((p, idx) => (p.type === "text" ? p.content : null))}
+      </div>
+      <div className="flex flex-wrap gap-2 pt-1">
+        {links.map((link, idx) => (
+          <Link
+            key={idx}
+            href={link.url!}
+            onClick={onCloseChat}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/60 text-amber-300 hover:text-amber-200 text-xs font-extrabold transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer"
+          >
+            <span>{link.title}</span>
+            <ExternalLink size={12} className="text-amber-400" />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
       sender: "bot",
-      text: "أهلاً بك في DEEP STORE 👑! كيف يمكنني مساعدتك اليوم في تصفح أحدث تشكيلات الموضة والستريت وير الفاخرة؟",
+      text: "أهلاً بك في DEEP STORE 👑! أنا مساعدك الذكي لاختيار أفضل المقاسات والمنتجات حسب طولك ووزنك، وتزويدك بروابط المنتجات المباشرة مع ترشيح قطع مكملة لإطلالتك الستريت وير.",
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load live store products when ChatBot opens
+  useEffect(() => {
+    if (isOpen && products.length === 0) {
+      getProducts()
+        .then((data) => {
+          if (data && data.length > 0) {
+            setProducts(data);
+          }
+        })
+        .catch((err) => console.error("ChatBot product fetch error:", err));
+    }
+  }, [isOpen, products.length]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -34,11 +104,25 @@ export function ChatBot() {
   }, [messages, isOpen]);
 
   const quickQuestions = [
-    "ما هي طرق الدفع المتاحة؟",
-    "كيف أختار مقاسي المناسب؟",
-    "كم استغراق مدة الشحن؟",
-    "كيف يمكنني تقديم شكوى أو استفسار؟",
+    "طولي 178 سم ووزني 75 كجم، ابعتلي لينك المقاس والمنتج المناسب",
+    "اقترح لي تيشيرت أوفرسايز أسود ورابط الشراء",
+    "عايز طقم كامل هودي وبنطال كارجو مع الروابط",
+    "ما هي طرق الدفع المتاحة ومواعيد الشحن؟",
   ];
+
+  // Construct a clear text summary of products currently in store with direct URLs
+  const productsCatalog = useMemo(() => {
+    if (!products || products.length === 0) return "";
+    return products
+      .map((p) => {
+        const colors = p.variants?.map((v) => v.colorName).filter(Boolean).join("، ") || "افتراضي";
+        const sizes = p.variants?.[0]?.sizes?.map((s) => `${s.size} (${s.stock > 0 ? "متوفر" : "نفد"})`).join(", ") || "S, M, L, XL, XXL";
+        const price = p.salePrice ? `${p.salePrice} ج.م (خصم من ${p.price} ج.م)` : `${p.price} ج.م`;
+        const link = `/product/${p.slug || p.id}`;
+        return `- ${p.name} | السعر: ${price} | الألوان: ${colors} | المقاسات: ${sizes} | رابط المنتج المباشر: ${link}`;
+      })
+      .join("\n");
+  }, [products]);
 
   const handleSend = async (textToSend?: string) => {
     const query = textToSend || input.trim();
@@ -58,11 +142,40 @@ export function ChatBot() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: query }),
+        body: JSON.stringify({
+          message: query,
+          productsCatalog: productsCatalog,
+        }),
       });
 
-      const data = await res.json();
-      const botReply = data.reply || "شكراً لتواصلك مع ديب ستور! فريقنا يرحب بك دائماً.";
+      let botReply = "";
+
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data && data.reply) {
+          botReply = data.reply;
+        }
+      }
+
+      // Smart client fallback if API route returns error or non-JSON
+      if (!botReply) {
+        const numbers = query.match(/\d+/g)?.map(Number) || [];
+        if (numbers.length >= 2) {
+          const [n1, n2] = numbers;
+          const height = Math.max(n1, n2);
+          const weight = Math.min(n1, n2);
+          let recSize = "L";
+          if (height < 165 || weight < 60) recSize = "S";
+          else if (height <= 175 && weight <= 72) recSize = "M";
+          else if (height <= 182 && weight <= 84) recSize = "L";
+          else if (height <= 190 && weight <= 95) recSize = "XL";
+          else recSize = "XXL";
+
+          botReply = `بناءً على قياساتك (طول ${height} سم ووزن ${weight} كجم)، ننصحك بمقاس (${recSize})!\n\nإليك اقتراحاتنا المتميزة لإكمال إطلالتك:\n- [تيشيرت أوفرسايز ديب أسود](/shop)\n- [بنطال كارجو ستريت وير أسود](/shop)`;
+        } else {
+          botReply = "أهلاً بك في DEEP STORE 👑! يمكنك تصفح التشكيلة الكاملة ورؤية المنتجات عبر [صفحة المتجر الرئيسية](/shop). اكتب لنا طولك ووزنك لاقتراح قطع مكملة مناسبة مع روابط الشراء المباشرة!";
+        }
+      }
 
       setMessages((prev) => [
         ...prev,
@@ -73,13 +186,13 @@ export function ChatBot() {
         },
       ]);
     } catch (err) {
-      console.error(err);
+      console.error("ChatBot send error:", err);
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           sender: "bot",
-          text: "عذراً، حدث خطأ مؤقت في الاتصال. يمكنك محاولة المحادثة لاحقاً أو التواصل معنا عبر الشكاوى.",
+          text: "أهلاً بك في ديب ستور! يمكنك الاطلاع على المنتجات المتاحة فوراً عبر [صفحة المتجر](/shop).",
         },
       ]);
     } finally {
@@ -95,7 +208,7 @@ export function ChatBot() {
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-600 text-black shadow-2xl shadow-amber-500/25 border border-amber-300/40 focus:outline-none"
+          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-600 text-black shadow-2xl shadow-amber-500/30 border border-amber-300/40 focus:outline-none cursor-pointer"
           aria-label="المساعد الذكي"
         >
           {isOpen ? (
@@ -120,7 +233,7 @@ export function ChatBot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[380px] h-[520px] max-h-[80vh] bg-zinc-950 border border-amber-500/30 rounded-3xl shadow-2xl shadow-black flex flex-col overflow-hidden text-white font-sans dir-rtl"
+            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[390px] h-[530px] max-h-[80vh] bg-zinc-950 border border-amber-500/30 rounded-3xl shadow-2xl shadow-black flex flex-col overflow-hidden text-white font-sans dir-rtl"
             dir="rtl"
           >
             {/* Header */}
@@ -131,9 +244,9 @@ export function ChatBot() {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-amber-400 flex items-center gap-1.5">
-                    DEEP AI Assistant
+                    DEEP AI Stylist & Direct Links
                   </h3>
-                  <p className="text-[11px] text-zinc-400">مساعد ديب ستور الذكي 👑</p>
+                  <p className="text-[11px] text-zinc-400">مساعد المقاسات وروابط الشراء المباشرة 👑</p>
                 </div>
               </div>
               <button
@@ -164,34 +277,34 @@ export function ChatBot() {
                   </div>
 
                   <div
-                    className={`max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed ${
+                    className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed ${
                       msg.sender === "user"
-                        ? "bg-amber-500 text-black font-medium rounded-tr-none"
+                        ? "bg-gradient-to-r from-amber-500 to-amber-400 text-black font-semibold rounded-tr-none"
                         : "bg-zinc-900 border border-zinc-800 text-zinc-200 rounded-tl-none"
                     }`}
                   >
-                    {msg.text}
+                    <FormattedMessageText text={msg.text} onCloseChat={() => setIsOpen(false)} />
                   </div>
                 </div>
               ))}
 
               {loading && (
-                <div className="flex items-center gap-2 text-zinc-400 text-xs py-2">
+                <div className="flex items-center gap-2 text-amber-400 text-xs py-2">
                   <Bot size={16} className="animate-spin text-amber-400" />
-                  <span>جاري الكتابة...</span>
+                  <span>جاري تجهيز روابط المنتجات واقتراح التشكيلة...</span>
                 </div>
               )}
               <div ref={messagesEndRef} />
             </div>
 
             {/* Quick Suggestions */}
-            {messages.length < 3 && (
+            {messages.length < 4 && (
               <div className="px-3 py-2 bg-zinc-950 border-t border-zinc-900 flex flex-wrap gap-1.5">
                 {quickQuestions.map((q, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSend(q)}
-                    className="text-[11px] px-2.5 py-1 rounded-full bg-zinc-900 hover:bg-amber-500/10 hover:border-amber-500/30 border border-zinc-800 text-zinc-300 hover:text-amber-300 transition-colors text-right"
+                    className="text-[11px] px-2.5 py-1 rounded-full bg-zinc-900 hover:bg-amber-500/10 hover:border-amber-500/30 border border-zinc-800 text-zinc-300 hover:text-amber-300 transition-colors text-right cursor-pointer"
                   >
                     {q}
                   </button>
@@ -211,13 +324,13 @@ export function ChatBot() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="اكتب استفسارك هنا..."
+                placeholder="اكتب استفسارك، أو اطلب رابط منتج محدد..."
                 className="flex-1 bg-zinc-900 border border-zinc-800 focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none transition-colors"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || loading}
-                className="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 <Send size={15} />
               </button>

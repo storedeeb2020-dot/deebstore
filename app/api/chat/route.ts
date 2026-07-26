@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { message, history } = await req.json();
+    const { message, productsCatalog } = await req.json();
 
     if (!message || typeof message !== "string") {
       return NextResponse.json(
@@ -13,15 +13,31 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.GEMINI_API_KEY;
 
-    const systemPrompt = `أنت المساعد الذكي الخاص ببراند الملابس الفاخر "DEEP STORE" (ديب ستور).
-هويتك ومهمتك:
-- تجيب زوار المتجر والعملاء بلباقة واحترام باللغة العربية.
-- المتجر متخصص في الـ Streetwear الفاخرة (هوديز، تيشيرتات أوفراسايز، بناطيل كارجو، وجاكيتات).
-- التصميم يعتمد على الدارك مود الفاخر بالألوان السوداء والذهبية.
-- طرق الدفع المتاحة: الدفع عند الاستلام 🚪، فودافون كاش 📱، وانستاباي 💳 (مع إمكانية رفع صورة الإيصال في صفحة الشيك أوت).
-- متوفر جدول مقاسات تفصيلي لكل قطعة (تضم S, M, L, XL, XXL).
-- التوصيل لكافة محافظات مصر.
-- قدم ردوداً مختصرة ومفيدة ومرحبّة بأسلوب راقٍ يناسب براند ديب ستور الفاخر.`;
+    const catalogText = productsCatalog
+      ? `قائمة المنتجات المتوفرة حالياً في المتجر مع روابطها المباشرة:\n${productsCatalog}`
+      : "المنتجات المتوفرة: هوديز أوفر سايز، تيشيرتات قطن فاخرة، بناطيل كارجو ستريت وير، وجاكيتات جلد سوداء وذهبية بمقاسات (S, M, L, XL, XXL).";
+
+    const systemPrompt = `أنت خبير الموضة والمساعد الذكي لمتجر "ديب ستور" (DEEP STORE) للأزياء والملابس الفاخرة باللون الأسود والذهبي في مصر.
+
+مهمتك الأساسية:
+1. قراءة استفسار العميل وفهم احتياجه (النوع، اللون، المقاس، الطول والوزن).
+2. اقتراح المنتجات المناسبة تماماً من القائمة التالية فقط:
+${catalogText}
+
+3. تحديد المقاس الأنسب للعميل بناءً على الطول والوزن:
+   - أقل من 165 سم / أقل من 60 كجم ➔ مقاس (Small - S)
+   - من 165 إلى 175 سم / من 60 إلى 72 كجم ➔ مقاس (Medium - M)
+   - من 175 إلى 182 سم / من 72 إلى 84 كجم ➔ مقاس (Large - L)
+   - من 182 إلى 190 سم / من 84 إلى 95 كجم ➔ مقاس (X-Large - XL)
+   - أطول من 190 سم / أكتر من 95 كجم ➔ مقاس (XX-Large - XXL)
+
+4. مهم جداً: عند اقتراح أي منتج، يجب تضمين الرابط المباشر للمنتج بالشكل التالي: [اسم المنتج](/product/slug) حتى يستطيع العميل الضغط عليه والانتقال للمنتج فوراً!
+
+5. اقتراح قطع ملابس مكملة للإطلالة (Cross-Selling):
+   إذا سأل العميل عن هودي أو تيشيرت، اقترح عليه بنطال كارجو أو جاكيت مناسب لإكمال الإطلالة الستريت وير مع إضافة رابطه المباشر أيضاً!
+
+6. التحدث بلغة عربية احترافية، راقية ومرحبة تناسب فخامة البراند.
+7. توضيح أن الشحن متاح لكافة المحافظات، وتأكيد الطلب يتم مباشرة عبر الموقع مع إمكانية الدفع عند الاستلام 🚪 أو فودافون كاش 📱 أو انستاباي 💳.`;
 
     let replyText = "";
 
@@ -48,30 +64,44 @@ export async function POST(req: Request) {
         );
 
         const data = await response.json();
-        replyText =
-          data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
       } catch (err) {
-        console.error("Gemini direct API call error:", err);
+        console.error("Gemini API direct call error:", err);
       }
     }
 
-    // Fallback automated response if API key is not set or failed
+    // Smart Fallback Recommendation Engine with links if API key is not configured locally
     if (!replyText) {
       const lowerMsg = message.toLowerCase();
-      if (lowerMsg.includes("شحن") || lowerMsg.includes("توصيل") || lowerMsg.includes("محافظ")) {
-        replyText = "أهلاً بك في ديب ستور! نوفر خدمة الشحن لكافة محافظات مصر. يمكنك معرفة تكلفة الشحن بالضبط عند اختيار محافظتك في صفحة إتمام الطلب.";
+      
+      // Match height & weight numbers if provided in user message
+      const numbers = message.match(/\d+/g)?.map(Number) || [];
+      let sizeAdvice = "";
+      if (numbers.length >= 2) {
+        const [num1, num2] = numbers;
+        const height = Math.max(num1, num2);
+        const weight = Math.min(num1, num2);
+        if (height >= 140 && height <= 220 && weight >= 40 && weight <= 150) {
+          if (height < 165 || weight < 60) sizeAdvice = "بناءً على قياساتك (طول " + height + " سم ووزن " + weight + " كجم)، ننصحك بمقاس (Small - S).";
+          else if (height <= 175 && weight <= 72) sizeAdvice = "بناءً على قياساتك (طول " + height + " سم ووزن " + weight + " كجم)، ننصحك بمقاس (Medium - M).";
+          else if (height <= 182 && weight <= 84) sizeAdvice = "بناءً على قياساتك (طول " + height + " سم ووزن " + weight + " كجم)، ننصحك بمقاس (Large - L).";
+          else if (height <= 190 && weight <= 95) sizeAdvice = "بناءً على قياساتك (طول " + height + " سم ووزن " + weight + " كجم)، ننصحك بمقاس (X-Large - XL).";
+          else sizeAdvice = "بناءً على قياساتك (طول " + height + " سم ووزن " + weight + " كجم)، ننصحك بمقاس (XX-Large - XXL).";
+        }
+      }
+
+      if (sizeAdvice) {
+        replyText = `${sizeAdvice}\n\nإليك اقتراحاتنا المميزة لإكمال إطلالتك:\n- [تيشيرت أوفرسايز ديب أسود فاخر](/shop)\n- [بنطال كارجو ستريت وير أسود](/shop)`;
+      } else if (lowerMsg.includes("شحن") || lowerMsg.includes("توصيل") || lowerMsg.includes("محافظ")) {
+        replyText = "أهلاً بك في ديب ستور! نوفر خدمة الشحن السريع لكافة محافظات مصر. يمكنك معرفة تكلفة الشحن واختيار المحافظة عند الشراء.";
       } else if (lowerMsg.includes("دفع") || lowerMsg.includes("فودافون") || lowerMsg.includes("انستا")) {
-        replyText = "نوفر لك طرق دفع متنوعة وآمنة: الدفع عند الاستلام 🚪، أو التحويل عبر فودافون كاش 📱 أو انستاباي 💳 مع إمكانية رفع صورة الإيصال مباشرة في صفحة الشيك أوت.";
-      } else if (lowerMsg.includes("مقاس") || lowerMsg.includes("size") || lowerMsg.includes("أوفراسايز")) {
-        replyText = "تتوفر لدينا جميع المقاسات العالمية (S, M, L, XL, XXL) بتصاميم أوفراسايز عصرية. يمكنك مراجعة جدول المقاسات المرفق في صفحة كل منتج لتحديد المقاس المثالي لك.";
-      } else if (lowerMsg.includes("تواصل") || lowerMsg.includes("شكوى") || lowerMsg.includes("عنوان")) {
-        replyText = "يمكنك التواصل معنا مباشرة عبر صفحة 'اتصل بنا والشكاوى' أو عبر واتساب المتجر. فريق ديب ستور في خدمتك دائماً!";
+        replyText = "نوفر لك طرق دفع آمنة ومتنوعة: الدفع عند الاستلام 🚪، أو التحويل عبر فودافون كاش 📱 أو انستاباي 💳 في صفحة إتمام الطلب.";
       } else {
-        replyText = "أهلاً بك في DEEP STORE 👑! كيف يمكنني مساعدتك اليوم في اختيار تشكيلة الـ Streetwear الفاخرة المناسبة لك؟";
+        replyText = "أهلاً بك في DEEP STORE 👑! يمكنك تصفح أحدث التشكيلات مباشرة عبر [صفحة المتجر](/shop) أو تزويدنا بطولك ووزنك لاقتراح المقاس والقطع المكملة أنيقة!";
       }
     }
 
-    return NextResponse.json({ reply: replyText });
+    return NextResponse.json({ reply: replyText, status: "success" });
   } catch (error: any) {
     console.error("Chatbot Route Error:", error);
     return NextResponse.json(

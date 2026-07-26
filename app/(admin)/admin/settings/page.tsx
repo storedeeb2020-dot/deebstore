@@ -13,7 +13,7 @@ export default function AdminSettingsPage() {
 
   const [settings, setSettings] = useState<SiteSettings>({
     storeName: "DEEP STORE",
-    heroTagline: "DEEP STORE — ROYAL STREETWEAR",
+    heroTagline: "ديب ستور — عالم الموضة والستريت وير الفاخر 👑",
     heroButtonText: "تسوق الآن — SHOP NOW",
     heroMediaType: "image",
     heroVideoUrlLight: "",

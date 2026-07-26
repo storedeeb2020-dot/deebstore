@@ -56,86 +56,69 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-white dark:bg-black transition-colors duration-500">
-      {/* Background Media Container */}
-      <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-black transition-colors duration-500">
-        {mediaType === "video" && videoUrl ? (
-          <video
-            key={videoUrl}
-            src={videoUrl}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover object-center rounded-none scale-100"
-          />
-        ) : (
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={currentImage}
-              src={currentImage}
-              alt="NXT Hero — Premium Fashion"
-              initial={{ opacity: 0.8 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0.8 }}
-              transition={{ duration: 0.8 }}
-              className="w-full h-full object-cover object-center rounded-none scale-100"
-            />
-          </AnimatePresence>
-        )}
+    <section className="relative h-screen w-full overflow-hidden bg-black transition-colors duration-500 flex flex-col items-center justify-center">
+      {/* Rich Obsidian Radial Background Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.08)_0%,rgba(5,5,5,1)_70%)] pointer-events-none" />
 
-        {/* Full-bleed gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40 dark:from-black/40 dark:via-transparent dark:to-black/70 pointer-events-none" />
-      </div>
-
-      {/* Sleek Minimal Subtitle */}
-      <div className="absolute top-32 left-1/2 -translate-x-1/2 z-10 text-center text-black dark:text-white pointer-events-none">
+      {/* Brand Central Hero Tagline & Subtitle */}
+      <div className="relative z-10 text-center px-4 -mt-20">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <motion.img
+          src="/logo.png"
+          alt="DEEP STORE"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          className="h-16 sm:h-24 w-auto mx-auto object-contain mb-4 drop-shadow-[0_0_25px_rgba(212,175,55,0.4)]"
+        />
         <motion.p
-          className="text-xs md:text-sm font-bold tracking-[0.6em] uppercase text-black/70 dark:text-white/80 drop-shadow-md"
+          className="text-sm md:text-base font-extrabold tracking-widest text-amber-400 drop-shadow-[0_0_12px_rgba(212,175,55,0.4)]"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
         >
-          {settings?.heroTagline || "next is yours"}
+          {(!settings?.heroTagline || settings?.heroTagline.toLowerCase().includes("next"))
+            ? "ديب ستور — عالم الموضة والستريت وير الفاخر 👑"
+            : settings.heroTagline}
         </motion.p>
       </div>
 
-      {/* 21st.dev Magic UI Shimmer 3D CTA Button - Positioned in lower third */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20">
+      {/* Luxury Royal Gold & Obsidian CTA Button */}
+      <div className="relative z-20 mt-10">
         <motion.div
-          initial={{ opacity: 0, y: 25, scale: 0.95 }}
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ delay: 0.6, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ delay: 0.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="relative group"
         >
-          {/* Ambient Gold Glow Backing Flare */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 rounded-full blur-lg opacity-60 group-hover:opacity-100 group-hover:blur-xl transition-all duration-500 animate-pulse" />
+          {/* Subtle Ambient Backing Halo */}
+          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-amber-500/40 via-yellow-400/50 to-amber-600/40 blur-md opacity-70 group-hover:opacity-100 transition-all duration-500" />
 
-          {/* Main Shimmer Gold Button */}
+          {/* Main Luxury Glassmorphic Button */}
           <motion.button
             onClick={handleScroll}
-            whileHover={{ scale: 1.06, y: -2 }}
+            whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.96 }}
-            transition={{ type: "spring", stiffness: 350, damping: 22 }}
-            className="relative inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-black px-10 py-4.5 rounded-full font-black text-sm tracking-wider uppercase shadow-[0_20px_50px_rgba(212,175,55,0.4)] border border-amber-300/50 overflow-hidden transition-colors"
+            transition={{ type: "spring", stiffness: 380, damping: 24 }}
+            className="relative inline-flex items-center gap-3 bg-zinc-950/90 hover:bg-gradient-to-r hover:from-amber-500 hover:via-amber-400 hover:to-yellow-500 text-amber-400 hover:text-black px-9 py-4 rounded-full font-black text-sm tracking-widest uppercase border border-amber-500/40 hover:border-amber-300 shadow-[0_15px_35px_rgba(0,0,0,0.8)] backdrop-blur-md overflow-hidden transition-all duration-300 cursor-pointer"
           >
-            {/* Moving Shimmer Light Ray */}
+            {/* Moving Shimmer Ray */}
             <motion.div
-              className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-25deg]"
+              className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-amber-300/20 to-transparent skew-x-[-25deg]"
               initial={{ x: "-150%" }}
               animate={{ x: "250%" }}
-              transition={{ repeat: Infinity, duration: 2.8, ease: "linear", repeatDelay: 1 }}
+              transition={{ repeat: Infinity, duration: 3, ease: "linear", repeatDelay: 1 }}
             />
 
-            <ShoppingBag size={18} className="relative z-10 text-black group-hover:scale-110 transition-transform duration-300" />
+            <ShoppingBag size={18} className="relative z-10 transition-transform duration-300 group-hover:scale-110" />
             
-            <span className="relative z-10 font-extrabold text-base">
+            <span className="relative z-10 font-bold text-sm sm:text-base">
               {settings?.heroButtonText || "تسوق الآن — SHOP NOW"}
             </span>
 
             <ArrowRight
               size={18}
-              className="relative z-10 group-hover:translate-x-1.5 transition-transform duration-300 text-black"
+              className="relative z-10 transition-transform duration-300 group-hover:translate-x-1.5"
             />
           </motion.button>
         </motion.div>
@@ -143,14 +126,14 @@ export function HeroSection() {
 
       {/* Scroll Indicator */}
       <motion.div
-        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-black/50 dark:text-white/50 z-10 pointer-events-none"
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-zinc-500 z-10 pointer-events-none"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
+        transition={{ delay: 0.8 }}
       >
-        <span className="text-[10px] font-extrabold tracking-[0.3em] uppercase text-black/70 dark:text-white/70">Scroll</span>
+        <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-zinc-400">Scroll</span>
         <motion.div
-          className="w-[2px] h-8 bg-gradient-to-b from-black/60 to-transparent dark:from-white/60 dark:to-transparent rounded-full"
+          className="w-[2px] h-6 bg-gradient-to-b from-amber-400/80 to-transparent rounded-full"
           animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.4, 1, 0.4] }}
           transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
         />

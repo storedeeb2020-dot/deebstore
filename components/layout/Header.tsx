@@ -12,10 +12,10 @@ import { cn } from "@/lib/utils";
 import { Logo3D } from "@/components/ui/Logo3D";
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/#products", label: "Shop" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/", label: "الرئيسية" },
+  { href: "/#products", label: "المتجر" },
+  { href: "/about", label: "عن المتجر" },
+  { href: "/contact", label: "اتصل بنا والشكاوى" },
 ];
 
 export function Header() {

@@ -92,17 +92,17 @@ export function Footer() {
 
           {/* Shop */}
           <div>
-            <h4 className="font-bold text-sm tracking-widest uppercase mb-4">
-              Shop
+            <h4 className="font-bold text-sm tracking-widest uppercase mb-4 text-amber-400">
+              تسوق المتجر
             </h4>
             <ul className="space-y-3 text-sm text-gray-400">
               {[
-                { href: "/#products", label: "Our Collection" },
+                { href: "/#products", label: "التشكيلة العصرية" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="hover:text-white transition-colors"
+                    className="hover:text-amber-400 transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -113,20 +113,20 @@ export function Footer() {
 
           {/* Info */}
           <div>
-            <h4 className="font-bold text-sm tracking-widest uppercase mb-4">
-              Info
+            <h4 className="font-bold text-sm tracking-widest uppercase mb-4 text-amber-400">
+              معلومات المتجر
             </h4>
             <ul className="space-y-3 text-sm text-gray-400">
               {[
-                { href: "/about", label: "About Us" },
-                { href: "/contact", label: "Contact Us" },
-                { href: "/privacy", label: "Privacy Policy" },
-                { href: "/terms", label: "Terms of Service" },
+                { href: "/about", label: "عن ديب ستور" },
+                { href: "/contact", label: "اتصل بنا والشكاوى" },
+                { href: "/privacy", label: "سياسة الخصوصية" },
+                { href: "/terms", label: "الشروط والأحكام" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="hover:text-white transition-colors"
+                    className="hover:text-amber-400 transition-colors"
                   >
                     {link.label}
                   </Link>
