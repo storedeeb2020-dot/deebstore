@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, Palette, Upload, Ruler, AlertCircle } from "lucide-react";
+import { Trash2, Palette, Upload, Ruler, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { createProduct, updateProduct, getSiteSettings, type GlobalSizeChart } from "@/lib/firebase/firestore";
 import { generateSlug, generateSKU } from "@/lib/utils";
@@ -17,8 +17,6 @@ interface ProductFormProps {
   productId?: string;
 }
 
-const AVAILABLE_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "One Size", "38", "40", "42", "44"];
-
 export function ProductForm({ initialData, productId }: ProductFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -27,7 +25,6 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
   // Custom states for variant adding inputs
   const [newColorName, setNewColorName] = useState("");
   const [newColorHex, setNewColorHex] = useState("#000000");
-  const [customSizeInputs, setCustomSizeInputs] = useState<Record<number, string>>({});
 
   useEffect(() => {
     getSiteSettings()
@@ -162,17 +159,6 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
     updatedVariants[variantIndex] = { ...variant, sizes: updatedSizes };
     
     setValue("variants", updatedVariants, { shouldValidate: true });
-  };
-
-  const handleAddCustomSize = (variantIndex: number) => {
-    const raw = customSizeInputs[variantIndex] || "";
-    const size = raw.trim();
-    if (!size) {
-      toast.error("اكتب اسم المقاس المخصص");
-      return;
-    }
-    addSizeToVariant(variantIndex, size);
-    setCustomSizeInputs((prev) => ({ ...prev, [variantIndex]: "" }));
   };
 
   const removeSizeFromVariant = (variantIndex: number, sizeIndex: number) => {

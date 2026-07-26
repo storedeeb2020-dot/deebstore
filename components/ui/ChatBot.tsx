@@ -70,10 +70,6 @@ function FormattedMessageText({
 export function ChatBot() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-
-  if (pathname.startsWith("/admin")) {
-    return null;
-  }
   const [products, setProducts] = useState<Product[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -188,6 +184,10 @@ export function ChatBot() {
       setLoading(false);
     }
   };
+
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
 
   return (
     <>
