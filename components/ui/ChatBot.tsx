@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { X, Send, Bot, User, Sparkles, ExternalLink } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { X, Send, Bot, User, Sparkles, ExternalLink, Shirt } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProducts } from "@/lib/firebase/firestore";
 import type { Product } from "@/types/product";
@@ -67,13 +68,18 @@ function FormattedMessageText({
 }
 
 export function ChatBot() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
   const [products, setProducts] = useState<Product[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
       sender: "bot",
-      text: "أهلاً بك في DEEP STORE 👑! أنا مساعدك الذكي لاختيار أفضل المقاسات والمنتجات حسب طولك ووزنك، وتزويدك بروابط المنتجات المباشرة مع ترشيح قطع مكملة لإطلالتك الستريت وير.",
+      text: "أهلاً بك في ديب ستور 👑! أنا مساعد ملابس الديب ستور. اكتب لي طولك ووزنك أو نوع القطعة التي تبحث عنها، وسأقترح عليك المقاس المضبوط والمنتجات المناسبة فوراً مع روابط الشراء المباشرة.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -105,9 +111,9 @@ export function ChatBot() {
 
   const quickQuestions = [
     "طولي 178 سم ووزني 75 كجم، ابعتلي لينك المقاس والمنتج المناسب",
-    "اقترح لي تيشيرت أوفرسايز أسود ورابط الشراء",
+    "اقترح لي تيشيرت أوفرسايز ورابط الشراء المباشر",
     "عايز طقم كامل هودي وبنطال كارجو مع الروابط",
-    "ما هي طرق الدفع المتاحة ومواعيد الشحن؟",
+    "ما هي طرق الدفع المتاحة ومواعيد التوصيل؟",
   ];
 
   // Construct a clear text summary of products currently in store with direct URLs
@@ -118,64 +124,47 @@ export function ChatBot() {
         const colors = p.variants?.map((v) => v.colorName).filter(Boolean).join("، ") || "افتراضي";
         const sizes = p.variants?.[0]?.sizes?.map((s) => `${s.size} (${s.stock > 0 ? "متوفر" : "نفد"})`).join(", ") || "S, M, L, XL, XXL";
         const price = p.salePrice ? `${p.salePrice} ج.م (خصم من ${p.price} ج.م)` : `${p.price} ج.م`;
-        const link = `/product/${p.slug || p.id}`;
-        return `- ${p.name} | السعر: ${price} | الألوان: ${colors} | المقاسات: ${sizes} | رابط المنتج المباشر: ${link}`;
+        return `- **${p.name}** | الماركة: ${p.brand || "DEEP STORE"} | السعر: ${price} | الألوان: ${colors} | المقاسات: ${sizes} | الرابط المباشر: [/product/${p.slug}](/product/${p.slug})`;
       })
       .join("\n");
   }, [products]);
 
-  const handleSend = async (textToSend?: string) => {
-    const query = textToSend || input.trim();
-    if (!query || loading) return;
+  const handleSend = async (customText?: string) => {
+    const textToSend = customText || input;
+    if (!textToSend.trim() || loading) return;
 
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       sender: "user",
-      text: query,
+      text: textToSend,
     };
 
     setMessages((prev) => [...prev, userMsg]);
-    if (!textToSend) setInput("");
+    if (!customText) setInput("");
     setLoading(true);
 
     try {
+      const historyForApi = messages.map((m) => ({
+        role: m.sender === "user" ? "user" : "model",
+        parts: [{ text: m.text }],
+      }));
+
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: query,
-          productsCatalog: productsCatalog,
+          messages: historyForApi,
+          userMessage: textToSend,
+          catalog: productsCatalog,
         }),
       });
 
-      let botReply = "";
-
-      if (res.ok) {
-        const data = await res.json().catch(() => null);
-        if (data && data.reply) {
-          botReply = data.reply;
-        }
+      if (!res.ok) {
+        throw new Error("Chat request failed");
       }
 
-      // Smart client fallback if API route returns error or non-JSON
-      if (!botReply) {
-        const numbers = query.match(/\d+/g)?.map(Number) || [];
-        if (numbers.length >= 2) {
-          const [n1, n2] = numbers;
-          const height = Math.max(n1, n2);
-          const weight = Math.min(n1, n2);
-          let recSize = "L";
-          if (height < 165 || weight < 60) recSize = "S";
-          else if (height <= 175 && weight <= 72) recSize = "M";
-          else if (height <= 182 && weight <= 84) recSize = "L";
-          else if (height <= 190 && weight <= 95) recSize = "XL";
-          else recSize = "XXL";
-
-          botReply = `بناءً على قياساتك (طول ${height} سم ووزن ${weight} كجم)، ننصحك بمقاس (${recSize})!\n\nإليك اقتراحاتنا المتميزة لإكمال إطلالتك:\n- [تيشيرت أوفرسايز ديب أسود](/shop)\n- [بنطال كارجو ستريت وير أسود](/shop)`;
-        } else {
-          botReply = "أهلاً بك في DEEP STORE 👑! يمكنك تصفح التشكيلة الكاملة ورؤية المنتجات عبر [صفحة المتجر الرئيسية](/shop). اكتب لنا طولك ووزنك لاقتراح قطع مكملة مناسبة مع روابط الشراء المباشرة!";
-        }
-      }
+      const data = await res.json();
+      const botReply = data.reply || "عذراً، حدث خطأ أثناء الاتصال. حاول مرة أخرى.";
 
       setMessages((prev) => [
         ...prev,
@@ -202,30 +191,36 @@ export function ChatBot() {
 
   return (
     <>
-      {/* Floating Trigger Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      {/* Draggable Smooth Floating Trigger Button */}
+      <motion.div
+        drag
+        dragMomentum={false}
+        whileDrag={{ scale: 1.1 }}
+        className="fixed bottom-6 right-6 z-50 cursor-grab active:cursor-grabbing touch-none select-none"
+      >
         <motion.button
           whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
+          whileTap={{ scale: 0.92 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-600 text-black shadow-2xl shadow-amber-500/30 border border-amber-300/40 focus:outline-none cursor-pointer"
-          aria-label="المساعد الذكي"
+          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-300 text-black shadow-[0_0_25px_rgba(255,215,0,0.5)] border-2 border-amber-200 focus:outline-none cursor-pointer"
+          aria-label="مساعد ملابس الديب ستور"
         >
           {isOpen ? (
-            <X className="w-6 h-6 text-black" />
+            <X className="w-6 h-6 text-black font-black" />
           ) : (
-            <>
-              <Bot className="w-7 h-7 text-black" />
+            <div className="relative flex items-center justify-center">
+              <Shirt className="w-7 h-7 text-black drop-shadow-md" />
+              <Sparkles className="w-4 h-4 text-black absolute -top-2 -right-2 animate-bounce" />
               <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-300"></span>
               </span>
-            </>
+            </div>
           )}
         </motion.button>
-      </div>
+      </motion.div>
 
-      {/* Chatbot Modal / Window */}
+      {/* Chatbot Drawer Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -233,32 +228,32 @@ export function ChatBot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[390px] h-[530px] max-h-[80vh] bg-zinc-950 border border-amber-500/30 rounded-3xl shadow-2xl shadow-black flex flex-col overflow-hidden text-white font-sans dir-rtl"
+            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[400px] h-[540px] max-h-[82vh] bg-zinc-950 border border-amber-500/40 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-white font-sans dir-rtl"
             dir="rtl"
           >
             {/* Header */}
             <div className="p-4 bg-gradient-to-r from-zinc-900 via-zinc-950 to-black border-b border-amber-500/20 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <Sparkles className="w-5 h-5 text-amber-400" />
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-black flex items-center justify-center shadow-lg shadow-amber-500/20">
+                  <Shirt className="w-5 h-5 text-black font-black" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-amber-400 flex items-center gap-1.5">
-                    DEEP AI Stylist & Direct Links
+                  <h3 className="font-extrabold text-sm text-amber-400 flex items-center gap-1.5">
+                    مساعد ملابس الديب ستور 👑
                   </h3>
-                  <p className="text-[11px] text-zinc-400">مساعد المقاسات وروابط الشراء المباشرة 👑</p>
+                  <p className="text-[11px] text-zinc-400">حاسبة المقاسات واقتراح التشكيلات المناسبة</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-full hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                className="p-1.5 rounded-full hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Messages Container */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-black/60 scrollbar-thin scrollbar-thumb-zinc-800">
+            <div className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-black/80 scrollbar-thin scrollbar-thumb-zinc-800">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
@@ -279,7 +274,7 @@ export function ChatBot() {
                   <div
                     className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed ${
                       msg.sender === "user"
-                        ? "bg-gradient-to-r from-amber-500 to-amber-400 text-black font-semibold rounded-tr-none"
+                        ? "bg-gradient-to-r from-amber-500 to-amber-400 text-black font-semibold rounded-tr-none shadow-md"
                         : "bg-zinc-900 border border-zinc-800 text-zinc-200 rounded-tl-none"
                     }`}
                   >
@@ -291,7 +286,7 @@ export function ChatBot() {
               {loading && (
                 <div className="flex items-center gap-2 text-amber-400 text-xs py-2">
                   <Bot size={16} className="animate-spin text-amber-400" />
-                  <span>جاري تجهيز روابط المنتجات واقتراح التشكيلة...</span>
+                  <span>جاري حساب المقاس واقتراح المنتجات المناسبة...</span>
                 </div>
               )}
               <div ref={messagesEndRef} />
@@ -324,13 +319,13 @@ export function ChatBot() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="اكتب استفسارك، أو اطلب رابط منتج محدد..."
+                placeholder="اكتب طولك ووزنك أو استفسارك..."
                 className="flex-1 bg-zinc-900 border border-zinc-800 focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none transition-colors"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || loading}
-                className="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 text-black font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 <Send size={15} />
               </button>

@@ -341,13 +341,15 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
                       {selectedSize}
                     </span>
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => setShowSizeGuide(true)}
-                    className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800/60"
-                  >
-                    <span>📏 جدول المقاسات (Size Guide)</span>
-                  </button>
+                  {product.sizeChartUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setShowSizeGuide(true)}
+                      className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800/60"
+                    >
+                      <span>📏 جدول المقاسات (Size Guide)</span>
+                    </button>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {availableSizes.map((sizeStockItem) => {
@@ -472,7 +474,7 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
                 <div className="flex items-center gap-2">
                   <span className="text-lg">📏</span>
                   <h3 className="font-black text-sm uppercase tracking-wider text-white">
-                    جدول مقاسات NXT ({product.sizeChartType === "pants" ? "بناطيل / Pants" : "تيشرتات / T-Shirts"})
+                    جدول مقاسات DEEP STORE 📏
                   </h3>
                 </div>
                 <button
@@ -486,14 +488,14 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
               <div className="flex justify-center p-2 bg-black rounded-2xl border border-zinc-800/80 overflow-hidden shadow-inner">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={product.sizeChartType === "pants" ? "/size-chart-pants.png" : "/size-chart-tshirt.png"}
-                  alt="NXT Size Guide"
+                  src={product.sizeChartUrl || "/logo.png"}
+                  alt="DEEP STORE Size Guide"
                   className="w-full max-h-[70vh] object-contain rounded-xl"
                 />
               </div>
 
               <p className="text-[11px] text-zinc-400 text-center mt-3 font-medium">
-                جميع المقاسات دقيقة ومصممة بعناية لمنتجات NXT
+                جميع المقاسات دقيقة ومصممة بعناية لمنتجات DEEP STORE 👑
               </p>
             </motion.div>
           </div>

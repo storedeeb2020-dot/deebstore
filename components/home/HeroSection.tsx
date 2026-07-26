@@ -26,25 +26,11 @@ export function HeroSection() {
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black transition-colors duration-500 flex flex-col items-center justify-center">
-      {/* Background Cinematic Video Layer */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-45">
-        <video
-          src="https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover scale-105"
-        />
-        {/* Dark Obsidian Luxury Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black" />
-      </div>
-
-      {/* Rich Obsidian Radial Background Glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.12)_0%,rgba(5,5,5,0.95)_70%)] pointer-events-none z-1" />
+      {/* Rich Obsidian Dark Background with Gold Radial Ambient Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.15)_0%,rgba(5,5,5,1)_75%)] pointer-events-none z-0" />
 
       {/* Brand Central Hero Tagline & Subtitle */}
-      <div className="relative z-10 text-center px-4 -mt-20">
+      <div className="relative z-10 text-center px-4 -mt-16">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <motion.img
           src="/logo.png"
@@ -52,10 +38,10 @@ export function HeroSection() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
-          className="h-16 sm:h-24 w-auto mx-auto object-contain mb-4 drop-shadow-[0_0_25px_rgba(212,175,55,0.4)]"
+          className="h-20 sm:h-28 w-auto mx-auto object-contain mb-5 drop-shadow-[0_0_30px_rgba(212,175,55,0.5)]"
         />
         <motion.p
-          className="text-sm md:text-base font-extrabold tracking-widest text-amber-400 drop-shadow-[0_0_12px_rgba(212,175,55,0.4)]"
+          className="text-base sm:text-lg font-black tracking-widest text-amber-400 drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.8 }}
@@ -74,7 +60,7 @@ export function HeroSection() {
           transition={{ delay: 0.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="relative group"
         >
-          {/* Subtle Ambient Backing Halo */}
+          {/* Ambient Backing Halo */}
           <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-amber-500/40 via-yellow-400/50 to-amber-600/40 blur-md opacity-70 group-hover:opacity-100 transition-all duration-500" />
 
           {/* Main Luxury Glassmorphic Button */}

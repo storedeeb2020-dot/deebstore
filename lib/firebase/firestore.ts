@@ -237,10 +237,15 @@ export async function deleteCategory(id: string): Promise<void> {
   await deleteDoc(doc(db, "categories", id));
 }
 
-// ─── Site Settings (CMS) ─────────────────────────────────
+export interface GlobalSizeChart {
+  id: string;
+  name: string;      // اسم جدول المقاسات (مثلاً: جدول مقاسات التيشيرتات)
+  imageUrl: string;  // رابط الصورة المرفوعة
+}
 
 export interface SiteSettings {
   storeName?: string;
+  logoUrl?: string;         // رابط لوغو المتجر الرسمي
   heroTagline?: string;
   heroButtonText?: string;
   heroMediaType?: "image" | "video";
@@ -257,11 +262,17 @@ export interface SiteSettings {
   storePhone?: string;
   vodafoneCash?: string;
   instapayUsername?: string;
-  onlinePaymentEnabled?: boolean;  // تفعيل/إيقاف الدفع الأونلاين
+  onlinePaymentEnabled?: boolean;  // تفعيل/إيقاف الدفع الأونلاين أونلاين بكروت البنك
+  vodafoneCashEnabled?: boolean;   // تفعيل/إيقاف فودافون كاش
+  instapayEnabled?: boolean;       // تفعيل/إيقاف انستاباي
+  codEnabled?: boolean;            // تفعيل/إيقاف الدفع عند الاستلام COD
   instagramUrl?: string;
   facebookUrl?: string;
   tiktokUrl?: string;
   currency?: string;
+
+  // Global Size Charts CMS
+  sizeCharts?: GlobalSizeChart[];
 
   // About Page CMS
   aboutTitle?: string;

@@ -9,7 +9,7 @@ export const productVariantSchema = z.object({
   colorName: z.string().min(1, "Color name is required"),
   colorHex: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Valid hex color required"),
   image: z.string().url("Color variant image is required"),
-  sizes: z.array(sizeStockSchema).min(1, "At least one size is required"),
+  sizes: z.array(sizeStockSchema).optional().default([]),
 });
 
 export const productSchema = z.object({
@@ -28,7 +28,9 @@ export const productSchema = z.object({
   variants: z.array(productVariantSchema).min(1, "أضف لون واحد على الأقل"),
   featured: z.boolean().default(false),
   bestSeller: z.boolean().default(false),
-  sizeChartType: z.enum(["tshirt", "pants"]).default("tshirt"),
+  hasSizes: z.boolean().default(true),
+  sizeChartUrl: z.string().optional(),
+  sizeChartType: z.string().optional(),
 });
 
 export type ProductFormData = z.infer<typeof productSchema>;

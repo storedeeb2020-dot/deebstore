@@ -16,7 +16,9 @@ export interface Product {
   bestSeller: boolean;
   isNewArrival?: boolean;
   isNew?: boolean;
-  sizeChartType?: "tshirt" | "pants"; // نوع جدول المقاسات للمنتج
+  hasSizes?: boolean;      // هل يحتوي المنتج على مقاسات أم بدون مقاسات (One Size / إكسسوارات)
+  sizeChartUrl?: string;   // رابط صورة جدول المقاسات المحدد للمنتج
+  sizeChartType?: string;  // معرف أو اسم جدول المقاسات للمنتج
   createdAt: Timestamp | Date;
 }
 
