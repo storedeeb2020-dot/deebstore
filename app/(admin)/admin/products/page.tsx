@@ -10,6 +10,7 @@ import {
   Edit,
   Trash2,
   AlertTriangle,
+  Package,
 } from "lucide-react";
 import { getProducts, deleteProduct } from "@/lib/firebase/firestore";
 import { formatPrice } from "@/lib/utils";
@@ -51,96 +52,95 @@ export default function AdminProductsPage() {
     );
   }, [search, products]);
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
+  const handleDelete = async (id: string) => {
     setDeleting(true);
     try {
-      await deleteProduct(deleteId);
-      toast.success("Product deleted successfully");
+      await deleteProduct(id);
+      toast.success("تم حذف المنتج بنجاح من قاعدة البيانات 👑");
+      setProducts((prev) => prev.filter((p) => p.id !== id));
       setDeleteId(null);
-      loadProducts();
-    } catch {
-      toast.error("Failed to delete product");
+    } catch (err) {
+      console.error(err);
+      toast.error("فشل حذف المنتج");
     } finally {
       setDeleting(false);
     }
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-8 max-w-6xl pb-16 font-sans dir-rtl text-white" dir="rtl">
+      {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-zinc-900">Products</h1>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400 mb-1">
+            <Package size={14} />
+            إدارة الكتالوج والمنتجات
+          </div>
+          <h1 className="text-3xl font-black tracking-tight text-white">
+            قائمة المنتجات والمعروضات
+          </h1>
           <p className="text-zinc-400 text-xs mt-1">
-            {products.length} total catalog products registered in Firestore
+            إضافة، تعديل، وحذف الأصناف والمنتجات المعروضة بالمتجر.
           </p>
         </div>
+
         <Link
           href="/admin/products/new"
-          className="inline-flex items-center gap-2 bg-zinc-900 text-white px-5 py-3 rounded-xl font-bold text-xs hover:bg-zinc-800 transition-all duration-300 shadow-md shadow-zinc-900/10 self-start sm:self-auto"
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 text-black px-5 py-3 rounded-xl font-black text-xs shadow-lg shadow-amber-500/20 hover:scale-105 transition-all duration-300 self-start sm:self-auto cursor-pointer"
         >
-          <Plus size={14} />
-          Add Product
+          <Plus size={16} />
+          إضافة منتج جديد
         </Link>
       </div>
 
-      {/* Search and Filters Bar */}
-      <div className="flex gap-3">
+      {/* Filter and Search Bar */}
+      <div className="flex items-center gap-4 bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
         <div className="relative flex-1">
-          <Search
-            size={14}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400"
-          />
+          <Search size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
           <input
             type="text"
-            placeholder="Search catalog by name, brand, category..."
+            placeholder="البحث باسم المنتج، الفئة أو الماركة..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-zinc-100 rounded-xl text-xs bg-white focus:outline-none focus:border-zinc-300 focus:ring-1 focus:ring-zinc-200/50 shadow-[0_8px_30px_rgba(0,0,0,0.015)] transition-all placeholder:text-zinc-400"
+            className="w-full pr-10 pl-4 py-3 border border-zinc-800 rounded-xl text-xs bg-zinc-900 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-all"
           />
         </div>
       </div>
 
       {/* Main Table Container */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="flex flex-col items-center justify-center h-64 space-y-4 text-amber-400">
           <Spinner size="lg" />
-          <p className="text-xs text-zinc-400 font-medium uppercase tracking-widest">Loading catalog</p>
+          <p className="text-xs text-amber-400 font-bold uppercase tracking-widest">جاري تحميل المنتجات...</p>
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState
-          title="No products found"
-          description={
-            search ? "Try searching for another keyword." : "Add your first product to get started."
-          }
-          action={
-            !search ? (
-              <Link
-                href="/admin/products/new"
-                className="inline-flex items-center gap-2 bg-zinc-900 text-white px-5 py-3 rounded-xl font-bold text-xs hover:bg-zinc-800 transition-all duration-300"
-              >
-                <Plus size={14} />
-                Add Product
-              </Link>
-            ) : undefined
-          }
-        />
+        <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-12 text-center text-zinc-500 space-y-4">
+          <Package size={40} className="mx-auto text-zinc-700" />
+          <h3 className="text-base font-bold text-white">لم يتم العثور على أي منتجات</h3>
+          <p className="text-xs text-zinc-400">جرب البحث بكلمة أخرى أو قم بإضافة أول منتج للمتجر.</p>
+          <Link
+            href="/admin/products/new"
+            className="inline-flex items-center gap-2 bg-amber-500 text-black px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-amber-400 transition-colors"
+          >
+            <Plus size={14} />
+            إضافة منتج الآن
+          </Link>
+        </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-zinc-100/80 shadow-[0_8px_30px_rgba(0,0,0,0.015)] overflow-hidden">
+        <div className="bg-zinc-950 rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-right text-xs">
               <thead>
-                <tr className="bg-zinc-50/50 border-b border-zinc-100 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                  <th className="px-6 py-4 text-left">Product Detail</th>
-                  <th className="px-6 py-4 text-left">Category</th>
-                  <th className="px-6 py-4 text-left">Price</th>
-                  <th className="px-6 py-4 text-left">Stock Level</th>
-                  <th className="px-6 py-4 text-left">Tags</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                <tr className="bg-zinc-900/60 border-b border-zinc-800 text-amber-400 font-bold uppercase tracking-wider">
+                  <th className="px-6 py-4">تفاصيل المنتج</th>
+                  <th className="px-6 py-4">الفئة</th>
+                  <th className="px-6 py-4">السعر</th>
+                  <th className="px-6 py-4">المخزون المتوفر</th>
+                  <th className="px-6 py-4">الوسوم</th>
+                  <th className="px-6 py-4 text-left">الإجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-50">
+              <tbody className="divide-y divide-zinc-800/60">
                 <AnimatePresence initial={false}>
                   {filtered.map((product, i) => {
                     const totalStock = product.variants?.reduce(
@@ -154,12 +154,12 @@ export default function AdminProductsPage() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3, delay: Math.min(i * 0.04, 0.2) }}
-                        className="hover:bg-zinc-50/40 transition-colors"
+                        className="hover:bg-zinc-900/40 transition-colors"
                       >
                         {/* Product details */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3.5">
-                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-50/60 border border-zinc-100 flex-shrink-0 flex items-center justify-center p-1.5">
+                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 flex-shrink-0 flex items-center justify-center p-1">
                               {product.mainImage ? (
                                 <Image
                                   src={product.mainImage}
@@ -169,92 +169,88 @@ export default function AdminProductsPage() {
                                   className="object-contain w-full h-full"
                                 />
                               ) : (
-                                 <div className="text-[10px] text-amber-500/50 font-black tracking-tighter">
-                                   DEEP
-                                 </div>
+                                <div className="text-[10px] text-amber-500/50 font-black tracking-tighter">
+                                  DEEP
+                                </div>
                               )}
                             </div>
                             <div>
-                              <p className="font-bold text-xs text-zinc-950">{product.name}</p>
-                              <p className="text-[10px] text-zinc-400 font-medium tracking-wide uppercase mt-0.5">{product.brand}</p>
+                              <p className="font-bold text-xs text-white">{product.name}</p>
+                              <p className="text-[10px] text-amber-400/90 font-medium tracking-wide uppercase mt-0.5">{product.brand || "DEEP STORE"}</p>
                             </div>
                           </div>
                         </td>
-                        
+
                         {/* Category */}
-                        <td className="px-6 py-4 text-xs font-semibold text-zinc-500 capitalize">
+                        <td className="px-6 py-4 font-medium text-zinc-300">
                           {product.category}
                         </td>
 
-                        {/* Pricing */}
-                        <td className="px-6 py-4 text-xs font-black text-zinc-950">
-                          <div>
-                            {product.salePrice ? (
-                              <div className="space-y-0.5">
-                                <p className="font-black text-zinc-950">{formatPrice(product.salePrice)}</p>
-                                <p className="text-[10px] text-zinc-400 line-through font-medium">
-                                  {formatPrice(product.price)}
-                                </p>
-                              </div>
-                            ) : (
-                              <p>{formatPrice(product.price)}</p>
+                        {/* Price */}
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-xs text-amber-300">
+                              {formatPrice(product.salePrice ?? product.price)}
+                            </span>
+                            {product.salePrice && (
+                              <span className="text-[10px] text-zinc-500 line-through">
+                                {formatPrice(product.price)}
+                              </span>
                             )}
                           </div>
                         </td>
 
-                        {/* Stock Level */}
+                        {/* Stock */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                totalStock === 0
-                                  ? "bg-red-500"
-                                  : totalStock <= 5
+                              className={`w-2 h-2 rounded-full ${
+                                totalStock > 10
+                                  ? "bg-emerald-500"
+                                  : totalStock > 0
                                   ? "bg-amber-500"
-                                  : "bg-green-500"
+                                  : "bg-red-500"
                               }`}
                             />
-                            <span className="text-xs font-bold text-zinc-800">
-                              {totalStock === 0 ? "Out of Stock" : `${totalStock} units`}
+                            <span className="font-bold text-xs text-zinc-200">
+                              {totalStock > 0 ? `${totalStock} قطعة` : "نفد المخزون"}
                             </span>
                           </div>
                         </td>
 
-                        {/* Status Badges */}
+                        {/* Tags */}
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-1">
                             {product.featured && (
-                              <span className="text-[9px] bg-zinc-900 text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                                Featured
+                              <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-md text-[10px] font-bold">
+                                مميز
                               </span>
                             )}
-                            {product.bestSeller && (
-                              <span className="text-[9px] bg-zinc-100 text-zinc-800 border border-zinc-200 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                                Best Seller
-                              </span>
-                            )}
-                            {!product.featured && !product.bestSeller && (
-                              <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
-                                Standard
+                            {product.isNewArrival && (
+                              <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-md text-[10px] font-bold">
+                                جديد
                               </span>
                             )}
                           </div>
                         </td>
 
-                        {/* Action buttons */}
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-1.5">
+                        {/* Actions */}
+                        <td className="px-6 py-4 text-left">
+                          <div className="flex items-center justify-end gap-2">
                             <Link
-                              href={`/admin/products/edit?id=${product.id}`}
-                              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-50 border border-transparent hover:border-zinc-100 transition-all text-zinc-500 hover:text-zinc-900"
+                              href={`/admin/products/${product.id}/edit`}
+                              className="p-2 text-zinc-400 hover:text-amber-400 hover:bg-zinc-900 rounded-lg transition-colors"
+                              title="تعديل المنتج"
                             >
-                              <Edit size={13} />
+                              <Edit size={16} />
                             </Link>
+
                             <button
                               onClick={() => setDeleteId(product.id)}
-                              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 border border-transparent hover:border-red-100 transition-all text-zinc-400 hover:text-red-600"
+                              className="p-2 text-zinc-400 hover:text-red-400 hover:bg-zinc-900 rounded-lg transition-colors"
+                              title="حذف المنتج"
                             >
-                              <Trash2 size={13} />
+                              <Trash2 size={16} />
                             </button>
                           </div>
                         </td>
@@ -268,41 +264,38 @@ export default function AdminProductsPage() {
         </div>
       )}
 
-      {/* Delete Confirmation Drawer Modal */}
+      {/* Delete Confirmation Modal */}
       <AnimatePresence>
         {deleteId && (
-          <div className="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
             <motion.div
-              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-zinc-100"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-2xl text-white"
             >
-              <div className="w-12 h-12 bg-red-50 border border-red-100 rounded-xl flex items-center justify-center mb-4">
-                <AlertTriangle className="text-red-500" size={18} />
+              <div className="flex items-center gap-3 text-red-400">
+                <AlertTriangle size={24} />
+                <h3 className="font-bold text-base">تأكيد حذف المنتج</h3>
               </div>
-              <h3 className="font-black text-sm text-zinc-900 uppercase tracking-wider mb-2">Delete Product</h3>
-              <p className="text-zinc-400 text-xs leading-relaxed mb-6">
-                Are you sure you want to delete this product? This action is permanent and cannot be undone on Firestore.
+              <p className="text-xs text-zinc-400">
+                هل أنت تأكد من رغبتك في حذف هذا المنتج نهائياً من المتجر؟ لا يمكن التراجع عن هذا الإجراء.
               </p>
-              <div className="flex gap-3">
+              <div className="flex items-center justify-end gap-3 pt-2">
                 <button
+                  type="button"
                   onClick={() => setDeleteId(null)}
-                  className="flex-1 py-2.5 border border-zinc-200 rounded-xl text-xs font-bold hover:bg-zinc-50 transition-colors"
+                  className="px-4 py-2 text-xs font-bold text-zinc-400 hover:text-white transition-colors"
                 >
-                  Cancel
+                  إلغاء
                 </button>
                 <button
-                  onClick={handleDelete}
+                  type="button"
+                  onClick={() => handleDelete(deleteId)}
                   disabled={deleting}
-                  className="flex-1 py-2.5 bg-red-500 text-white rounded-xl text-xs font-bold hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-red-500/10"
+                  className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
                 >
-                  {deleting ? (
-                    <Spinner size="sm" className="border-white border-t-transparent" />
-                  ) : (
-                    "Delete"
-                  )}
+                  {deleting ? "جاري الحذف..." : "حذف نهائي"}
                 </button>
               </div>
             </motion.div>

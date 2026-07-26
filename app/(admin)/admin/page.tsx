@@ -7,13 +7,12 @@ import {
   ShoppingCart,
   Package,
   TrendingUp,
-  ArrowRight,
+  ArrowLeft,
   Clock,
-  ChevronRight,
+  ChevronLeft,
   Plus,
 } from "lucide-react";
-import { getOrders } from "@/lib/firebase/firestore";
-import { getProducts } from "@/lib/firebase/firestore";
+import { getOrders, getProducts } from "@/lib/firebase/firestore";
 import { formatPrice, formatDate } from "@/lib/utils";
 import type { Order } from "@/types/order";
 import { Spinner } from "@/components/ui/Spinner";
@@ -29,8 +28,16 @@ const statusDots: Record<string, string> = {
   pending: "bg-amber-500",
   processing: "bg-blue-500",
   shipped: "bg-indigo-500",
-  delivered: "bg-green-500",
+  delivered: "bg-emerald-500",
   cancelled: "bg-red-500",
+};
+
+const statusLabels: Record<string, string> = {
+  pending: "قيد الانتظار",
+  processing: "جاري التجهيز",
+  shipped: "تم الشحن",
+  delivered: "تم التوصيل",
+  cancelled: "ملغي",
 };
 
 export default function AdminDashboardPage() {
@@ -59,70 +66,66 @@ export default function AdminDashboardPage() {
 
   const statCards = [
     {
-      title: "Total Revenue",
+      title: "إجمالي الأرباح والمبيعات",
       value: formatPrice(stats?.totalRevenue ?? 0),
       icon: TrendingUp,
       href: "/admin/orders",
-      progress: "85%", // Simulated target completion
-      desc: "Gross sales (excl. cancelled)",
+      desc: "إجمالي المبيعات النشطة (باستثناء الملغاة)",
     },
     {
-      title: "Active Orders",
+      title: "إجمالي الطلبات",
       value: stats?.totalOrders ?? 0,
       icon: ShoppingCart,
       href: "/admin/orders",
-      progress: "60%",
-      desc: "Total lifetime orders placed",
+      desc: "عدد الطلبات المستلمة حتى الآن",
     },
     {
-      title: "Pending Orders",
+      title: "طلبات قيد الانتظار",
       value: stats?.pendingOrders ?? 0,
       icon: Clock,
       href: "/admin/orders?status=pending",
-      progress: "35%",
-      desc: "Awaiting fulfillment",
+      desc: "طلبات تنتظر المراجعة والتجهيز",
     },
     {
-      title: "Store Products",
+      title: "منتجات المتجر المتاحة",
       value: stats?.totalProducts ?? 0,
       icon: Package,
       href: "/admin/products",
-      progress: "100%",
-      desc: "Active listed items",
+      desc: "الأصناف المعروضة حالياً بالمتجر",
     },
   ];
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 space-y-4">
+      <div className="flex flex-col items-center justify-center h-96 space-y-4 text-amber-400">
         <Spinner size="lg" />
-        <p className="text-xs text-zinc-400 font-medium uppercase tracking-widest">Loading stats</p>
+        <p className="text-xs text-amber-400 font-bold uppercase tracking-widest">جاري تحميل البيانات والتحليلات...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-10">
-      {/* Welcome header with action */}
+    <div className="space-y-10 font-sans dir-rtl text-white" dir="rtl">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-zinc-900">Overview</h1>
-          <p className="text-zinc-400 text-sm mt-1">
-            Real-time analytics and management controls for DEEP STORE.
+          <h1 className="text-3xl font-black tracking-tight text-white">نظرة عامة والتحليلات الحية 👑</h1>
+          <p className="text-zinc-400 text-xs mt-1">
+            متابعة إحصائيات المبيعات، الطلبات الحية، وإدارة منتجات DEEP STORE.
           </p>
         </div>
         <div className="flex gap-3">
           <Link
             href="/admin/products"
-            className="inline-flex items-center gap-2 bg-zinc-900 text-white px-5 py-3 rounded-xl font-bold text-xs hover:bg-zinc-800 transition-all duration-300 shadow-md shadow-zinc-900/10"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 text-black px-5 py-3 rounded-xl font-extrabold text-xs shadow-lg shadow-amber-500/20 hover:scale-105 transition-all duration-300 cursor-pointer"
           >
-            <Plus size={14} />
-            Manage Products
+            <Plus size={16} />
+            إضافة منتج جديد
           </Link>
         </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((card, i) => {
           const Icon = card.icon;
@@ -135,101 +138,86 @@ export default function AdminDashboardPage() {
             >
               <Link
                 href={card.href}
-                className="block bg-white rounded-2xl p-6 border border-zinc-100/80 shadow-[0_8px_30px_rgba(0,0,0,0.015)] hover:border-zinc-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.03)] transition-all duration-300 group"
+                className="block bg-zinc-950 rounded-2xl p-6 border border-zinc-800 hover:border-amber-500/50 shadow-2xl transition-all duration-300 group"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] tracking-wider text-zinc-400 font-bold uppercase">
+                  <span className="text-xs font-bold text-zinc-400 group-hover:text-amber-400 transition-colors">
                     {card.title}
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-zinc-50 flex items-center justify-center text-zinc-500 group-hover:bg-zinc-900 group-hover:text-white transition-all duration-300">
-                    <Icon size={14} />
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                    <Icon size={20} />
                   </div>
                 </div>
-                <h3 className="text-2xl font-black text-zinc-900 tracking-tight mb-1">{card.value}</h3>
-                <p className="text-[10px] text-zinc-400 font-medium">{card.desc}</p>
-                
-                {/* Clean Micro progress bar */}
-                <div className="w-full h-1 bg-zinc-50 rounded-full mt-5 overflow-hidden">
-                  <div 
-                    className="bg-zinc-900 h-full rounded-full transition-all duration-500" 
-                    style={{ width: card.progress }}
-                  />
+
+                <div className="text-2xl font-black text-white mb-2 tracking-tight">
+                  {card.value}
                 </div>
+
+                <p className="text-[11px] text-zinc-500">
+                  {card.desc}
+                </p>
               </Link>
             </motion.div>
           );
         })}
       </div>
 
-      {/* Recent Orders section */}
-      <div className="bg-white rounded-2xl border border-zinc-100/80 shadow-[0_8px_30px_rgba(0,0,0,0.015)] overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-100">
+      {/* Recent Orders Section */}
+      <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6">
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
           <div>
-            <h2 className="font-black text-sm text-zinc-900 uppercase tracking-widest">Recent Orders</h2>
-            <p className="text-zinc-400 text-xs mt-0.5">Showing the latest orders registered on Firestore</p>
+            <h2 className="text-lg font-black text-white">أحدث الطلبات المستلمة</h2>
+            <p className="text-xs text-zinc-400 mt-0.5">آخر الطلبات التي تم إنشاؤها عبر المتجر</p>
           </div>
           <Link
             href="/admin/orders"
-            className="text-xs font-bold text-zinc-400 hover:text-zinc-900 transition-colors flex items-center gap-1 group"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors"
           >
-            View all orders
-            <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+            <span>عرض كافة الطلبات</span>
+            <ArrowLeft size={14} />
           </Link>
         </div>
 
         {recentOrders.length === 0 ? (
-          <div className="px-6 py-16 text-center text-zinc-400 text-xs font-medium">
-            No orders registered in the system yet.
+          <div className="py-12 text-center text-zinc-500 text-xs">
+            لا توجد طلبات جديدة حتى الآن.
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-right text-xs">
               <thead>
-                <tr className="bg-zinc-50/50 border-b border-zinc-100 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                  <th className="px-6 py-4 text-left">Order ID</th>
-                  <th className="px-6 py-4 text-left">Customer</th>
-                  <th className="px-6 py-4 text-left">Date</th>
-                  <th className="px-6 py-4 text-left">Total</th>
-                  <th className="px-6 py-4 text-left">Fulfillment</th>
-                  <th className="px-6 py-4 text-right">Action</th>
+                <tr className="border-b border-zinc-800 text-zinc-400 font-bold uppercase tracking-wider">
+                  <th className="py-3 px-4">رقم الطلب</th>
+                  <th className="py-3 px-4">العميل</th>
+                  <th className="py-3 px-4">المحافظة</th>
+                  <th className="py-3 px-4">المبلغ الإجمالي</th>
+                  <th className="py-3 px-4">الحالة</th>
+                  <th className="py-3 px-4">التاريخ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-50">
+              <tbody className="divide-y divide-zinc-800/60">
                 {recentOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-zinc-50/40 transition-colors">
-                    <td className="px-6 py-4 text-xs font-mono text-zinc-500 font-medium">
-                      #{order.id.slice(0, 8).toUpperCase()}
+                  <tr key={order.id} className="hover:bg-zinc-900/60 transition-colors">
+                    <td className="py-3.5 px-4 font-mono font-bold text-amber-400">
+                      #{order.id.slice(0, 8)}
                     </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="text-xs font-bold text-zinc-900">{order.customerName}</p>
-                        <p className="text-[10px] text-zinc-400 font-mono mt-0.5">{order.phone}</p>
-                      </div>
+                    <td className="py-3.5 px-4 font-bold text-white">
+                      {order.customerName}
                     </td>
-                    <td className="px-6 py-4 text-xs text-zinc-500 font-medium">
-                      {formatDate(
-                        order.createdAt instanceof Date
-                          ? order.createdAt
-                          : (order.createdAt as { toDate(): Date }).toDate()
-                      )}
+                    <td className="py-3.5 px-4 text-zinc-300">
+                      {order.governorate}
                     </td>
-                    <td className="px-6 py-4 text-xs font-black text-zinc-900">
+                    <td className="py-3.5 px-4 font-black text-amber-300">
                       {formatPrice(order.total)}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1.5 font-bold text-xs text-zinc-800 capitalize">
-                        <span className={`w-1.5 h-1.5 rounded-full ${statusDots[order.status] || "bg-zinc-300"}`} />
-                        {order.status}
-                      </div>
+                    <td className="py-3.5 px-4">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-zinc-900 border border-zinc-800 text-zinc-200">
+                        <span className={`w-2 h-2 rounded-full ${statusDots[order.status] || "bg-zinc-500"}`} />
+                        {statusLabels[order.status] || order.status}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <Link
-                        href={`/admin/orders?id=${order.id}`}
-                        className="inline-flex items-center gap-1 text-[10px] font-bold bg-zinc-50 text-zinc-700 hover:bg-zinc-900 hover:text-white px-3 py-1.5 rounded-lg transition-all duration-300"
-                      >
-                        Manage
-                        <ChevronRight size={10} />
-                      </Link>
+                    <td className="py-3.5 px-4 text-zinc-400 font-mono text-[11px]">
+                      {formatDate(order.createdAt)}
                     </td>
                   </tr>
                 ))}
