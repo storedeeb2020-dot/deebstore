@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingBag, Menu, X, Sun, Moon, Heart } from "lucide-react";
+import { ShoppingBag, Menu, X, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useScroll } from "@/hooks/useScroll";
@@ -42,21 +42,8 @@ export function Header() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={cn("flex items-center justify-between transition-all duration-300", scrolled ? "h-14 sm:h-16 md:h-18" : "h-18 sm:h-22 md:h-24")}>
-            {/* Left Section: 2 Icons (Theme & Wishlist) + Desktop Nav */}
+            {/* Left Section: Wishlist + Desktop Nav */}
             <div className="flex items-center gap-2 sm:gap-4 z-20">
-              {/* Theme Toggle */}
-              <motion.button
-                onClick={toggleTheme}
-                className={cn(
-                  "p-2 transition-all duration-300 rounded-xl hover:bg-black/5 dark:hover:bg-white/5",
-                  scrolled || theme === "light" ? "text-black dark:text-white" : "text-white"
-                )}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                aria-label="Toggle theme"
-              >
-                {mounted ? (theme === "dark" ? <Sun size={20} className="sm:w-6 sm:h-6" /> : <Moon size={20} className="sm:w-6 sm:h-6" />) : <div className="w-5 h-5 sm:w-6 sm:h-6" />}
-              </motion.button>
 
               {/* Wishlist Toggle */}
               <motion.button
@@ -111,12 +98,7 @@ export function Header() {
                   whileTap={{ scale: 0.95 }}
                   className="relative flex items-center justify-center py-1 transition-all duration-300"
                 >
-                  <div className="block md:hidden">
-                    <Logo3D size={scrolled ? 65 : 80} layers={14} className={theme === "dark" ? "invert" : "invert-0"} />
-                  </div>
-                  <div className="hidden md:block">
-                    <Logo3D size={scrolled ? 85 : 115} layers={14} className={theme === "dark" ? "invert" : "invert-0"} />
-                  </div>
+                  <Logo3D layers={10} />
                 </motion.div>
               </Link>
             </div>

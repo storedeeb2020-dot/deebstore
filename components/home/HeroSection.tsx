@@ -57,8 +57,22 @@ export function HeroSection() {
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black transition-colors duration-500 flex flex-col items-center justify-center">
+      {/* Background Cinematic Video Layer */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-45">
+        <video
+          src="https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover scale-105"
+        />
+        {/* Dark Obsidian Luxury Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black" />
+      </div>
+
       {/* Rich Obsidian Radial Background Glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.08)_0%,rgba(5,5,5,1)_70%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.12)_0%,rgba(5,5,5,0.95)_70%)] pointer-events-none z-1" />
 
       {/* Brand Central Hero Tagline & Subtitle */}
       <div className="relative z-10 text-center px-4 -mt-20">

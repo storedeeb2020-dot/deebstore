@@ -118,13 +118,16 @@ export function NXTIntro({ onComplete }: IntroProps) {
             </div>
           ) : (
             /* ── STAGE 2: INTRO VIDEO PLAYBACK (9888.mp4) ── */
-            <div className="relative w-full h-full flex items-center justify-center bg-black">
+            <div className="relative w-full h-full flex items-center justify-center bg-black overflow-hidden">
               <video
                 ref={videoRef}
-                src="/intro.mp4"
+                src="https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4"
+                onError={(e) => {
+                  (e.target as HTMLVideoElement).src = "/intro.mp4";
+                }}
                 playsInline
                 onEnded={handleFinish}
-                className="w-full h-full object-cover sm:object-contain"
+                className="w-full h-full object-cover scale-105 md:scale-100 min-h-full min-w-full"
               />
 
               {/* Video Controls Overlay */}
