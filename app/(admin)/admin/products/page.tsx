@@ -16,7 +16,6 @@ import { getProducts, deleteProduct } from "@/lib/firebase/firestore";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types/product";
 import { Spinner } from "@/components/ui/Spinner";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { toast } from "sonner";
 
 export default function AdminProductsPage() {

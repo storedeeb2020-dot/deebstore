@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Trash2, Video, Image as ImageIcon, Save, Sparkles, Sliders, Type, CreditCard, Share2, Info, FileText, Shield } from "lucide-react";
+import { Video, Image as ImageIcon, Save, Sparkles, Sliders, Type, CreditCard, Shield } from "lucide-react";
 import { getSiteSettings, updateSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
-import { ImageUploader } from "@/components/admin/ImageUploader";
 import { Spinner } from "@/components/ui/Spinner";
 
 export default function AdminSettingsPage() {

@@ -11,7 +11,6 @@ import {
   Inbox,
   User,
   Search,
-  ExternalLink,
   RefreshCw,
 } from "lucide-react";
 import {

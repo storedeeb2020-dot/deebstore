@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { ShoppingBag, Menu, X, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useScroll } from "@/hooks/useScroll";
 import { useCart } from "@/features/cart/CartProvider";
-import { useTheme } from "@/features/theme/ThemeProvider";
 import { useWishlist } from "@/features/wishlist/WishlistProvider";
 import { cn } from "@/lib/utils";
 import { Logo3D } from "@/components/ui/Logo3D";
@@ -21,14 +20,8 @@ const navLinks = [
 export function Header() {
   const { scrolled } = useScroll(40);
   const { totalItems, toggleCart } = useCart();
-  const { theme, toggleTheme } = useTheme();
   const { wishlist, toggleWishlistDrawer } = useWishlist();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <>
@@ -50,7 +43,7 @@ export function Header() {
                 onClick={toggleWishlistDrawer}
                 className={cn(
                   "relative p-2 transition-all duration-300 rounded-xl hover:bg-black/5 dark:hover:bg-white/5",
-                  scrolled || theme === "light" ? "text-black dark:text-white" : "text-white"
+                  "text-white hover:text-amber-400"
                 )}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -81,7 +74,7 @@ export function Header() {
                     href={link.href}
                     className={cn(
                       "text-sm font-medium tracking-wide transition-all duration-300 hover:opacity-70",
-                      scrolled || theme === "light" ? "text-black dark:text-white" : "text-white"
+                      "text-white hover:text-amber-400"
                     )}
                   >
                     {link.label}
@@ -110,7 +103,7 @@ export function Header() {
                 onClick={toggleCart}
                 className={cn(
                   "relative p-2 transition-all duration-300 rounded-xl hover:bg-black/5 dark:hover:bg-white/5",
-                  scrolled || theme === "light" ? "text-black dark:text-white" : "text-white"
+                  "text-white hover:text-amber-400"
                 )}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -137,7 +130,7 @@ export function Header() {
               <button
                 className={cn(
                   "p-2 transition-colors rounded-xl hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer",
-                  scrolled || theme === "light" ? "text-black dark:text-white" : "text-white"
+                  "text-white hover:text-amber-400"
                 )}
                 onClick={(e) => {
                   e.preventDefault();

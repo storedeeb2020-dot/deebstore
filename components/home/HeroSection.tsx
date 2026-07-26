@@ -1,15 +1,12 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { ArrowRight, ShoppingBag } from "lucide-react";
-import { useTheme } from "@/features/theme/ThemeProvider";
 import { getSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
 
 export function HeroSection() {
-  const { theme } = useTheme();
   const [settings, setSettings] = useState<SiteSettings | null>(null);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
     getSiteSettings()
@@ -18,34 +15,6 @@ export function HeroSection() {
       })
       .catch(console.error);
   }, []);
-
-  const isDark = theme === "dark";
-  const mediaType = settings?.heroMediaType || "image";
-
-  const videoUrl = isDark
-    ? settings?.heroVideoUrlDark || settings?.heroVideoUrlLight
-    : settings?.heroVideoUrlLight || settings?.heroVideoUrlDark;
-
-  const imageList = useMemo(() => {
-    return isDark
-      ? settings?.heroImagesDark?.length
-        ? settings.heroImagesDark
-        : ["/banner.png"]
-      : settings?.heroImagesLight?.length
-      ? settings.heroImagesLight
-      : ["/banner_light.png"];
-  }, [isDark, settings?.heroImagesDark, settings?.heroImagesLight]);
-
-  useEffect(() => {
-    if (mediaType === "image" && imageList.length > 1) {
-      const interval = setInterval(() => {
-        setActiveImageIndex((prev) => (prev + 1) % imageList.length);
-      }, 4500);
-      return () => clearInterval(interval);
-    }
-  }, [mediaType, imageList.length]);
-
-  const currentImage = imageList[activeImageIndex % imageList.length] || (isDark ? "/banner.png" : "/banner_light.png");
 
   const handleScroll = (e: React.MouseEvent) => {
     e.preventDefault();

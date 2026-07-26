@@ -9,7 +9,6 @@ import {
   TrendingUp,
   ArrowLeft,
   Clock,
-  ChevronLeft,
   Plus,
 } from "lucide-react";
 import { getOrders, getProducts } from "@/lib/firebase/firestore";

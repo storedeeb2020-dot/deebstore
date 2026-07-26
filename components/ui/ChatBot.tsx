@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { MessageSquare, X, Send, Bot, User, Sparkles, ExternalLink } from "lucide-react";
+import { X, Send, Bot, User, Sparkles, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProducts } from "@/lib/firebase/firestore";
 import type { Product } from "@/types/product";
