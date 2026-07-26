@@ -20,6 +20,7 @@ import {
 import { getSiteSettings, updateSiteSettings, type SiteSettings, type GlobalSizeChart } from "@/lib/firebase/firestore";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import { Spinner } from "@/components/ui/Spinner";
+import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 
 type SettingsTab = "hero" | "brand" | "payments" | "sizeCharts" | "contact" | "about" | "legal";
 
@@ -425,15 +426,11 @@ export default function AdminSettingsPage() {
                   </p>
                 </div>
 
-                <label className="relative inline-flex items-center cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={!!settings.onlinePaymentEnabled}
-                    onChange={(e) => setSettings({ ...settings, onlinePaymentEnabled: e.target.checked })}
-                    className="sr-only peer"
-                  />
-                  <div className="w-14 h-7 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:right-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-500"></div>
-                </label>
+                <ToggleSwitch
+                  checked={!!settings.onlinePaymentEnabled}
+                  onChange={(val) => setSettings({ ...settings, onlinePaymentEnabled: val })}
+                  size="lg"
+                />
               </div>
             </div>
 
@@ -443,15 +440,11 @@ export default function AdminSettingsPage() {
               <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-xs text-amber-400">فودافون كاش (Vodafone Cash)</span>
-                  <label className="relative inline-flex items-center cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={!!settings.vodafoneCashEnabled}
-                      onChange={(e) => setSettings({ ...settings, vodafoneCashEnabled: e.target.checked })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-zinc-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:right-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-                  </label>
+                  <ToggleSwitch
+                    checked={!!settings.vodafoneCashEnabled}
+                    onChange={(val) => setSettings({ ...settings, vodafoneCashEnabled: val })}
+                    size="sm"
+                  />
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-zinc-400 mb-1">رقم محفظة فودافون كاش</label>
@@ -468,15 +461,11 @@ export default function AdminSettingsPage() {
               <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-xs text-amber-400">انستاباي (InstaPay)</span>
-                  <label className="relative inline-flex items-center cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={!!settings.instapayEnabled}
-                      onChange={(e) => setSettings({ ...settings, instapayEnabled: e.target.checked })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-zinc-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:right-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-                  </label>
+                  <ToggleSwitch
+                    checked={!!settings.instapayEnabled}
+                    onChange={(val) => setSettings({ ...settings, instapayEnabled: val })}
+                    size="sm"
+                  />
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-zinc-400 mb-1">معرف انستاباي IPA</label>
@@ -493,15 +482,11 @@ export default function AdminSettingsPage() {
               <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-xs text-amber-400">الدفع عند الاستلام (COD)</span>
-                  <label className="relative inline-flex items-center cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={!!settings.codEnabled}
-                      onChange={(e) => setSettings({ ...settings, codEnabled: e.target.checked })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-zinc-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:right-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-                  </label>
+                  <ToggleSwitch
+                    checked={!!settings.codEnabled}
+                    onChange={(val) => setSettings({ ...settings, codEnabled: val })}
+                    size="sm"
+                  />
                 </div>
                 <p className="text-[11px] text-zinc-400 leading-relaxed pt-2">
                   تمكين العملاء من دفع قيمة الطلب نقداً للمندوب عند استلام الشحنة.

@@ -11,6 +11,7 @@ import { generateSlug, generateSKU } from "@/lib/utils";
 import { productSchema, type ProductFormData } from "@/lib/validations/product.schema";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import type { Product, SizeStock } from "@/types/product";
+import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -361,15 +362,11 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
               قم بإيقاف هذا الخيار للمنتجات ذات المقاس الموحد (One Size)، الإكسسوارات، الشنط أو النظارات.
             </p>
           </div>
-          <label className="relative inline-flex items-center cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={!!watchedHasSizes}
-              onChange={(e) => setValue("hasSizes", e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-zinc-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:right-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-          </label>
+          <ToggleSwitch
+            checked={!!watchedHasSizes}
+            onChange={(val) => setValue("hasSizes", val)}
+            size="md"
+          />
         </div>
 
         {/* Option 2: Select Global Size Chart from Uploaded Settings */}

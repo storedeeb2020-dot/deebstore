@@ -10,8 +10,8 @@ interface Logo3DProps {
   src?: string;
 }
 
-export function Logo3D({ className, layers = 22, src }: Logo3DProps) {
-  const actualLayers = Math.min(layers, 28);
+export function Logo3D({ className, layers = 36, src }: Logo3DProps) {
+  const actualLayers = Math.min(layers, 42);
   const [logoSrc, setLogoSrc] = useState(src || "/logo.png");
 
   useEffect(() => {
@@ -52,13 +52,13 @@ export function Logo3D({ className, layers = 22, src }: Logo3DProps) {
         <motion.div
           animate={{ scale: [1, 1.15, 1] }}
           transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-          className="text-lg sm:text-2xl text-amber-400 drop-shadow-[0_0_15px_rgba(255,215,0,0.9)] -mb-2 z-40"
+          className="text-lg sm:text-2xl text-amber-400 -mb-2 z-40"
           style={{ transform: "translateZ(10px)" }}
         >
           👑
         </motion.div>
 
-        {/* 3D Extruded Glued Tightly Stacked Image Block */}
+        {/* Ultra-Dense 3D Glued Coin Block */}
         <div
           className="relative flex items-center justify-center"
           style={{ transformStyle: "preserve-3d" }}
@@ -66,7 +66,12 @@ export function Logo3D({ className, layers = 22, src }: Logo3DProps) {
           {Array.from({ length: actualLayers }).map((_, i) => {
             const isFront = i === 0;
             const isBack = i === actualLayers - 1;
-            const zOffset = -i * 0.85; // Dense subpixel 3D extrusion step
+            const zOffset = -i * 0.45; // Micro subpixel 3D extrusion step for 100% solid feel
+
+            // Flip back side image horizontally so text "ELDEEB" is always perfectly readable right-side-up from behind!
+            const layerTransform = isBack
+              ? `translateZ(${zOffset}px) rotateY(180deg) scaleX(-1)`
+              : `translateZ(${zOffset}px)`;
 
             return (
               <div
@@ -75,13 +80,13 @@ export function Logo3D({ className, layers = 22, src }: Logo3DProps) {
                   position: isFront ? "relative" : "absolute",
                   top: isFront ? "auto" : 0,
                   left: isFront ? "auto" : 0,
-                  transform: `translateZ(${zOffset}px)`,
-                  backfaceVisibility: "visible",
+                  transform: layerTransform,
+                  backfaceVisibility: isFront || isBack ? "hidden" : "visible",
                   filter: isFront
-                    ? "drop-shadow(0 0 25px rgba(255,215,0,0.9))"
+                    ? "drop-shadow(0 8px 16px rgba(0,0,0,0.9))"
                     : isBack
-                    ? "drop-shadow(0 0 15px rgba(255,215,0,0.6))"
-                    : `brightness(${Math.max(0.2, 0.9 - i * 0.035)}) contrast(1.2)`,
+                    ? "drop-shadow(0 6px 12px rgba(0,0,0,0.8))"
+                    : `brightness(${Math.max(0.25, 0.95 - i * 0.02)}) contrast(1.1)`,
                   opacity: 1,
                 }}
               >

@@ -25,9 +25,9 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-black transition-colors duration-500 flex flex-col items-center justify-center">
-      {/* Rich Obsidian Dark Background with Gold Radial Ambient Glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.15)_0%,rgba(5,5,5,1)_75%)] pointer-events-none z-0" />
+    <section className="relative h-screen w-full overflow-hidden bg-black flex flex-col items-center justify-center">
+      {/* Pure Solid Obsidian Black Background (No yellow radial ambient glow) */}
+      <div className="absolute inset-0 bg-black pointer-events-none z-0" />
 
       {/* Brand Central Hero Tagline & Subtitle */}
       <div className="relative z-10 text-center px-4 -mt-16">
@@ -38,10 +38,10 @@ export function HeroSection() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
-          className="h-20 sm:h-28 w-auto mx-auto object-contain mb-5 drop-shadow-[0_0_30px_rgba(212,175,55,0.5)]"
+          className="h-20 sm:h-28 w-auto mx-auto object-contain mb-5"
         />
         <motion.p
-          className="text-base sm:text-lg font-black tracking-widest text-amber-400 drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]"
+          className="text-base sm:text-lg font-black tracking-widest text-amber-400"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.8 }}
@@ -60,25 +60,14 @@ export function HeroSection() {
           transition={{ delay: 0.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="relative group"
         >
-          {/* Ambient Backing Halo */}
-          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-amber-500/40 via-yellow-400/50 to-amber-600/40 blur-md opacity-70 group-hover:opacity-100 transition-all duration-500" />
-
-          {/* Main Luxury Glassmorphic Button */}
+          {/* Main Luxury Button */}
           <motion.button
             onClick={handleScroll}
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.96 }}
             transition={{ type: "spring", stiffness: 380, damping: 24 }}
-            className="relative inline-flex items-center gap-3 bg-zinc-950/90 hover:bg-gradient-to-r hover:from-amber-500 hover:via-amber-400 hover:to-yellow-500 text-amber-400 hover:text-black px-9 py-4 rounded-full font-black text-sm tracking-widest uppercase border border-amber-500/40 hover:border-amber-300 shadow-[0_15px_35px_rgba(0,0,0,0.8)] backdrop-blur-md overflow-hidden transition-all duration-300 cursor-pointer"
+            className="relative inline-flex items-center gap-3 bg-zinc-950 hover:bg-gradient-to-r hover:from-amber-500 hover:via-amber-400 hover:to-yellow-500 text-amber-400 hover:text-black px-9 py-4 rounded-full font-black text-sm tracking-widest uppercase border border-amber-500/40 hover:border-amber-300 shadow-[0_15px_35px_rgba(0,0,0,0.8)] backdrop-blur-md overflow-hidden transition-all duration-300 cursor-pointer"
           >
-            {/* Moving Shimmer Ray */}
-            <motion.div
-              className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-amber-300/20 to-transparent skew-x-[-25deg]"
-              initial={{ x: "-150%" }}
-              animate={{ x: "250%" }}
-              transition={{ repeat: Infinity, duration: 3, ease: "linear", repeatDelay: 1 }}
-            />
-
             <ShoppingBag size={18} className="relative z-10 transition-transform duration-300 group-hover:scale-110" />
             
             <span className="relative z-10 font-bold text-sm sm:text-base">
