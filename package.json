@@ -1,0 +1,11 @@
+{
+  "name": "eldeeb-store",
+  "version": "1.0.0",
+  "description": "ELDEEB STORE - Arabic Streetwear Fashion",
+  "scripts": {
+    "dev": "npx serve . -p 3000",
+    "build": "echo build done",
+    "start": "npx serve . -p 3000",
+    "push": "node git_bot.js"
+  }
+}

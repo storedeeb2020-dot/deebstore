@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة تحكم — ELDEEB STORE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="../assets/logo.jpeg" alt="ELDEEB" onerror="this.src='../../logo/WhatsApp Image 2026-07-26 at 18.23.08.jpeg'; this.onerror=function(){this.style.display='none';}" />
+    </div>
+    <h1 class="login-title">لوحة تحكم ELDEEB</h1>
+    <p class="login-sub">تسجيل الدخول للمتابعة</p>
+    <div id="login-error" class="login-error" style="display:none"></div>
+    <div class="form-group">
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="login-email" class="form-input" placeholder="storedeeb2020@gmail.com" value="storedeeb2020@gmail.com" />
+    </div>
+    <div class="form-group">
+      <label>كلمة المرور</label>
+      <input type="password" id="login-pass" class="form-input" placeholder="••••••••" onkeypress="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="btn-login" onclick="doLogin()">
+      <span id="login-btn-text">دخول</span>
+    </button>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="admin-app" class="admin-app" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar" id="admin-sidebar">
+    <div class="sidebar-logo">
+      <img src="../assets/logo.jpeg" alt="ELDEEB" onerror="this.src='../../logo/WhatsApp Image 2026-07-26 at 18.23.08.jpeg'; this.onerror=function(){this.style.display='none';}" />
+      <div class="sidebar-brand">
+        <span class="brand-name">ELDEEB STORE</span>
+        <span class="brand-role">لوحة التحكم</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" onclick="showPage('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        الرئيسية
+      </button>
+      <button class="nav-item" onclick="showPage('products')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        المنتجات
+        <span class="nav-badge" id="products-count-badge">0</span>
+      </button>
+      <button class="nav-item" onclick="showPage('categories')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        الفئات
+      </button>
+      <button class="nav-item" onclick="showPage('orders')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        الطلبات
+        <span class="nav-badge nav-badge-red" id="orders-pending-badge">0</span>
+      </button>
+      <button class="nav-item" onclick="showPage('shipping')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        الشحن
+      </button>
+      <button class="nav-item" onclick="showPage('complaints')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        الشكاوى
+        <span class="nav-badge nav-badge-red" id="complaints-badge">0</span>
+      </button>
+      <button class="nav-item" onclick="showPage('errors')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        الأخطاء
+      </button>
+      <button class="nav-item" onclick="showPage('coupons')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        الكوبونات
+      </button>
+      <button class="nav-item" onclick="showPage('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07"/><path d="M4.93 4.93A10 10 0 0 1 19.07 19.07"/></svg>
+        الإعدادات
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-user">
+        <div class="admin-avatar">A</div>
+        <div class="admin-info">
+          <span id="admin-email-display">storedeeb2020@gmail.com</span>
+          <span>مدير المتجر</span>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">خروج</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="admin-main">
+    <!-- Mobile Header -->
+    <div class="admin-mobile-header">
+      <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+      <span>لوحة التحكم</span>
+      <span></span>
+    </div>
+
+    <!-- ── DASHBOARD PAGE ── -->
+    <div id="page-dashboard" class="admin-page active">
+      <div class="page-header">
+        <h1>الرئيسية</h1>
+        <div class="visitors-live">
+          <span class="live-dot"></span>
+          <span id="live-visitors">0</span> زائر الآن
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card gold">
+          <div class="stat-icon">💰</div>
+          <div class="stat-body">
+            <div class="stat-label">إجمالي المبيعات</div>
+            <div class="stat-value" id="stat-sales">0 جنيه</div>
+          </div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-icon">📦</div>
+          <div class="stat-body">
+            <div class="stat-label">إجمالي الطلبات</div>
+            <div class="stat-value" id="stat-orders">0</div>
+          </div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-body">
+            <div class="stat-label">طلبات معلقة</div>
+            <div class="stat-value" id="stat-pending">0</div>
+          </div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">🛍️</div>
+          <div class="stat-body">
+            <div class="stat-label">إجمالي المنتجات</div>
+            <div class="stat-value" id="stat-products">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Orders -->
+      <div class="admin-card">
+        <div class="card-header">
+          <h2>آخر الطلبات</h2>
+          <button class="btn-link" onclick="showPage('orders')">عرض الكل</button>
+        </div>
+        <div class="table-wrap">
+          <table class="admin-table" id="recent-orders-table">
+            <thead><tr><th>رقم الطلب</th><th>العميل</th><th>المحافظة</th><th>الإجمالي</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+            <tbody id="recent-orders-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Best Sellers -->
+      <div class="admin-card" style="margin-top:24px">
+        <div class="card-header"><h2>الأكثر مبيعاً</h2></div>
+        <div id="bestsellers-list" class="bestsellers-list"></div>
+      </div>
+    </div>
+
+    <!-- ── PRODUCTS PAGE ── -->
+    <div id="page-products" class="admin-page">
+      <div class="page-header">
+        <h1>المنتجات</h1>
+        <button class="btn-primary" onclick="openProductForm()">+ إضافة منتج</button>
+      </div>
+
+      <!-- Search & Filter -->
+      <div class="filter-bar">
+        <input type="text" id="products-search" placeholder="بحث عن منتج..." class="filter-input" oninput="filterProducts(this.value)" />
+        <select id="products-cat-filter" class="filter-select" onchange="filterProducts()">
+          <option value="">كل الفئات</option>
+        </select>
+      </div>
+
+      <div class="admin-card">
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>الصورة</th><th>الاسم</th><th>الفئة</th><th>السعر</th><th>سعر الخصم</th><th>المقاسات</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody id="products-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CATEGORIES PAGE ── -->
+    <div id="page-categories" class="admin-page">
+      <div class="page-header">
+        <h1>الفئات</h1>
+        <button class="btn-primary" onclick="openCategoryForm()">+ فئة جديدة</button>
+      </div>
+      <div class="admin-card">
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>الأيقونة</th><th>الاسم</th><th>عدد المنتجات</th><th>إجراءات</th></tr></thead>
+            <tbody id="categories-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ORDERS PAGE ── -->
+    <div id="page-orders" class="admin-page">
+      <div class="page-header">
+        <h1>الطلبات</h1>
+        <div class="filter-bar" style="margin:0">
+          <select id="order-status-filter" class="filter-select" onchange="filterOrders()">
+            <option value="">كل الطلبات</option>
+            <option value="pending">معلقة</option>
+            <option value="processing">قيد التجهيز</option>
+            <option value="shipped">تم الشحن</option>
+            <option value="delivered">تم التسليم</option>
+            <option value="cancelled">ملغاة</option>
+          </select>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>رقم الطلب</th><th>العميل</th><th>الهاتف</th><th>المحافظة</th><th>الإجمالي</th><th>الحالة</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+            <tbody id="orders-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SHIPPING PAGE ── -->
+    <div id="page-shipping" class="admin-page">
+      <div class="page-header"><h1>أسعار الشحن</h1></div>
+      <div class="admin-card">
+        <p class="card-desc">حدد سعر الشحن لكل محافظة. اتركه فارغاً لاستخدام السعر الافتراضي.</p>
+        <div class="shipping-grid" id="shipping-grid"></div>
+        <div class="shipping-defaults">
+          <div class="form-group">
+            <label>السعر الافتراضي (للمحافظات غير المحددة)</label>
+            <input type="number" id="default-shipping" class="form-input" placeholder="60" />
+          </div>
+          <div class="form-group">
+            <label>الحد الأدنى للشحن المجاني (جنيه)</label>
+            <input type="number" id="free-shipping-min" class="form-input" placeholder="2000" />
+          </div>
+        </div>
+        <button class="btn-primary" onclick="saveShipping()">💾 حفظ أسعار الشحن</button>
+      </div>
+    </div>
+
+    <!-- ── COMPLAINTS PAGE ── -->
+    <div id="page-complaints" class="admin-page">
+      <div class="page-header"><h1>الشكاوى والتواصل</h1></div>
+      <div class="admin-card">
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>الاسم</th><th>الإيميل</th><th>النوع</th><th>الرسالة</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody id="complaints-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ERRORS PAGE ── -->
+    <div id="page-errors" class="admin-page">
+      <div class="page-header">
+        <h1>سجل الأخطاء</h1>
+        <button class="btn-danger" onclick="clearErrors()">مسح الكل</button>
+      </div>
+      <div class="admin-card">
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>الخطأ</th><th>الصفحة</th><th>المتصفح</th><th>التاريخ</th></tr></thead>
+            <tbody id="errors-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── COUPONS PAGE ── -->
+    <div id="page-coupons" class="admin-page">
+      <div class="page-header">
+        <h1>كوبونات الخصم</h1>
+        <button class="btn-primary" onclick="openCouponForm()">+ كوبون جديد</button>
+      </div>
+      <div class="admin-card">
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>الكود</th><th>النوع</th><th>القيمة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody id="coupons-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS PAGE ── -->
+    <div id="page-settings" class="admin-page">
+      <div class="page-header"><h1>إعدادات الموقع</h1></div>
+      <div class="settings-grid">
+
+        <!-- General -->
+        <div class="admin-card settings-card">
+          <h2 class="settings-section-title">⚙️ الإعدادات العامة</h2>
+          <div class="form-group">
+            <label>اسم المتجر</label>
+            <input type="text" id="s-store-name" class="form-input" placeholder="ELDEEB STORE" />
+          </div>
+          <div class="form-group">
+            <label>لوجو المتجر (رابط URL)</label>
+            <input type="url" id="s-logo-url" class="form-input" placeholder="https://..." />
+          </div>
+          <div class="form-group">
+            <label>رقم واتساب</label>
+            <input type="tel" id="s-whatsapp" class="form-input" placeholder="201XXXXXXXXX" />
+          </div>
+          <div class="form-group">
+            <label>اللون الذهبي الرئيسي</label>
+            <div style="display:flex;gap:10px;align-items:center">
+              <input type="color" id="s-gold-color" value="#D4AF37" style="width:48px;height:40px;border:none;background:none;cursor:pointer" />
+              <input type="text" id="s-gold-hex" class="form-input" placeholder="#D4AF37" style="flex:1" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero -->
+        <div class="admin-card settings-card">
+          <h2 class="settings-section-title">🏠 الصفحة الرئيسية (الهيرو)</h2>
+          <div class="form-group">
+            <label>النص الكبير الرئيسي</label>
+            <input type="text" id="s-hero-title" class="form-input" placeholder="ارتقِ بأسلوبك" />
+          </div>
+          <div class="form-group">
+            <label>النص الفرعي</label>
+            <input type="text" id="s-hero-subtitle" class="form-input" placeholder="أفخر ملابس الستريت وير" />
+          </div>
+          <div class="form-group">
+            <label>صورة الهيرو (رابط URL)</label>
+            <input type="url" id="s-hero-image" class="form-input" placeholder="https://images.unsplash.com/..." />
+          </div>
+        </div>
+
+        <!-- Social -->
+        <div class="admin-card settings-card">
+          <h2 class="settings-section-title">📱 السوشيال ميديا</h2>
+          <div class="form-group">
+            <label>فيس بوك</label>
+            <input type="url" id="s-facebook" class="form-input" placeholder="https://facebook.com/..." />
+          </div>
+          <div class="form-group">
+            <label>انستجرام</label>
+            <input type="url" id="s-instagram" class="form-input" placeholder="https://instagram.com/..." />
+          </div>
+          <div class="form-group">
+            <label>تيك توك</label>
+            <input type="url" id="s-tiktok" class="form-input" placeholder="https://tiktok.com/..." />
+          </div>
+        </div>
+
+        <!-- Chatbot -->
+        <div class="admin-card settings-card">
+          <h2 class="settings-section-title">🤖 الشات بوت (Val.town)</h2>
+          <div class="form-group">
+            <label>رابط Val.town Endpoint</label>
+            <input type="url" id="s-chatbot-endpoint" class="form-input" placeholder="https://xxx.web.val.run/chat" />
+          </div>
+          <p class="settings-hint">أنشئ endpoint على val.town يستقبل { message } ويرد بـ { reply }</p>
+        </div>
+
+        <!-- Save Button -->
+        <div class="settings-save-row">
+          <button class="btn-primary btn-large" onclick="saveSettings()">💾 حفظ جميع الإعدادات</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /admin-app -->
+
+<!-- PRODUCT FORM MODAL -->
+<div id="product-form-overlay" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeProductForm()">
+  <div class="modal admin-modal">
+    <div class="modal-header">
+      <h2 id="product-form-title">إضافة منتج جديد</h2>
+      <button class="drawer-close" onclick="closeProductForm()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-product-id" />
+      <div class="form-grid">
+        <div class="form-group">
+          <label>اسم المنتج *</label>
+          <input type="text" id="p-name" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label>الفئة *</label>
+          <select id="p-category" class="form-input">
+            <option value="">اختر الفئة</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>السعر الأصلي (جنيه) *</label>
+          <input type="number" id="p-price" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label>سعر الخصم (اتركه فارغاً إذا لا يوجد)</label>
+          <input type="number" id="p-sale-price" class="form-input" />
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>رابط الصورة (URL) *</label>
+          <input type="url" id="p-image" class="form-input" placeholder="https://images.unsplash.com/..." />
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>المقاسات المتاحة</label>
+          <div class="sizes-checkboxes">
+            <label><input type="checkbox" class="p-size" value="S" /> S</label>
+            <label><input type="checkbox" class="p-size" value="M" /> M</label>
+            <label><input type="checkbox" class="p-size" value="L" /> L</label>
+            <label><input type="checkbox" class="p-size" value="XL" /> XL</label>
+            <label><input type="checkbox" class="p-size" value="XXL" /> XXL</label>
+          </div>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>الألوان المتاحة (مفصولة بفاصلة)</label>
+          <input type="text" id="p-colors" class="form-input" placeholder="أسود، أبيض، ذهبي" />
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="p-bestseller" /> الأكثر مبيعاً
+          </label>
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="p-instock" checked /> متوفر في المخزون
+          </label>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px">
+        <button class="btn-primary" style="flex:1" onclick="saveProduct()">💾 حفظ المنتج</button>
+        <button class="btn-ghost" onclick="closeProductForm()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY FORM MODAL -->
+<div id="cat-form-overlay" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeCategoryForm()">
+  <div class="modal admin-modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2 id="cat-form-title">فئة جديدة</h2>
+      <button class="drawer-close" onclick="closeCategoryForm()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-cat-id" />
+      <div class="form-group"><label>اسم الفئة *</label><input type="text" id="c-name" class="form-input" /></div>
+      <div class="form-group"><label>أيقونة (emoji)</label><input type="text" id="c-icon" class="form-input" placeholder="👕" /></div>
+      <div style="display:flex;gap:12px">
+        <button class="btn-primary" style="flex:1" onclick="saveCategory()">💾 حفظ</button>
+        <button class="btn-ghost" onclick="closeCategoryForm()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COUPON FORM MODAL -->
+<div id="coupon-form-overlay" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeCouponForm()">
+  <div class="modal admin-modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2>كوبون جديد</h2>
+      <button class="drawer-close" onclick="closeCouponForm()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>كود الخصم *</label><input type="text" id="coup-code" class="form-input" placeholder="DEEP20" /></div>
+      <div class="form-group">
+        <label>نوع الخصم</label>
+        <select id="coup-type" class="form-input">
+          <option value="percent">نسبة مئوية (%)</option>
+          <option value="fixed">مبلغ ثابت (جنيه)</option>
+        </select>
+      </div>
+      <div class="form-group"><label>القيمة *</label><input type="number" id="coup-value" class="form-input" placeholder="20" /></div>
+      <div style="display:flex;gap:12px">
+        <button class="btn-primary" style="flex:1" onclick="saveCoupon()">💾 حفظ</button>
+        <button class="btn-ghost" onclick="closeCouponForm()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div id="order-detail-overlay" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeOrderDetail()">
+  <div class="modal admin-modal" style="max-width:600px">
+    <div class="modal-header">
+      <h2>تفاصيل الطلب</h2>
+      <button class="drawer-close" onclick="closeOrderDetail()">✕</button>
+    </div>
+    <div class="modal-body" id="order-detail-body"></div>
+  </div>
+</div>
+
+<script type="module" src="admin.js"></script>
+</body>
+</html>
