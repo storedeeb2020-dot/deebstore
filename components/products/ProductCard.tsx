@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Eye, Heart } from "lucide-react";
 import { useWishlist } from "@/features/wishlist/WishlistProvider";
 import { formatPrice, getDiscountPercentage } from "@/lib/utils";
@@ -25,10 +26,42 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
   const staggerDelay = (index % 4) * 0.08;
 
-  // Navigate by Firestore Document ID (always unique — never use slug)
+  // Build image gallery: mainImage first, then variant images (deduplicated)
+  const allImages: string[] = [];
+  if (product.mainImage) allImages.push(product.mainImage);
+  if (product.variants) {
+    for (const v of product.variants) {
+      if (v.images && Array.isArray(v.images)) {
+        for (const img of v.images) {
+          if (img && !allImages.includes(img)) allImages.push(img);
+        }
+      }
+    }
+  }
+
+  const [hovered, setHovered] = useState(false);
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (hovered && allImages.length > 1) {
+      intervalRef.current = setInterval(() => {
+        setCurrentImgIndex((prev) => (prev + 1) % allImages.length);
+      }, 900);
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (!hovered) setCurrentImgIndex(0);
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [hovered, allImages.length]);
+
   const navigateToProduct = () => {
     router.push(`/products?id=${encodeURIComponent(product.id)}`);
   };
+
+  const currentImage = allImages[currentImgIndex] ?? product.mainImage;
 
   return (
     <motion.article
@@ -41,14 +74,15 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         ease: [0.16, 1, 0.3, 1],
       }}
       whileHover={{ y: -8, transition: { duration: 0.3, ease: "easeOut" } }}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
     >
-      {/* Outer wrapper — NO nested buttons, NO role=button on div */}
       <div className="block group cursor-pointer select-none" onClick={navigateToProduct}>
 
         {/* Floating Image Container */}
         <div className="relative overflow-visible">
 
-          {/* Wishlist Heart Button — stops propagation so card click doesn't fire */}
+          {/* Wishlist Heart Button */}
           <button
             type="button"
             onClick={(e) => {
@@ -87,30 +121,49 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             </motion.span>
           </div>
 
-          {/* Product Image */}
-          <div className="aspect-[3/4] relative overflow-hidden">
-            {product.mainImage ? (
-              <motion.div
-                className="w-full h-full"
-                whileHover={{ scale: 1.04 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <Image
-                  src={product.mainImage}
-                  alt={product.name}
-                  fill
-                  priority={index < 4}
-                  quality={95}
-                  crossOrigin="anonymous"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-contain object-top transition-transform duration-500"
+          {/* Image slideshow dots */}
+          {hovered && allImages.length > 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1 pointer-events-none">
+              {allImages.map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="h-1 rounded-full bg-amber-400"
+                  animate={{ width: i === currentImgIndex ? 16 : 4, opacity: i === currentImgIndex ? 1 : 0.4 }}
+                  transition={{ duration: 0.3 }}
                 />
-              </motion.div>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-amber-500/40 text-3xl font-black tracking-widest">DEEP</span>
-              </div>
-            )}
+              ))}
+            </div>
+          )}
+
+          {/* Product Image with crossfade animation */}
+          <div className="aspect-[3/4] relative overflow-hidden rounded-xl">
+            <AnimatePresence mode="crossfade">
+              {currentImage ? (
+                <motion.div
+                  key={currentImage}
+                  className="absolute inset-0"
+                  initial={{ opacity: 0, scale: 1.06 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Image
+                    src={currentImage}
+                    alt={product.name}
+                    fill
+                    priority={index < 4}
+                    quality={95}
+                    crossOrigin="anonymous"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-contain object-top"
+                  />
+                </motion.div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-amber-500/40 text-3xl font-black tracking-widest">DEEP</span>
+                </div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
@@ -135,12 +188,13 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             </div>
           )}
 
-          <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors">
+          {/* Product name — always yellow */}
+          <h3 className="text-xs sm:text-sm font-bold leading-tight text-amber-400 group-hover:text-amber-300 transition-colors duration-200">
             {product.name}
           </h3>
 
           <div className="flex items-center justify-center gap-2">
-            <span className="text-sm sm:text-base font-black text-foreground">
+            <span className="text-sm sm:text-base font-black text-white">
               {formatPrice(displayPrice)}
             </span>
             {hasDiscount && (

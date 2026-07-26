@@ -9,6 +9,7 @@ import { useCart } from "@/features/cart/CartProvider";
 import { useWishlist } from "@/features/wishlist/WishlistProvider";
 import { cn } from "@/lib/utils";
 import { Logo3D } from "@/components/ui/Logo3D";
+import { AnimatedNavLink } from "@/components/ui/AnimatedButton";
 
 const navLinks = [
   { href: "/", label: "الرئيسية" },
@@ -73,11 +74,11 @@ export function Header() {
                     key={link.href}
                     href={link.href}
                     className={cn(
-                      "text-sm font-medium tracking-wide transition-all duration-300 hover:opacity-70",
+                      "text-sm font-medium tracking-wide transition-all duration-300",
                       "text-white hover:text-amber-400"
                     )}
                   >
-                    {link.label}
+                    <AnimatedNavLink>{link.label}</AnimatedNavLink>
                   </Link>
                 ))}
               </nav>

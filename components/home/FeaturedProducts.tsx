@@ -34,7 +34,7 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
             >
-              {settings?.featuredSubtitle || "Curated for you"}
+              {settings?.featuredSubtitle || "مختارة خصيصاً لك"}
             </motion.p>
             <motion.h2
               className="text-3xl md:text-4xl font-bold tracking-tight text-white"
@@ -43,7 +43,7 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
             >
-              {settings?.featuredTitle || "Our Collection"}
+              {settings?.featuredTitle || "مجموعتنا"}
             </motion.h2>
           </div>
         </div>

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Instagram, Facebook, MessageCircle } from "lucide-react";
 import { getSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
+import { SocialIconButton } from "@/components/ui/AnimatedButton";
+import { motion } from "framer-motion";
 
 function TiktokIcon({ size = 18 }: { size?: number }) {
   return (
@@ -76,16 +78,9 @@ export function Footer() {
             </p>
             <div className="flex gap-4 mt-6">
               {socialLinks.map(({ icon: Icon, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-colors"
-                >
+                <SocialIconButton key={label} href={href} label={label}>
                   <Icon size={18} />
-                </a>
+                </SocialIconButton>
               ))}
             </div>
           </div>
@@ -137,7 +132,13 @@ export function Footer() {
         </div>
 
         {/* Bottom Credits */}
-        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+        <motion.div
+          className="mt-12 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-400"
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
           <p>© {new Date().getFullYear()} DEEP STORE. All rights reserved.</p>
 
           {/* Developer Credit & WhatsApp */}
@@ -155,7 +156,7 @@ export function Footer() {
               <span>01020451206</span>
             </a>
           </div>
-        </div>
+        </motion.div>
       </div>
     </footer>
   );

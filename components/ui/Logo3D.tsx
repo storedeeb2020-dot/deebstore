@@ -10,8 +10,8 @@ interface Logo3DProps {
   src?: string;
 }
 
-export function Logo3D({ className, layers = 36, src }: Logo3DProps) {
-  const actualLayers = Math.min(layers, 42);
+export function Logo3D({ className, layers = 60, src }: Logo3DProps) {
+  const actualLayers = Math.min(layers, 72);
   const [logoSrc, setLogoSrc] = useState(src || "/logo.png");
 
   useEffect(() => {
@@ -66,11 +66,15 @@ export function Logo3D({ className, layers = 36, src }: Logo3DProps) {
           {Array.from({ length: actualLayers }).map((_, i) => {
             const isFront = i === 0;
             const isBack = i === actualLayers - 1;
-            const zOffset = -i * 0.45; // Micro subpixel 3D extrusion step for 100% solid feel
+            // Tighter step = denser coin body, more solid 3D feel
+            const zOffset = -i * 0.38;
+            // Total depth of the coin block
+            const totalDepth = (actualLayers - 1) * 0.38;
 
-            // Flip back side image horizontally so text "ELDEEB" is always perfectly readable right-side-up from behind!
+            // Back face: place at the rear of the coin block, then rotate 180° around Y
+            // and mirror X so the logo text reads correctly when viewed from behind
             const layerTransform = isBack
-              ? `translateZ(${zOffset}px) rotateY(180deg) scaleX(-1)`
+              ? `translateZ(${-totalDepth}px) rotateY(180deg) scaleX(-1)`
               : `translateZ(${zOffset}px)`;
 
             return (
