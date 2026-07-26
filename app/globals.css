@@ -1,0 +1,231 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Google Fonts Import ────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ─── CSS Variables ──────────────────────────────────── */
+:root {
+  --font-outfit: 'Outfit', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+
+  --background: #ffffff;
+  --foreground: #000000;
+  --gray-50: #F9F9F9;
+  --gray-100: #F5F5F5;
+  --gray-200: #EEEEEE;
+  --accent: #111111;
+  --muted: #6B7280;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --gray-50: #121212;
+  --gray-100: #1a1a1a;
+  --gray-200: #262626;
+  --accent: #f5f5f5;
+  --muted: #9CA3AF;
+}
+
+/* ─── Base Reset ─────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-outfit);
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* GPU Acceleration for smooth animations */
+.gpu-accelerated {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Performance optimization for lists/cards offscreen */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 400px;
+}
+
+/* ─── Hide Scrollbar (Modern Minimal Style) ─────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ─── Typography Utilities ───────────────────────────── */
+.font-outfit { font-family: var(--font-outfit); }
+.font-inter { font-family: var(--font-inter); }
+
+/* ─── Product Card Floating Style ────────────────────── */
+/* 
+  Product images are transparent PNGs (no background).
+  mix-blend-mode: multiply ensures the image blends 
+  seamlessly with the white page background — 
+  the product appears to "float" on the page.
+*/
+.product-img-blend {
+  mix-blend-mode: multiply;
+}
+
+/* ─── Glass Morphism ─────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Animations ─────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ─── Shimmer Skeleton ───────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ─── Swiper Custom Styles ───────────────────────────── */
+.swiper-pagination-bullet {
+  background: #000 !important;
+  opacity: 0.3 !important;
+}
+.swiper-pagination-bullet-active {
+  opacity: 1 !important;
+}
+.swiper-button-next,
+.swiper-button-prev {
+  color: #000 !important;
+}
+
+/* ─── Admin Sidebar ──────────────────────────────────── */
+.admin-sidebar-link {
+  @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200;
+}
+
+.admin-sidebar-link:hover {
+  @apply bg-gray-100;
+}
+
+.admin-sidebar-link.active {
+  @apply bg-black text-white;
+}
+
+/* ─── Form Styles ────────────────────────────────────── */
+.form-input {
+  @apply w-full px-4 py-3 border border-gray-200 rounded-xl text-sm
+         focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent
+         transition-all duration-200 bg-white;
+}
+
+.form-input::placeholder {
+  @apply text-gray-400;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-1.5;
+}
+
+.form-error {
+  @apply text-red-500 text-xs mt-1;
+}
+
+/* ─── Button Variants ────────────────────────────────── */
+.btn-primary {
+  @apply bg-black text-white px-6 py-3 rounded-xl font-semibold text-sm
+         hover:bg-gray-900 active:scale-95 transition-all duration-200
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply bg-white text-black border border-gray-200 px-6 py-3 rounded-xl 
+         font-semibold text-sm hover:bg-gray-50 active:scale-95 
+         transition-all duration-200;
+}
+
+.btn-ghost {
+  @apply text-black px-4 py-2 rounded-xl font-medium text-sm
+         hover:bg-gray-100 active:scale-95 transition-all duration-200;
+}
+
+/* ─── Section Headings ───────────────────────────────── */
+.section-heading {
+  @apply text-3xl md:text-4xl font-bold tracking-tight;
+}
+
+.section-subheading {
+  @apply text-gray-500 text-base mt-2;
+}
+
+/* ─── Page Transitions ───────────────────────────────── */
+.page-enter {
+  animation: fadeUp 0.5s ease forwards;
+}
