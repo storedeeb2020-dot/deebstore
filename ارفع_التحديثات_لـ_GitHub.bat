@@ -1,21 +1,20 @@
 @echo off
-chcp 65001 > nul
-title بوت رفع التحديثات التلقائي — ELDEEB STORE
-color 0E
+set PATH=%SystemRoot%\system32;%SystemRoot%;%PATH%
+title GitHub Sync — ELDEEB STORE
 
 echo.
-echo  ======================================================
-echo     🤖 بوت رفع التحديثات إلى GitHub — ELDEEB STORE
-echo  ======================================================
-echo.
-echo  ⏳ جاري تجميع الملفات ورفع التحديثات...
+echo 🚀 جاري رفع التحديثات إلى GitHub...
 echo.
 
-node git_bot.js
+git init
+git remote add origin https://github.com/storedeeb2020-dot/deebstore.git 2>nul
+git remote set-url origin https://github.com/storedeeb2020-dot/deebstore.git
+
+git add .
+git commit -m "تحديث المتجر"
+git branch -M main
+git push -u origin main
 
 echo.
-echo  ======================================================
-echo  ✅ تم الانتهاء من عملية الرفع!
-echo  ======================================================
-echo.
-timeout /t 5
+echo ✅ تم الرفع بنجاح!
+pause
