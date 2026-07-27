@@ -6,9 +6,12 @@ import { ArrowRight, ShoppingBag } from "lucide-react";
 import { getSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
 import { useTheme } from "@/features/theme/ThemeProvider";
 
+const DEFAULT_VIDEO_URL = "https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4";
+
 export function HeroSection() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [videoSrc, setVideoSrc] = useState<string>(DEFAULT_VIDEO_URL);
   const { theme } = useTheme();
 
   const desktopVideoRef = useRef<HTMLVideoElement>(null);
@@ -17,7 +20,11 @@ export function HeroSection() {
   useEffect(() => {
     getSiteSettings()
       .then((data) => {
-        if (data) setSettings(data);
+        if (data) {
+          setSettings(data);
+          const validUrl = data.heroVideoUrlDark?.trim() || data.heroVideoUrlLight?.trim() || DEFAULT_VIDEO_URL;
+          setVideoSrc(validUrl);
+        }
       })
       .catch(console.error);
   }, []);
@@ -41,11 +48,6 @@ export function HeroSection() {
     }
   }, [activeImageList]);
 
-  const activeVideoUrl =
-    settings?.heroVideoUrlDark ||
-    settings?.heroVideoUrlLight ||
-    "https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4";
-
   // Default to video mode unless explicitly configured as image in admin settings
   const isVideoMode = settings?.heroMediaType === "video" || !settings?.heroMediaType || (settings?.heroMediaType !== "image");
 
@@ -56,7 +58,7 @@ export function HeroSection() {
         ref.current.play().catch(() => {});
       }
     });
-  }, [activeVideoUrl, isVideoMode]);
+  }, [videoSrc, isVideoMode]);
 
   const mobileHeroImage =
     settings?.heroMobileImageUrl ||
@@ -72,20 +74,24 @@ export function HeroSection() {
 
   return (
     <>
-      {/* ─── 1. DESKTOP / TABLET HERO VIEW (Pure Vibrant Video Background) ─── */}
+      {/* ─── 1. DESKTOP / TABLET HERO VIEW (Pure Uncovered Video) ─── */}
       <section className="hidden md:flex relative h-screen w-full overflow-hidden bg-black flex-col items-center justify-center">
-        {/* Background Media */}
+        {/* Background Video Layer */}
         <div className="absolute inset-0 z-0 bg-black">
           {isVideoMode ? (
             <video
               ref={desktopVideoRef}
-              key={activeVideoUrl}
-              src={activeVideoUrl}
+              key={videoSrc}
+              src={videoSrc}
               autoPlay
               loop
               muted
               playsInline
               preload="auto"
+              onError={() => {
+                console.warn("Video failed, switching to default working video");
+                setVideoSrc(DEFAULT_VIDEO_URL);
+              }}
               onCanPlay={(e) => {
                 e.currentTarget.muted = true;
                 e.currentTarget.play().catch(() => {});
@@ -110,12 +116,9 @@ export function HeroSection() {
           ) : (
             <div className="w-full h-full bg-black" />
           )}
-
-          {/* Clean Subtle Top and Bottom Vignette Only (No center grey blur) */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
         </div>
 
-        {/* Brand Central Hero Tagline & Subtitle */}
+        {/* Brand Central Hero Content */}
         <div className="relative z-10 text-center px-4 -mt-10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <motion.img
@@ -151,7 +154,7 @@ export function HeroSection() {
             whileTap={{ scale: 0.96 }}
             className="relative inline-flex items-center justify-center p-[1.5px] rounded-full overflow-hidden bg-zinc-900 shadow-[0_20px_50px_rgba(0,0,0,0.95)] cursor-pointer border-none outline-none z-10"
           >
-            <div className="relative w-full h-full bg-zinc-950/90 backdrop-blur-md hover:bg-gradient-to-r hover:from-amber-500 hover:to-amber-400 hover:text-black rounded-full px-10 py-4 flex items-center gap-3.5 transition-all duration-300 group border border-amber-500/30">
+            <div className="relative w-full h-full bg-zinc-950/90 hover:bg-gradient-to-r hover:from-amber-500 hover:to-amber-400 hover:text-black rounded-full px-10 py-4 flex items-center gap-3.5 transition-all duration-300 group border border-amber-500/30">
               <ShoppingBag size={18} className="text-amber-400 group-hover:text-black transition-colors" />
               <span className="font-bold text-base text-amber-400 group-hover:text-black transition-colors tracking-wide">
                 {settings?.heroButtonText || "تسوق الآن — SHOP NOW"}
@@ -169,13 +172,14 @@ export function HeroSection() {
           <div className="w-full aspect-video bg-black relative overflow-hidden shadow-lg">
             <video
               ref={mobileVideoRef}
-              key={activeVideoUrl}
-              src={activeVideoUrl}
+              key={videoSrc}
+              src={videoSrc}
               autoPlay
               loop
               muted
               playsInline
               preload="auto"
+              onError={() => setVideoSrc(DEFAULT_VIDEO_URL)}
               onCanPlay={(e) => {
                 e.currentTarget.muted = true;
                 e.currentTarget.play().catch(() => {});
@@ -185,7 +189,7 @@ export function HeroSection() {
           </div>
         )}
 
-        {/* Bottom Part: Mobile Hero Banner Photo (Just like Town Team screenshot) */}
+        {/* Bottom Part: Mobile Hero Banner Photo */}
         <div className="relative w-full aspect-[4/5] sm:aspect-square bg-zinc-900 overflow-hidden">
           {mobileHeroImage ? (
             // eslint-disable-next-line @next/next/no-img-element
