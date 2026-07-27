@@ -179,12 +179,25 @@ INTENT:intent_name`;
 
       if (isShipping) {
         detectedIntent = "shipping";
-        // Find if user mentioned a specific governorate
-        const matchedRate = shippingRates.find(r => lower.includes(r.nameAr.toLowerCase()) || lower.includes(r.nameEn.toLowerCase()));
+        // Search user message against real Firestore shipping rates array
+        const matchedRate = shippingRates.find(r => 
+          lower.includes(r.nameAr.toLowerCase()) || 
+          lower.includes(r.nameEn.toLowerCase()) ||
+          (r.nameAr.includes("القاهرة") && (lower.includes("قاهره") || lower.includes("قاهرة") || lower.includes("جيزة") || lower.includes("جيزه"))) ||
+          (r.nameAr.includes("الدقهلية") && (lower.includes("منصورة") || lower.includes("منصوره")))
+        );
+
         if (matchedRate) {
           replyText = `سعر الشحن لـ **${matchedRate.nameAr}** هو **${matchedRate.price} ج.م** واستلام الطلب خلال 2-4 أيام عمل 🚚.`;
+        } else if (shippingRates.length > 0) {
+          const ratesSummary = shippingRates
+            .filter(r => r.active)
+            .slice(0, 5)
+            .map(r => `• **${r.nameAr}**: ${r.price} ج.م`)
+            .join("\n");
+          replyText = `أسعار الشحن المتاحة حسب المحافظة 🚚:\n${ratesSummary}\n\nتحدد التكلفة بدقة في صفحة الشراء عند إدخال العنوان.`;
         } else {
-          replyText = `الشحن متوفر لكل المحافظات 🚚!\n- القاهرة والجيزة: 50ج\n- الإسكندرية والدلتا: 60ج\n- باقي المحافظات والصعيد: 65-85ج.`;
+          replyText = `الشحن متوفر لجميع المحافظات 🚚 وتحدد التكلفة بالضبط في صفحة الشراء.`;
         }
       } else if (isGreeting) {
         detectedIntent = "greeting";
@@ -195,10 +208,10 @@ INTENT:intent_name`;
         if (matched.length > 0) {
           detectedIntent = "products";
           suggestedProductIds = matched.map(p => p.id);
-          replyText = `إليك التفاصيل والقطع المتاحة 🐺✨:`;
+          replyText = `إليك القطع المتاحة 🐺✨:`;
         } else {
           detectedIntent = "unknown";
-          replyText = `أنا معاك يا فنان 🐺! اسألني عن المنتجات المتاحة، أسعار الشحن لمحافظتك، أو احسب مقاسك المضبوط وطولك ووزنك.`;
+          replyText = `أنا معاك يا فنان 🐺! اسألني عن المنتجات، أسعار الشحن لمحافظتك، أو اكتب طولك ووزنك لحساب مقاسك.`;
           suggestedProductIds = validProducts.slice(0, 2).map(p => p.id);
         }
       }
