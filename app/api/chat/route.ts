@@ -24,7 +24,14 @@ export async function POST(req: Request) {
     }
 
     // 2. Build rich structured catalog for the AI (with product IDs)
-    const catalogLines = productsList.map((p) => {
+    // Filter out corrupt/test products first
+    const validProductsForCatalog = productsList.filter((p) =>
+      p.name && p.name.trim().length >= 3 &&
+      p.slug && p.slug.trim().length >= 2 &&
+      typeof p.price === "number" && p.price > 0 && p.price < 50000
+    );
+
+    const catalogLines = validProductsForCatalog.map((p) => {
       const priceText = p.salePrice
         ? `${p.salePrice} ج.م (بدلاً من ${p.price} ج.م)`
         : `${p.price} ج.م`;
@@ -108,57 +115,92 @@ PRODUCT_IDS:id1,id2`;
     if (!replyText) {
       const lower = message.toLowerCase();
 
-      // Size detection from numbers in message
-      const nums = message.match(/\d+/g)?.map(Number) || [];
-      if (nums.length >= 2) {
-        const height = Math.max(...nums);
-        const weight = Math.min(...nums);
-        if (height >= 140 && height <= 220 && weight >= 40 && weight <= 150) {
-          let size = "M";
-          if (height < 165 || weight < 60) size = "S";
-          else if (height <= 175 && weight <= 72) size = "M";
-          else if (height <= 182 && weight <= 84) size = "L";
-          else if (height <= 190 && weight <= 95) size = "XL";
-          else size = "XXL";
-          replyText = `بناءً على طولك (${height}سم) ووزنك (${weight}كجم)، مقاسك المضبوط هو ${size} 🎯\n\nإليك أفضل قطعنا المتاحة:`;
-          suggestedProductIds = productsList.slice(0, 3).map((p) => p.id);
+      // Filter out corrupt/test products before anything else
+      const validProducts = productsList.filter((p) =>
+        p.name &&
+        p.name.trim().length >= 3 &&
+        p.slug &&
+        p.slug.trim().length >= 2 &&
+        typeof p.price === "number" &&
+        p.price > 0 &&
+        p.price < 50000
+      );
+
+      // === Priority 1: Non-product intents (handle BEFORE any product search) ===
+
+      if (lower.includes("ازيك") || lower.includes("سلام") || lower.includes("اهلا") || lower.includes("أهلا") || lower.includes("مرحبا") || lower.includes("هاي") || lower.includes("hi") || lower.includes("hello")) {
+        replyText = `أهلاً بيك في DEEP STORE 🐺✨\n\nأنا وولف، مساعدك الشخصي! قولي إيه اللي بتدور عليه:\n- اكتب طولك ووزنك وهقولك مقاسك 📏\n- اسأل عن أي منتج وهعرضهولك 👕\n- أي سؤال عن الأسعار أو الشحن أو الألوان 🚚`;
+        suggestedProductIds = validProducts.slice(0, 3).map((p) => p.id);
+      } else if (lower.includes("شحن") || lower.includes("توصيل") || lower.includes("يوصل") || lower.includes("محافظ") || lower.includes("قاهره") || lower.includes("اسكندري")) {
+        replyText = `الشحن متاح لكل محافظات مصر 🚚\n\nيوصلك خلال 2-4 أيام عمل من تأكيد الطلب. تكلفة الشحن تتحدد حسب المحافظة عند إتمام الطلب على الموقع.`;
+      } else if (lower.includes("دفع") || lower.includes("فودافون") || lower.includes("انستا") || lower.includes("كاش") || lower.includes("بيتاش") || lower.includes("اونلاين")) {
+        replyText = `طرق الدفع المتاحة 💳\n- الدفع عند الاستلام 🚪\n- فودافون كاش 📱\n- انستاباي 💳\n\nكل الطرق متاحة عند إتمام الطلب.`;
+      } else if (lower.includes("مقاس") || lower.includes("حجم") || lower.includes("size") || (lower.includes("طول") && !lower.includes("طول") && lower.includes("وزن"))) {
+        replyText = `اكتبلي طولك بالسم ووزنك بالكيلو في نفس الرسالة\nمثال: طولي 178 ووزني 75 وهحسبلك المقاس فوراً 📏`;
+      } else {
+        // === Priority 2: Size detection from numbers ===
+        const nums = message.match(/\d+/g)?.map(Number) || [];
+        if (nums.length >= 2) {
+          const height = Math.max(...nums);
+          const weight = Math.min(...nums);
+          if (height >= 140 && height <= 220 && weight >= 40 && weight <= 150) {
+            let size = "M";
+            if (height < 165 || weight < 60) size = "S";
+            else if (height <= 175 && weight <= 72) size = "M";
+            else if (height <= 182 && weight <= 84) size = "L";
+            else if (height <= 190 && weight <= 95) size = "XL";
+            else size = "XXL";
+            replyText = `بناءً على طولك (${height}سم) ووزنك (${weight}كجم)، مقاسك المضبوط هو **${size}** 🎯\n\nإليك أفضل قطعنا المتاحة:`;
+            suggestedProductIds = validProducts.slice(0, 3).map((p) => p.id);
+          }
         }
-      }
 
-      if (!replyText) {
-        // Keyword search in product names, categories, descriptions
-        const matched = productsList.filter((p) => {
-          const name = (p.name || "").toLowerCase();
-          const cat = (p.category || "").toLowerCase();
-          const desc = (p.description || "").toLowerCase();
+        if (!replyText) {
+          // === Priority 3: Price-range search ===
+          const priceNums = message.match(/\d+/g)?.map(Number) || [];
+          const isAskingPrice = lower.includes("سعر") || lower.includes("بكام") || lower.includes("تمن") || lower.includes("فلوس") || lower.includes("كام") || lower.includes("جنيه") || lower.includes("ج.م");
+          if (isAskingPrice && priceNums.length > 0) {
+            const maxPrice = Math.max(...priceNums);
+            const affordable = validProducts.filter((p) => (p.salePrice || p.price) <= maxPrice * 1.2);
+            if (affordable.length > 0) {
+              suggestedProductIds = affordable.map((p) => p.id);
+              replyText = `دول المنتجات اللي تقدر تلاقي في نطاق ميزانيتك 💰:`;
+            } else {
+              replyText = `مش عندنا منتجات في نطاق السعر ده. أقل أسعارنا هي:\n${validProducts.slice(0, 2).map((p) => `- ${p.name}: ${p.salePrice || p.price} ج.م`).join("\n")}`;
+            }
+          }
+        }
+
+        if (!replyText) {
+          // === Priority 4: Explicit product/catalog requests ===
+          const isProductRequest = lower.includes("منتج") || lower.includes("عندك") || lower.includes("متوفر") || lower.includes("تشكيل") || lower.includes("موجود") || lower.includes("products") || lower.includes("shop") || lower.includes("عرض") || lower.includes("اشتر");
+          const isColorRequest = lower.includes("لون") || lower.includes("الوان") || lower.includes("ألوان") || lower.includes("color");
+          const isPriceRequest = lower.includes("سعر") || lower.includes("بكام") || lower.includes("تمن") || lower.includes("كام");
+
+          if (isProductRequest || isColorRequest || isPriceRequest) {
+            suggestedProductIds = validProducts.map((p) => p.id);
+            if (isColorRequest) replyText = `دول المنتجات المتاحة بكل ألوانها 🎨:`;
+            else if (isPriceRequest) replyText = `دي قائمة منتجاتنا بالأسعار الكاملة 💰:`;
+            else replyText = `دي كل تشكيلة DEEP STORE المتاحة دلوقتي 🐺🔥:`;
+          }
+        }
+
+        if (!replyText) {
+          // === Priority 5: Keyword search in product data ===
           const words = lower.split(/\s+/).filter((w) => w.length > 2);
-          return words.some((w) => name.includes(w) || cat.includes(w) || desc.includes(w));
-        });
+          const matched = validProducts.filter((p) => {
+            const name = (p.name || "").toLowerCase();
+            const cat = (p.category || "").toLowerCase();
+            const desc = (p.description || "").toLowerCase();
+            return words.some((w) => name.includes(w) || cat.includes(w) || desc.includes(w));
+          });
 
-        if (matched.length > 0) {
-          suggestedProductIds = matched.map((p) => p.id);
-          replyText = `وجدت ${matched.length} منتج يناسب بحثك، شوف دول:`;
-        } else if (lower.includes("منتج") || lower.includes("عندك") || lower.includes("تشكيل") || lower.includes("ايه") || lower.includes("شوف") || lower.includes("كل") || lower.includes("اسعار") || lower.includes("products")) {
-          suggestedProductIds = productsList.map((p) => p.id);
-          replyText = `دي كل تشكيلة DEEP STORE المتاحة دلوقتي:`;
-        } else if (lower.includes("سعر") || lower.includes("بكام") || lower.includes("تمن")) {
-          suggestedProductIds = productsList.map((p) => p.id);
-          replyText = `دي قائمة منتجاتنا بالأسعار الكاملة:`;
-        } else if (lower.includes("لون") || lower.includes("الوان") || lower.includes("ألوان")) {
-          suggestedProductIds = productsList.map((p) => p.id);
-          replyText = `دول المنتجات المتاحة بكل ألوانها:`;
-        } else if (lower.includes("مقاس") || lower.includes("حجم") || lower.includes("size")) {
-          replyText = `اكتبلي طولك بالسم ووزنك بالكيلو في نفس الرسالة\nمثال: طولي 178 ووزني 75 وهحسبلك المقاس فوراً 📏`;
-        } else if (lower.includes("شحن") || lower.includes("توصيل")) {
-          replyText = `الشحن متاح لكل محافظات مصر 🚚\nيوصلك خلال 2-4 أيام عمل.`;
-        } else if (lower.includes("دفع") || lower.includes("فودافون") || lower.includes("انستا") || lower.includes("كاش")) {
-          replyText = `طرق الدفع المتاحة:\n- الدفع عند الاستلام 🚪\n- فودافون كاش 📱\n- انستاباي 💳`;
-        } else if (lower.includes("ازيك") || lower.includes("سلام") || lower.includes("اهلا") || lower.includes("أهلا") || lower.includes("مرحبا") || lower.includes("هاي") || lower.includes("hi")) {
-          replyText = `أهلاً بيك في DEEP STORE 🐺✨\n\nأنا وولف، مساعدك الشخصي! قولي إيه اللي بتدور عليه:\n- اكتب طولك ووزنك وهقولك مقاسك 📏\n- اسأل عن أي منتج وهعرضهولك 👕\n- أي سؤال عن الأسعار أو الشحن أو الألوان 🚚`;
-          suggestedProductIds = productsList.slice(0, 3).map((p) => p.id);
-        } else {
-          replyText = `مش فاهم كويس 😅 قولي أكتر، بتدور على منتج معين؟ ولا عايز تعرف مقاسك؟`;
-          suggestedProductIds = productsList.slice(0, 2).map((p) => p.id);
+          if (matched.length > 0) {
+            suggestedProductIds = matched.map((p) => p.id);
+            replyText = `وجدت ${matched.length} منتج يناسب بحثك 👕:`;
+          } else {
+            replyText = `مش فاهم كويس 😅\nقولي أكتر — بتدور على نوع معين من الملابس؟ ولا عايز تعرف مقاسك؟`;
+          }
         }
       }
     }

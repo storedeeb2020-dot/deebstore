@@ -330,7 +330,9 @@ export function ChatBot() {
                     {/* Rich Product Cards */}
                     {msg.suggestedProducts && msg.suggestedProducts.length > 0 && (
                       <div className="mt-2 flex flex-col gap-2">
-                        {msg.suggestedProducts.map((p) => (
+                        {msg.suggestedProducts
+                          .filter((p) => p.name && p.name.trim().length >= 3 && p.slug && p.price > 0 && p.price < 50000)
+                          .map((p) => (
                           <Link
                             key={p.id}
                             href={`/products/${p.slug}`}
