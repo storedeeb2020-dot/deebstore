@@ -36,7 +36,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://deebstore.vercel.app"
+    process.env.NEXT_PUBLIC_SITE_URL || "https://eldeeb.shop"
   ),
   title: {
     default: "DEEP STORE | البراند المفضل للملابس والستريت وير الفاخرة",
@@ -163,7 +163,7 @@ export default function RootLayout({
               "@type": "Brand",
               "name": "DEEP STORE",
               "alternateName": ["ديب ستور", "DEEP STORE", "DEEP Streetwear", "ملابس DEEP STORE"],
-              "url": process.env.NEXT_PUBLIC_SITE_URL || "https://deebstore.vercel.app",
+              "url": process.env.NEXT_PUBLIC_SITE_URL || "https://eldeeb.shop",
               "logo": "/logo.png",
               "description": "متجر DEEP STORE الفاخر المتخصص في أفضل ملابس الستريت وير والموضة العصرية في مصر والوطن العربي."
             })
