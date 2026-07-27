@@ -95,6 +95,15 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // ─── 9. سجلات المحادثات (Chat Logs) ─────────────────────────────────
+    match /chat_logs/{logId} {
+      // أي زائر يمكنه بدء محادثة وحفظها
+      allow create, update: if true;
+      
+      // فقط الأدمن يمكنه قراءة وحذف سجلات المحادثات للتحليل
+      allow read, delete: if isAdmin();
+    }
+
     // ─── الحماية الافتراضية لأي مجموعة أخرى غير معروفة ───────────────
     match /{document=**} {
       allow read, write: if false;

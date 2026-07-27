@@ -45,7 +45,7 @@ export function HeroSection() {
             loop
             muted
             playsInline
-            className="w-full h-full object-cover opacity-45"
+            className="w-full h-full object-cover opacity-80"
           />
         ) : settings?.heroImagesDark && settings.heroImagesDark.length > 0 ? (
           <div className="relative w-full h-full">
@@ -55,7 +55,7 @@ export function HeroSection() {
                 src={settings.heroImagesDark[activeImageIndex]}
                 alt="Hero Background"
                 initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 0.45, scale: 1 }}
+                animate={{ opacity: 0.85, scale: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 1.2, ease: "easeInOut" }}
                 className="absolute inset-0 w-full h-full object-cover"
@@ -66,8 +66,8 @@ export function HeroSection() {
           <div className="w-full h-full bg-black" />
         )}
         
-        {/* Dark vignette overlay for luxury feel and readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/80 pointer-events-none" />
+        {/* Soft vignette overlay at top/bottom for readability, center is completely clear */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/45 pointer-events-none" />
       </div>
 
       {/* Brand Central Hero Tagline & Subtitle */}

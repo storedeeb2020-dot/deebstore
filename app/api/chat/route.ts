@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { message, productsCatalog } = await req.json();
+    const body = await req.json();
+    const message = body.userMessage || body.message;
+    const productsCatalog = body.catalog || body.productsCatalog;
 
     if (!message || typeof message !== "string") {
       return NextResponse.json(

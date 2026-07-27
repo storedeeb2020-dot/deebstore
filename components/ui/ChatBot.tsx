@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { X, Send, Bot, User, Sparkles, ExternalLink, Shirt } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProducts } from "@/lib/firebase/firestore";
+import { db } from "@/lib/firebase/config";
+import { doc, setDoc, arrayUnion, serverTimestamp } from "firebase/firestore";
 import type { Product } from "@/types/product";
 
 interface ChatMessage {
@@ -80,7 +82,43 @@ export function ChatBot() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Generate or retrieve session ID for chat analytics
+  useEffect(() => {
+    let currentSessionId = sessionStorage.getItem("deep_chat_session_id");
+    if (!currentSessionId) {
+      currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      sessionStorage.setItem("deep_chat_session_id", currentSessionId);
+    }
+    setSessionId(currentSessionId);
+  }, []);
+
+  // Log messages to Firestore for admin analytics
+  const logMessageToFirestore = async (sender: "user" | "bot", text: string) => {
+    if (!sessionId) return;
+    try {
+      const chatDocRef = doc(db, "chat_logs", sessionId);
+      const logData: any = {
+        messages: arrayUnion({
+          sender,
+          text,
+          timestamp: new Date().toISOString(),
+        }),
+        updatedAt: serverTimestamp(),
+        deviceInfo: typeof navigator !== "undefined" ? navigator.userAgent : "Unknown",
+      };
+      // For the first user message, record it as a preview and set first created time
+      if (sender === "user" && messages.length <= 1) {
+        logData.firstMessage = text;
+        logData.createdAt = serverTimestamp();
+      }
+      await setDoc(chatDocRef, logData, { merge: true });
+    } catch (err) {
+      console.error("Error logging chat message to Firestore:", err);
+    }
+  };
 
   // Load live store products when ChatBot opens
   useEffect(() => {
@@ -112,7 +150,7 @@ export function ChatBot() {
     "ما هي طرق الدفع المتاحة ومواعيد التوصيل؟",
   ];
 
-  // Construct a clear text summary of products currently in store with direct URLs
+  // Construct a detailed text summary of products currently in store including description and correct URLs
   const productsCatalog = useMemo(() => {
     if (!products || products.length === 0) return "";
     return products
@@ -120,7 +158,8 @@ export function ChatBot() {
         const colors = p.variants?.map((v) => v.colorName).filter(Boolean).join("، ") || "افتراضي";
         const sizes = p.variants?.[0]?.sizes?.map((s) => `${s.size} (${s.stock > 0 ? "متوفر" : "نفد"})`).join(", ") || "S, M, L, XL, XXL";
         const price = p.salePrice ? `${p.salePrice} ج.م (خصم من ${p.price} ج.م)` : `${p.price} ج.م`;
-        return `- **${p.name}** | الماركة: ${p.brand || "DEEP STORE"} | السعر: ${price} | الألوان: ${colors} | المقاسات: ${sizes} | الرابط المباشر: [/product/${p.slug}](/product/${p.slug})`;
+        const description = p.description ? p.description.replace(/\n/g, " ") : "لا يوجد وصف";
+        return `- **${p.name}** | الوصف: ${description} | الماركة: ${p.brand || "DEEP STORE"} | السعر: ${price} | الألوان: ${colors} | المقاسات: ${sizes} | الرابط المباشر: [/products/${p.slug}](/products/${p.slug})`;
       })
       .join("\n");
   }, [products]);
@@ -138,6 +177,9 @@ export function ChatBot() {
     setMessages((prev) => [...prev, userMsg]);
     if (!customText) setInput("");
     setLoading(true);
+
+    // 1. Log the user message to Firestore
+    await logMessageToFirestore("user", textToSend);
 
     try {
       const historyForApi = messages.map((m) => ({
@@ -170,16 +212,23 @@ export function ChatBot() {
           text: botReply,
         },
       ]);
+
+      // 2. Log the bot reply to Firestore
+      await logMessageToFirestore("bot", botReply);
     } catch (err) {
       console.error("ChatBot send error:", err);
+      const fallbackText = "أهلاً بك في ديب ستور! يمكنك الاطلاع على المنتجات المتاحة فوراً عبر [صفحة المتجر](/shop).";
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           sender: "bot",
-          text: "أهلاً بك في ديب ستور! يمكنك الاطلاع على المنتجات المتاحة فوراً عبر [صفحة المتجر](/shop).",
+          text: fallbackText,
         },
       ]);
+
+      // 3. Log the fallback bot reply to Firestore
+      await logMessageToFirestore("bot", fallbackText);
     } finally {
       setLoading(false);
     }
@@ -292,20 +341,6 @@ export function ChatBot() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Quick Suggestions */}
-            {messages.length < 4 && (
-              <div className="px-3 py-2 bg-zinc-950 border-t border-zinc-900 flex flex-wrap gap-1.5">
-                {quickQuestions.map((q, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleSend(q)}
-                    className="text-[11px] px-2.5 py-1 rounded-full bg-zinc-900 hover:bg-amber-500/10 hover:border-amber-500/30 border border-zinc-800 text-zinc-300 hover:text-amber-300 transition-colors text-right cursor-pointer"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-            )}
 
             {/* Input Form */}
             <form

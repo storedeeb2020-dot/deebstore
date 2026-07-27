@@ -64,7 +64,7 @@ export function Logo3D({ className, layers = 60, src }: Logo3DProps) {
             // Front half layers face forward, back half layers face backward and are flipped to read correctly
             const layerTransform = isFrontHalf
               ? `translateZ(${zOffset}px)`
-              : `translateZ(${zOffset}px) rotateY(180deg) scaleX(-1)`;
+              : `translateZ(${zOffset}px) rotateY(180deg)`;
 
             // Brightness styling for depth effect (symmetrical lighting)
             const brightnessValue = isFrontHalf
@@ -79,6 +79,7 @@ export function Logo3D({ className, layers = 60, src }: Logo3DProps) {
                   top: isFront ? "auto" : 0,
                   left: isFront ? "auto" : 0,
                   transform: layerTransform,
+                  WebkitBackfaceVisibility: "hidden", // Safari/Chrome prefix
                   backfaceVisibility: "hidden", // Hide backface for all layers to avoid mirrored bleed-through
                   filter: isFront
                     ? "drop-shadow(0 8px 16px rgba(0,0,0,0.9))"
@@ -93,6 +94,10 @@ export function Logo3D({ className, layers = 60, src }: Logo3DProps) {
                   src={logoSrc}
                   alt="DEEP STORE 3D Logo Emblem"
                   className="h-10 sm:h-14 md:h-16 w-auto object-contain drop-shadow-2xl"
+                  style={{
+                    WebkitBackfaceVisibility: "hidden",
+                    backfaceVisibility: "hidden"
+                  }}
                 />
               </div>
             );

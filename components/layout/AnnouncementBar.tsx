@@ -31,10 +31,9 @@ export function AnnouncementBar() {
     : [];
 
   // Repeat items to ensure there's enough content to fill the screen width and loop seamlessly
-  const baseRepeat = parsed.length === 1 ? 4 : parsed.length < 3 ? 2 : 1;
-  const singleGroup = [];
-  for (let i = 0; i < baseRepeat; i++) {
-    singleGroup.push(...parsed);
+  let singleGroup = [...parsed];
+  while (singleGroup.length < 15 && singleGroup.length > 0) {
+    singleGroup = [...singleGroup, ...parsed];
   }
   const marqueeItems = [...singleGroup, ...singleGroup]; // Double it for the -50% offset looping
 
@@ -69,7 +68,7 @@ export function AnnouncementBar() {
 
           <div className="relative flex items-center justify-start py-2.5 min-h-[36px] overflow-hidden">
             {/* Marquee Track Container */}
-            <div className="animate-marquee-track flex items-center gap-16 pr-16 pl-6">
+            <div className="animate-marquee-track flex items-center gap-16">
               {marqueeItems.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-3.5 shrink-0">
                   <Megaphone size={12.5} className="text-black/75 shrink-0" />

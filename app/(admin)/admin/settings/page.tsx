@@ -17,13 +17,16 @@ import {
   Ruler,
   Plus,
   Megaphone,
+  Bot,
 } from "lucide-react";
 import { getSiteSettings, updateSiteSettings, type SiteSettings, type GlobalSizeChart } from "@/lib/firebase/firestore";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import { Spinner } from "@/components/ui/Spinner";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
+import { db } from "@/lib/firebase/config";
+import { collection, query, orderBy, getDocs, limit, deleteDoc, doc } from "firebase/firestore";
 
-type SettingsTab = "hero" | "brand" | "payments" | "sizeCharts" | "contact" | "about" | "legal" | "announcement";
+type SettingsTab = "hero" | "brand" | "payments" | "sizeCharts" | "contact" | "about" | "legal" | "announcement" | "chatAnalytics";
 
 export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -33,6 +36,11 @@ export default function AdminSettingsPage() {
   // New size chart creator state
   const [newSizeChartName, setNewSizeChartName] = useState("");
   const [newSizeChartImage, setNewSizeChartImage] = useState("");
+
+  // ChatBot Analytics states
+  const [chatLogs, setChatLogs] = useState<any[]>([]);
+  const [loadingChats, setLoadingChats] = useState(false);
+  const [selectedChat, setSelectedChat] = useState<any | null>(null);
 
   const [settings, setSettings] = useState<SiteSettings>({
     storeName: "DEEP STORE",
@@ -130,6 +138,41 @@ export default function AdminSettingsPage() {
     }
   };
 
+  // Fetch chat logs for analytics
+  useEffect(() => {
+    if (activeTab === "chatAnalytics") {
+      setLoadingChats(true);
+      const q = query(collection(db, "chat_logs"), orderBy("updatedAt", "desc"), limit(50));
+      getDocs(q)
+        .then((snap) => {
+          const logs = snap.docs.map((docItem) => ({
+            id: docItem.id,
+            ...docItem.data(),
+          }));
+          setChatLogs(logs);
+        })
+        .catch((err) => {
+          console.error("Failed to load chat logs:", err);
+          toast.error("فشل تحميل سجلات المحادثات");
+        })
+        .finally(() => setLoadingChats(false));
+    }
+  }, [activeTab]);
+
+  const handleDeleteChat = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("هل أنت متأكد من حذف هذا السجل؟")) return;
+    try {
+      await deleteDoc(doc(db, "chat_logs", id));
+      setChatLogs((prev) => prev.filter((c) => c.id !== id));
+      if (selectedChat?.id === id) setSelectedChat(null);
+      toast.success("تم حذف المحادثة بنجاح");
+    } catch (err) {
+      console.error("Failed to delete chat log:", err);
+      toast.error("فشل حذف المحادثة");
+    }
+  };
+
   const addSizeChart = () => {
     if (!newSizeChartName.trim()) {
       toast.error("يرجى كتابة اسم لجدول المقاسات (مثلاً: جدول مقاسات التيشيرتات)");
@@ -189,6 +232,7 @@ export default function AdminSettingsPage() {
     { id: "contact", label: "التواصل والسوشيال ميديا", icon: Phone },
     { id: "about", label: "صفحة من نحن", icon: Info },
     { id: "legal", label: "الشروط والخصوصية", icon: Shield },
+    { id: "chatAnalytics", label: "تحليلات الشات بوت", icon: Bot },
   ];
 
   return (
@@ -807,17 +851,164 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
+        {/* TAB 9: CHATBOT ANALYTICS */}
+        {activeTab === "chatAnalytics" && (
+          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6 text-white text-right">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+              <div className="flex items-center gap-2">
+                <Bot size={20} className="text-amber-400" />
+                <h2 className="font-black text-base text-amber-400">
+                  تحليلات وسجلات مساعد الموضة الذكي (ChatBot)
+                </h2>
+              </div>
+              <span className="text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full">
+                تحليل مباشر لتفاعل العملاء
+              </span>
+            </div>
+
+            {/* Quick Analytics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-850">
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">إجمالي جلسات الشات</p>
+                <p className="text-2xl font-black text-amber-400 mt-1">{chatLogs.length}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-850">
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">إجمالي الرسائل المرسلة</p>
+                <p className="text-2xl font-black text-amber-400 mt-1">
+                  {chatLogs.reduce((acc, curr) => acc + (curr.messages?.length || 0), 0)}
+                </p>
+              </div>
+              <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-850">
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">متوسط طول المحادثة</p>
+                <p className="text-2xl font-black text-amber-400 mt-1">
+                  {chatLogs.length > 0
+                    ? (chatLogs.reduce((acc, curr) => acc + (curr.messages?.length || 0), 0) / chatLogs.length).toFixed(1)
+                    : 0}{" "}
+                  رسالة
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-4">
+              {/* Left Column: Chat List */}
+              <div className="lg:col-span-5 space-y-3">
+                <h3 className="text-xs font-black text-zinc-300 uppercase tracking-wider mb-2">أحدث المحادثات النشطة</h3>
+                {loadingChats ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Spinner size="md" className="border-amber-400" />
+                  </div>
+                ) : chatLogs.length === 0 ? (
+                  <div className="text-center py-12 bg-zinc-900/40 rounded-xl border border-zinc-900 text-zinc-500 text-xs">
+                    لا توجد سجلات محادثات بعد.
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+                    {chatLogs.map((log) => {
+                      const msgCount = log.messages?.length || 0;
+                      const isSelected = selectedChat?.id === log.id;
+                      const dateString = log.updatedAt?.seconds
+                        ? new Date(log.updatedAt.seconds * 1000).toLocaleString("ar-EG")
+                        : "غير معروف";
+                      return (
+                        <div
+                          key={log.id}
+                          onClick={() => setSelectedChat(log)}
+                          className={`p-3 rounded-xl border transition-all cursor-pointer text-right flex flex-col justify-between gap-1.5 ${
+                            isSelected
+                              ? "bg-amber-500/10 border-amber-500/50"
+                              : "bg-zinc-900 hover:bg-zinc-850 border-zinc-800/80"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-mono text-zinc-500">{log.id.slice(-8)}</span>
+                            <span className="text-[10px] font-bold text-amber-500/80 bg-amber-500/5 px-2 py-0.5 rounded-full">
+                              {msgCount} رسائل
+                            </span>
+                          </div>
+                          <p className="text-xs text-zinc-200 truncate font-semibold">
+                            {log.firstMessage || log.messages?.[0]?.text || "بدون نص معاينة"}
+                          </p>
+                          <div className="flex items-center justify-between text-[9px] text-zinc-400 mt-1 border-t border-zinc-800/60 pt-1.5">
+                            <span>{dateString}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteChat(log.id, e)}
+                              className="text-red-500 hover:text-red-400 transition-colors p-1"
+                              title="حذف السجل"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column: Chat Transcript Details */}
+              <div className="lg:col-span-7">
+                {selectedChat ? (
+                  <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-4 flex flex-col h-[420px]">
+                    <div className="flex items-center justify-between border-b border-zinc-800/60 pb-3 mb-3">
+                      <div>
+                        <h4 className="text-xs font-black text-amber-400 uppercase">تفاصيل الجلسة: {selectedChat.id.slice(-8)}</h4>
+                        <p className="text-[9px] text-zinc-550 mt-0.5">المتصفح: {selectedChat.deviceInfo?.split(" ")[0] || "غير معروف"}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedChat(null)}
+                        className="text-xs font-bold text-zinc-400 hover:text-white cursor-pointer"
+                      >
+                        إغلاق العرض
+                      </button>
+                    </div>
+                    {/* Transcript flow */}
+                    <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-right flex flex-col scrollbar-thin scrollbar-thumb-zinc-800">
+                      {selectedChat.messages?.map((msg: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className={`flex flex-col max-w-[85%] rounded-xl p-2.5 text-xs ${
+                            msg.sender === "user"
+                              ? "bg-amber-500/10 border border-amber-500/20 text-amber-300 self-start"
+                              : "bg-zinc-950 text-zinc-300 self-end"
+                          }`}
+                        >
+                          <span className="font-black text-[9px] text-zinc-550 mb-1">
+                            {msg.sender === "user" ? "العميل" : "مساعد ملابس الديب"}
+                          </span>
+                          <p className="whitespace-pre-line leading-relaxed">{msg.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-zinc-900/30 rounded-2xl border border-dashed border-zinc-800/80 h-[420px] flex flex-col items-center justify-center text-center p-6">
+                    <Bot size={40} className="text-zinc-700 animate-pulse mb-3" />
+                    <p className="text-xs font-bold text-zinc-400">اختر محادثة من القائمة لرؤية سجل الدردشة والتحليل الكامل هنا.</p>
+                    <p className="text-[10px] text-zinc-500 mt-1 max-w-xs leading-relaxed">
+                      سجلات المحادثات توضح لك أسئلة العملاء، المقاسات التي يبحثون عنها، والمنتجات المقترحة لزيادة المبيعات.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Floating Save Button Bar */}
-        <div className="sticky bottom-6 z-20 flex justify-end">
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex items-center gap-3 px-10 py-4 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-black font-black text-sm tracking-wider uppercase shadow-2xl border border-amber-300/60 hover:scale-105 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
-          >
-            <Save size={18} />
-            <span>{saving ? "جاري حفظ الإعدادات..." : "حفظ التغييرات الآن"}</span>
-          </button>
-        </div>
+        {activeTab !== "chatAnalytics" && (
+          <div className="sticky bottom-6 z-20 flex justify-end">
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex items-center gap-3 px-10 py-4 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-black font-black text-sm tracking-wider uppercase shadow-2xl border border-amber-300/60 hover:scale-105 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+            >
+              <Save size={18} />
+              <span>{saving ? "جاري حفظ الإعدادات..." : "حفظ التغييرات الآن"}</span>
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );
