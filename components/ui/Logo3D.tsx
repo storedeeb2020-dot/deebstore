@@ -1,28 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { getSiteSettings } from "@/lib/firebase/firestore";
 
 interface Logo3DProps {
   className?: string;
-  layers?: number;
-  src?: string;
+  text?: string;
 }
 
-export function Logo3D({ className, layers = 60, src }: Logo3DProps) {
-  const actualLayers = Math.min(layers, 72);
-  const [logoSrc, setLogoSrc] = useState(src || "/logo.png");
-
-  useEffect(() => {
-    if (!src) {
-      getSiteSettings()
-        .then((s) => {
-          if (s?.logoUrl) setLogoSrc(s.logoUrl);
-        })
-        .catch(console.error);
-    }
-  }, [src]);
+export function Logo3D({ className, text = "ELDEEB" }: Logo3DProps) {
+  const actualLayers = 24;
 
   return (
     <div
@@ -44,11 +30,11 @@ export function Logo3D({ className, layers = 60, src }: Logo3DProps) {
         }}
         transition={{
           repeat: Infinity,
-          duration: 8.5,
+          duration: 7.5,
           ease: "linear",
         }}
       >
-        {/* Ultra-Dense 3D Glued Coin Block */}
+        {/* Ultra-Dense 3D Text Layers Block */}
         <div
           className="relative flex items-center justify-center"
           style={{ transformStyle: "preserve-3d" }}
@@ -57,19 +43,18 @@ export function Logo3D({ className, layers = 60, src }: Logo3DProps) {
             const isFront = i === 0;
             const isBack = i === actualLayers - 1;
             const isFrontHalf = i < actualLayers / 2;
-            
-            // Tighter step = denser coin body, more solid 3D feel
-            const zOffset = -i * 0.38;
 
-            // Front half layers face forward, back half layers face backward and are flipped to read correctly
+            const zOffset = -i * 0.45;
+
             const layerTransform = isFrontHalf
               ? `translateZ(${zOffset}px)`
               : `translateZ(${zOffset}px) rotateY(180deg)`;
 
-            // Brightness styling for depth effect (symmetrical lighting)
-            const brightnessValue = isFrontHalf
-              ? Math.max(0.25, 0.95 - i * 0.02)
-              : Math.max(0.25, 0.95 - (actualLayers - 1 - i) * 0.02);
+            const colorClass = isFront
+              ? "text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 drop-shadow-[0_4px_12px_rgba(245,158,11,0.6)]"
+              : isBack
+              ? "text-amber-600"
+              : "text-amber-500/90";
 
             return (
               <div
@@ -79,26 +64,17 @@ export function Logo3D({ className, layers = 60, src }: Logo3DProps) {
                   top: isFront ? "auto" : 0,
                   left: isFront ? "auto" : 0,
                   transform: layerTransform,
-                  WebkitBackfaceVisibility: "hidden", // Safari/Chrome prefix
-                  backfaceVisibility: "hidden", // Hide backface for all layers to avoid mirrored bleed-through
+                  WebkitBackfaceVisibility: "hidden",
+                  backfaceVisibility: "hidden",
                   filter: isFront
-                    ? "drop-shadow(0 8px 16px rgba(0,0,0,0.9))"
-                    : isBack
-                    ? "drop-shadow(0 6px 12px rgba(0,0,0,0.8))"
-                    : `brightness(${brightnessValue}) contrast(1.1)`,
-                  opacity: 1,
+                    ? "drop-shadow(0 6px 12px rgba(0,0,0,0.9))"
+                    : `brightness(${Math.max(0.3, 1 - i * 0.03)})`,
                 }}
+                className="whitespace-nowrap font-black tracking-widest text-xl sm:text-2xl md:text-3xl uppercase font-mono select-none"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={logoSrc}
-                  alt="DEEP STORE 3D Logo Emblem"
-                  className="h-10 sm:h-14 md:h-16 w-auto object-contain drop-shadow-2xl"
-                  style={{
-                    WebkitBackfaceVisibility: "hidden",
-                    backfaceVisibility: "hidden"
-                  }}
-                />
+                <span className={colorClass}>
+                  {text}
+                </span>
               </div>
             );
           })}
