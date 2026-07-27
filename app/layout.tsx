@@ -9,6 +9,8 @@ import { Toaster } from "sonner";
 import fs from "fs";
 import path from "path";
 
+export const dynamic = "force-dynamic";
+
 try {
   const src = "C:\\Users\\youse\\.gemini\\antigravity-ide\\brain\\7143436e-db2e-4dd9-8309-d096b857b2cc\\media__1785122093009.png";
   const dest = path.join(process.cwd(), "public", "wolf-icon.png");

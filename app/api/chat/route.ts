@@ -94,6 +94,12 @@ ${catalogText}
 
       if (sizeAdvice) {
         replyText = `${sizeAdvice}\n\nإليك اقتراحاتنا المميزة لإكمال إطلالتك:\n- [تيشيرت أوفرسايز ديب أسود فاخر](/shop)\n- [بنطال كارجو ستريت وير أسود](/shop)`;
+      } else if (lowerMsg.includes("ازيك") || lowerMsg.includes("سلام") || lowerMsg.includes("مرحبا") || lowerMsg.includes("أهلا") || lowerMsg.includes("اهلا") || lowerMsg.includes("hi") || lowerMsg.includes("hello")) {
+        replyText = "أهلاً بك يا فنان في DEEP STORE 🐺! أنا مساعدك الشخصي للمقاسات وتنسيق الملابس. اكتب لي طولك ووزنك وسأرشح لك المقاس المضبوط والقطع المناسبة فوراً!";
+      } else if (lowerMsg.includes("منتج") || lowerMsg.includes("عندك") || lowerMsg.includes("متوفر") || lowerMsg.includes("تبيع") || lowerMsg.includes("تشكيلة") || lowerMsg.includes("shop") || lowerMsg.includes("products")) {
+        replyText = "نوفر لك في DEEP STORE 🐺 تشكيلة ملابس ستريت وير فاخرة (تيشيرتات أوفرسايز، هوديز، وبناطيل كارجو).\n\nتصفح كافة المنتجات المتاحة مع أسعارها وروابطها المباشرة عبر [صفحة المتجر](/shop).";
+      } else if (lowerMsg.includes("مقاس") || lowerMsg.includes("حجم") || lowerMsg.includes("طول") || lowerMsg.includes("وزن") || lowerMsg.includes("size")) {
+        replyText = "لمعرفة مقاسك المناسب، يرجى كتابة طولك بالسم (مثال: 175) ووزنك بالكجم (مثال: 70) معاً في رسالة واحدة، وسأقوم بحساب مقاسك واقتراح المنتجات المناسبة لك.";
       } else if (lowerMsg.includes("شحن") || lowerMsg.includes("توصيل") || lowerMsg.includes("محافظ")) {
         replyText = "أهلاً بك في ديب ستور! نوفر خدمة الشحن السريع لكافة محافظات مصر. يمكنك معرفة تكلفة الشحن واختيار المحافظة عند الشراء.";
       } else if (lowerMsg.includes("دفع") || lowerMsg.includes("فودافون") || lowerMsg.includes("انستا")) {

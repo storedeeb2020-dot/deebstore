@@ -91,7 +91,7 @@ export function NXTIntro({ onComplete }: IntroProps) {
                   DEEP STORE
                 </h1>
                 <p className="text-xs sm:text-sm font-bold tracking-[0.3em] text-zinc-400 uppercase flex items-center justify-center gap-2">
-                  ROYAL STREETWEAR <img src="/wolf-icon.png" alt="Wolf" className="w-4 h-4 object-contain invert" />
+                  ROYAL STREETWEAR <img src="/api/wolf-icon" alt="Wolf" className="w-4 h-4 object-contain invert" />
                 </p>
               </motion.div>
 

@@ -258,7 +258,7 @@ export function ChatBot() {
             <X className="w-6 h-6 text-black font-black" />
           ) : (
             <div className="relative flex items-center justify-center p-1">
-              <img src="/wolf-icon.png" alt="Wolf" className="w-7 h-7 object-contain drop-shadow-md" />
+              <img src="/api/wolf-icon" alt="Wolf" className="w-7 h-7 object-contain drop-shadow-md" />
               <Sparkles className="w-4 h-4 text-black absolute -top-2 -right-2 animate-bounce" />
               <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -284,11 +284,11 @@ export function ChatBot() {
             <div className="p-4 bg-gradient-to-r from-zinc-900 via-zinc-950 to-black border-b border-amber-500/20 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center shadow-lg shadow-amber-500/20 p-1.5">
-                  <img src="/wolf-icon.png" alt="Wolf" className="w-6 h-6 object-contain" />
+                  <img src="/api/wolf-icon" alt="Wolf" className="w-6 h-6 object-contain" />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-sm text-amber-400 flex items-center gap-1.5">
-                    مساعد ملابس الديب ستور <img src="/wolf-icon.png" alt="Wolf" className="w-4 h-4 object-contain invert" />
+                    مساعد ملابس الديب ستور <img src="/api/wolf-icon" alt="Wolf" className="w-4 h-4 object-contain invert" />
                   </h3>
                   <p className="text-[11px] text-zinc-400">حاسبة المقاسات واقتراح التشكيلات المناسبة</p>
                 </div>

@@ -65,7 +65,7 @@ export function AnnouncementBar() {
             }
           `}} />
 
-          <div className="relative flex items-center justify-start py-2.5 min-h-[36px] overflow-hidden">
+          <div className="relative flex items-center justify-start py-2.5 min-h-[36px] overflow-hidden pl-12" dir="ltr">
             {/* Marquee Track Container */}
             <div className="animate-marquee-track flex">
               {/* Sub-Track 1 */}
