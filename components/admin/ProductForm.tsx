@@ -372,6 +372,23 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
             </div>
           </div>
         </div>
+
+        {/* Best Seller Option Toggle */}
+        <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between">
+          <div>
+            <h3 className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+              عرض هذا المنتج في قائمة الأكثر مبيعاً 🔥 (Best Seller)
+            </h3>
+            <p className="text-[11px] text-zinc-400">
+              قم بتفعيل هذا الخيار لظهور المنتج في قسم الأكثر مبيعاً على الصفحة الرئيسية وفي المنيو.
+            </p>
+          </div>
+          <ToggleSwitch
+            checked={!!watch("bestSeller")}
+            onChange={(val) => setValue("bestSeller", val)}
+            size="md"
+          />
+        </div>
       </div>
 
       {/* 3. Global Size Chart Selector & Options */}

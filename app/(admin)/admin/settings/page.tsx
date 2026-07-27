@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { getSiteSettings, updateSiteSettings, type SiteSettings, type GlobalSizeChart } from "@/lib/firebase/firestore";
 import { ImageUploader } from "@/components/admin/ImageUploader";
+import { uploadVideoToCloudinary } from "@/lib/cloudinary";
 import { Spinner } from "@/components/ui/Spinner";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 import { db } from "@/lib/firebase/config";
@@ -34,6 +35,8 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>("payments");
+
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   // New size chart creator state
   const [newSizeChartName, setNewSizeChartName] = useState("");
@@ -592,21 +595,77 @@ export default function AdminSettingsPage() {
             </div>
 
             <div className="space-y-6 pt-4 border-t border-zinc-800">
-              {/* Video URL Input */}
+              {/* Video File Uploader */}
               <div className="space-y-3 p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
                 <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                  <Video size={14} /> رابط فيديو الهيرو السينمائي (عرضي Landscape Video MP4)
+                  <Video size={14} /> رفع وتعديل فيديو الهيرو السينمائي (Video Uploader)
                 </label>
-                <input
-                  type="text"
-                  placeholder="https://res.cloudinary.com/.../video.mp4"
-                  value={settings.heroVideoUrlDark || ""}
-                  onChange={(e) => setSettings({ ...settings, heroVideoUrlDark: e.target.value, heroVideoUrlLight: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 font-mono"
-                />
                 <p className="text-[10px] text-zinc-400">
-                  سيتم تشغيل هذا الفيديو بكامل أبعاده العرضية (16:9) في أعلى الشاشة.
+                  قم برفع فيديو (.mp4 / .webm) مباشرة من جهازك وسيتم رفعه وتغذيته تلقائياً بالصفحة الرئيسية.
                 </p>
+
+                {/* Video Preview */}
+                {settings.heroVideoUrlDark && (
+                  <div className="relative aspect-video w-full max-w-md rounded-xl overflow-hidden bg-black border border-zinc-800 my-2">
+                    <video
+                      src={settings.heroVideoUrlDark}
+                      controls
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                  <label className="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-400 text-black font-extrabold text-xs rounded-xl hover:scale-[1.02] transition-all cursor-pointer inline-flex items-center gap-2 shadow-md">
+                    {uploadingVideo ? (
+                      <>
+                        <Spinner size="sm" className="border-black border-t-transparent" />
+                        <span>جاري رفع الفيديو...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Video size={16} />
+                        <span>رفع فيديو جديد من الجهاز 🎬</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploadingVideo(true);
+                        const loadingToast = toast.loading("جاري رفع ملف الفيديو إلى Cloudinary...");
+                        try {
+                          const url = await uploadVideoToCloudinary(file);
+                          setSettings((prev) => ({
+                            ...prev,
+                            heroVideoUrlDark: url,
+                            heroVideoUrlLight: url,
+                          }));
+                          toast.success("تم رفع الفيديو بنجاح 🐺", { id: loadingToast });
+                        } catch (err) {
+                          console.error(err);
+                          toast.error("فشل رفع الفيديو، يرجى تجربة ملف آخر", { id: loadingToast });
+                        } finally {
+                          setUploadingVideo(false);
+                        }
+                      }}
+                      disabled={uploadingVideo}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <div className="flex-1 w-full">
+                    <input
+                      type="text"
+                      placeholder="أو أدخل رابط الفيديو يدويًا..."
+                      value={settings.heroVideoUrlDark || ""}
+                      onChange={(e) => setSettings({ ...settings, heroVideoUrlDark: e.target.value, heroVideoUrlLight: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 font-mono"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Mobile Hero Image Banner */}
