@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, Send, Bot, User, Sparkles, ExternalLink, Shirt } from "lucide-react";
+import { X, Send, Bot, User, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProducts } from "@/lib/firebase/firestore";
 import { db } from "@/lib/firebase/config";

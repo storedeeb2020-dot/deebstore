@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getProducts, getSiteSettings, getShippingRates } from "@/lib/firebase/firestore";
-import { getSessionData, updateSessionData, extractEntitiesFromMessage } from "@/lib/chat/sessionMemory";
+import { updateSessionData, extractEntitiesFromMessage } from "@/lib/chat/sessionMemory";
 import { callGeminiRestAPI, callValTownStreamProxy } from "@/lib/chat/gemini";
 import type { Product } from "@/types/product";
 
