@@ -62,15 +62,17 @@ function ChatProductCard({
       id: product.id,
       name: product.name,
       slug: product.slug,
+      sku: `DEEP-${product.id.slice(0, 6)}`,
+      description: "",
       price: product.price,
       salePrice: product.salePrice,
-      mainImage: product.mainImage,
       category: product.category,
-      images: [product.mainImage],
-      description: "",
-      stock: 100,
-      createdAt: "",
-      updatedAt: "",
+      brand: "DEEP STORE",
+      mainImage: product.mainImage,
+      variants: [],
+      featured: false,
+      bestSeller: false,
+      createdAt: new Date(),
     };
 
     addItem(
@@ -434,13 +436,6 @@ export function ChatBot() {
     }
   }, [messages, isOpen]);
 
-  const quickQuestions = [
-    "طولي 178 سم ووزني 75 كجم، ابعتلي لينك المقاس والمنتج المناسب",
-    "اقترح لي تيشيرت أوفرسايز ورابط الشراء المباشر",
-    "عايز طقم كامل هودي وبنطال كارجو مع الروابط",
-    "ما هي طرق الدفع المتاحة ومواعيد التوصيل؟",
-  ];
-
   // Construct a detailed text summary of products currently in store including description and correct URLs
   const productsCatalog = useMemo(() => {
     if (!products || products.length === 0) return "";
@@ -483,6 +478,7 @@ export function ChatBot() {
         body: JSON.stringify({
           userMessage: textToSend,
           history: historyForApi,
+          catalogText: productsCatalog,
           sessionId: sessionId || "anon_session",
         }),
       });
