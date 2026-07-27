@@ -592,6 +592,39 @@ export default function AdminSettingsPage() {
             </div>
 
             <div className="space-y-6 pt-4 border-t border-zinc-800">
+              {/* Video URL Input */}
+              <div className="space-y-3 p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
+                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                  <Video size={14} /> رابط فيديو الهيرو السينمائي (عرضي Landscape Video MP4)
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://res.cloudinary.com/.../video.mp4"
+                  value={settings.heroVideoUrlDark || ""}
+                  onChange={(e) => setSettings({ ...settings, heroVideoUrlDark: e.target.value, heroVideoUrlLight: e.target.value })}
+                  className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 font-mono"
+                />
+                <p className="text-[10px] text-zinc-400">
+                  سيتم تشغيل هذا الفيديو بكامل أبعاده العرضية (16:9) في أعلى الشاشة.
+                </p>
+              </div>
+
+              {/* Mobile Hero Image Banner */}
+              <div className="space-y-3 p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
+                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                  <ImageIcon size={14} /> صورة بانر الموبايل (تظهر أسفل الفيديو في شاشات الموبايل 📱)
+                </label>
+                <p className="text-[10px] text-zinc-400 mb-2">
+                  صورة موديلز/منتجات تعليقيه تظهر تحت فيديو العرض في الموبايل تماماً كما في الصورة المرفقة.
+                </p>
+                <ImageUploader
+                  id="hero-mobile-image-uploader"
+                  multiple={false}
+                  images={settings.heroMobileImageUrl ? [settings.heroMobileImageUrl] : []}
+                  onChange={(newImgs) => setSettings((prev) => ({ ...prev, heroMobileImageUrl: newImgs[0] || "" }))}
+                />
+              </div>
+
               {/* Dark Mode Banners */}
               <div className="space-y-3 p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
                 <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">

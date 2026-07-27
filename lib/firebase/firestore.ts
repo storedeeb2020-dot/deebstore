@@ -267,6 +267,7 @@ export interface SiteSettings {
   heroMediaType?: "image" | "video";
   heroVideoUrlLight?: string;
   heroVideoUrlDark?: string;
+  heroMobileImageUrl?: string;   // صورة الهيرو الإضافية للموبايل أسفل الفيديو
   heroImagesLight?: string[];
   heroImagesDark?: string[];
   featuredTitle?: string;
