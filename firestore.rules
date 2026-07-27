@@ -5,9 +5,12 @@ service cloud.firestore {
 
     // ─── Helper Functions ──────────────────────────────────────────────
 
-    // التحقق من تسجيل دخول الأدمن
+    // التحقق من تسجيل دخول الأدمن بشكل آمن ومحكم
     function isAdmin() {
-      return request.auth != null;
+      return request.auth != null && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'storedeeb2020@gmail.com'
+      );
     }
 
     // التحقق من تسجيل الدخول العام
@@ -84,6 +87,12 @@ service cloud.firestore {
       allow read: if isOwner(userId) || isAdmin();
       allow create, update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
+    }
+
+    // ─── 8. المسؤولون (Admins) ─────────────────────────────────────────
+    match /admins/{adminId} {
+      // فقط الأدمن يمكنه قراءة وتعديل صلاحيات الأدمنز
+      allow read, write: if isAdmin();
     }
 
     // ─── الحماية الافتراضية لأي مجموعة أخرى غير معروفة ───────────────

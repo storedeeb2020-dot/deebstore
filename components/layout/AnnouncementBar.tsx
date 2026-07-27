@@ -26,7 +26,19 @@ export function AnnouncementBar() {
     sessionStorage.setItem("announcement_dismissed", "1");
   };
 
-  const show = !dismissed && settings?.announcementEnabled && settings?.announcementText;
+  const parsed = settings?.announcementText
+    ? settings.announcementText.split("|").map((t) => t.trim()).filter(Boolean)
+    : [];
+
+  // Repeat items to ensure there's enough content to fill the screen width and loop seamlessly
+  const baseRepeat = parsed.length === 1 ? 4 : parsed.length < 3 ? 2 : 1;
+  const singleGroup = [];
+  for (let i = 0; i < baseRepeat; i++) {
+    singleGroup.push(...parsed);
+  }
+  const marqueeItems = [...singleGroup, ...singleGroup]; // Double it for the -50% offset looping
+
+  const show = !dismissed && settings?.announcementEnabled && parsed.length > 0;
 
   return (
     <AnimatePresence>
@@ -36,38 +48,65 @@ export function AnnouncementBar() {
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="overflow-hidden w-full z-50 relative"
+          className="overflow-hidden w-full z-50 relative select-none"
           style={{ backgroundColor: settings?.announcementColor || "#F59E0B" }}
         >
-          <div className="relative flex items-center justify-center px-10 py-2 min-h-[36px]">
-            {/* Scrolling text wrapper */}
-            <div className="flex items-center gap-2 overflow-hidden max-w-full">
-              <Megaphone size={13} className="shrink-0 text-black/70" />
-              {settings?.announcementLink ? (
-                <a
-                  href={settings.announcementLink}
-                  className="text-[11px] sm:text-xs font-black text-black tracking-wide truncate hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {settings.announcementText}
-                </a>
-              ) : (
-                <span className="text-[11px] sm:text-xs font-black text-black tracking-wide truncate">
-                  {settings?.announcementText}
-                </span>
-              )}
+          {/* Injecting CSS for continuous marquee scrolling and hover-to-pause */}
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes marqueeScroll {
+              0% { transform: translateX(0%); }
+              100% { transform: translateX(-50%); }
+            }
+            .animate-marquee-track {
+              display: flex;
+              width: max-content;
+              animation: marqueeScroll 28s linear infinite;
+            }
+            .animate-marquee-track:hover {
+              animation-play-state: paused;
+            }
+          `}} />
+
+          <div className="relative flex items-center justify-start py-2.5 min-h-[36px] overflow-hidden">
+            {/* Marquee Track Container */}
+            <div className="animate-marquee-track flex items-center gap-16 pr-16 pl-6">
+              {marqueeItems.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-3.5 shrink-0">
+                  <Megaphone size={12.5} className="text-black/75 shrink-0" />
+                  {settings?.announcementLink ? (
+                    <a
+                      href={settings.announcementLink}
+                      className="text-[11px] sm:text-xs font-black text-black tracking-wide hover:underline cursor-pointer"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {item}
+                    </a>
+                  ) : (
+                    <span className="text-[11px] sm:text-xs font-black text-black tracking-wide">
+                      {item}
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
 
-            {/* Dismiss button */}
-            <button
-              type="button"
-              onClick={handleDismiss}
-              aria-label="إغلاق الإعلان"
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-black/10 transition-colors"
+            {/* Dismiss Button Overlay - Fading from Solid Theme Color to Transparent */}
+            <div 
+              className="absolute left-0 top-0 bottom-0 flex items-center pl-3 pr-8 z-20 pointer-events-none"
+              style={{
+                background: `linear-gradient(to right, ${settings?.announcementColor || "#F59E0B"} 50%, transparent)`
+              }}
             >
-              <X size={13} className="text-black/70" />
-            </button>
+              <button
+                type="button"
+                onClick={handleDismiss}
+                aria-label="إغلاق الإعلان"
+                className="p-1 rounded-full bg-black/5 hover:bg-black/15 active:scale-95 transition-all pointer-events-auto cursor-pointer"
+              >
+                <X size={13} className="text-black/75" />
+              </button>
+            </div>
           </div>
         </motion.div>
       )}

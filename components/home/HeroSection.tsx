@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 import { getSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
 
 export function HeroSection() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
     getSiteSettings()
@@ -15,6 +16,15 @@ export function HeroSection() {
       })
       .catch(console.error);
   }, []);
+
+  useEffect(() => {
+    if (settings?.heroImagesDark && settings.heroImagesDark.length > 1) {
+      const interval = setInterval(() => {
+        setActiveImageIndex((prev) => (prev + 1) % settings.heroImagesDark!.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [settings?.heroImagesDark]);
 
   const handleScroll = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -26,8 +36,39 @@ export function HeroSection() {
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black flex flex-col items-center justify-center">
-      {/* Pure Solid Obsidian Black Background (No yellow radial ambient glow) */}
-      <div className="absolute inset-0 bg-black pointer-events-none z-0" />
+      {/* Background Media */}
+      <div className="absolute inset-0 z-0">
+        {settings?.heroMediaType === "video" ? (
+          <video
+            src={settings?.heroVideoUrlDark || settings?.heroVideoUrlLight || "https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4"}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover opacity-45"
+          />
+        ) : settings?.heroImagesDark && settings.heroImagesDark.length > 0 ? (
+          <div className="relative w-full h-full">
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={activeImageIndex}
+                src={settings.heroImagesDark[activeImageIndex]}
+                alt="Hero Background"
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 0.45, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.2, ease: "easeInOut" }}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </AnimatePresence>
+          </div>
+        ) : (
+          <div className="w-full h-full bg-black" />
+        )}
+        
+        {/* Dark vignette overlay for luxury feel and readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/80 pointer-events-none" />
+      </div>
 
       {/* Brand Central Hero Tagline & Subtitle */}
       <div className="relative z-10 text-center px-4 -mt-16">
@@ -60,24 +101,86 @@ export function HeroSection() {
           transition={{ delay: 0.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="relative group"
         >
+          {/* Pulsing Backing Ambient Glow */}
+          <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-amber-500/10 via-yellow-500/20 to-amber-600/10 blur-xl opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 pointer-events-none" />
+
           {/* Main Luxury Button */}
           <motion.button
             onClick={handleScroll}
-            whileHover={{ scale: 1.05, y: -2 }}
+            whileHover="hover"
             whileTap={{ scale: 0.96 }}
-            transition={{ type: "spring", stiffness: 380, damping: 24 }}
-            className="relative inline-flex items-center gap-3 bg-zinc-950 hover:bg-gradient-to-r hover:from-amber-500 hover:via-amber-400 hover:to-yellow-500 text-amber-400 hover:text-black px-9 py-4 rounded-full font-black text-sm tracking-widest uppercase border border-amber-500/40 hover:border-amber-300 shadow-[0_15px_35px_rgba(0,0,0,0.8)] backdrop-blur-md overflow-hidden transition-all duration-300 cursor-pointer"
+            variants={{
+              hover: {
+                scale: 1.05,
+                y: -3,
+                transition: { type: "spring", stiffness: 350, damping: 16 }
+              }
+            }}
+            className="relative inline-flex items-center justify-center p-[1.5px] rounded-full overflow-hidden bg-zinc-900 shadow-[0_20px_50px_rgba(0,0,0,0.9)] cursor-pointer select-none border-none outline-none z-10 transition-shadow duration-300"
           >
-            <ShoppingBag size={18} className="relative z-10 transition-transform duration-300 group-hover:scale-110" />
-            
-            <span className="relative z-10 font-bold text-sm sm:text-base">
-              {settings?.heroButtonText || "تسوق الآن — SHOP NOW"}
-            </span>
-
-            <ArrowRight
-              size={18}
-              className="relative z-10 transition-transform duration-300 group-hover:translate-x-1.5"
+            {/* 1. Conic gradient border trace layer */}
+            <motion.div
+              className="absolute w-[300%] h-[300%] -left-[100%] -top-[100%] bg-[conic-gradient(from_0deg,transparent_35%,#f59e0b_50%,transparent_65%)] pointer-events-none z-0"
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 3.5, ease: "linear" }}
             />
+
+            {/* 2. Inner Button Container */}
+            <div className="relative w-full h-full bg-zinc-950 rounded-full px-10 py-4 flex items-center gap-3.5 overflow-hidden z-10">
+              
+              {/* Liquid Gold Background Sweep */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 origin-left z-0 pointer-events-none"
+                initial={{ scaleX: 0 }}
+                variants={{
+                  hover: { scaleX: 1 }
+                }}
+                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              />
+
+              {/* Shimmer sheen gloss reflection */}
+              <motion.div
+                className="absolute inset-0 w-1/3 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 pointer-events-none z-10"
+                initial={{ left: "-50%" }}
+                variants={{
+                  hover: { left: "150%" }
+                }}
+                transition={{ duration: 0.85, ease: "easeInOut" }}
+              />
+
+              {/* Shopping Bag Icon with kinetic hover bounce */}
+              <motion.div
+                className="relative z-10 flex items-center justify-center"
+                variants={{
+                  hover: { y: [0, -3, 1, -1, 0], rotate: [0, -8, 6, -3, 0] }
+                }}
+                transition={{ duration: 0.55, ease: "easeInOut" }}
+              >
+                <ShoppingBag
+                  size={18}
+                  className="text-amber-400 group-hover:text-black transition-colors duration-300"
+                />
+              </motion.div>
+              
+              {/* Text with dynamic color transition */}
+              <span className="relative z-10 font-bold text-sm sm:text-base text-amber-400 group-hover:text-black transition-colors duration-300 tracking-wide">
+                {settings?.heroButtonText || "تسوق الآن — SHOP NOW"}
+              </span>
+
+              {/* Arrow icon with spring translation */}
+              <motion.div
+                className="relative z-10 flex items-center justify-center"
+                variants={{
+                  hover: { x: 5 }
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 10 }}
+              >
+                <ArrowRight
+                  size={18}
+                  className="text-amber-400 group-hover:text-black transition-colors duration-300"
+                />
+              </motion.div>
+            </div>
           </motion.button>
         </motion.div>
       </div>

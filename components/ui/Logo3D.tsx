@@ -48,16 +48,6 @@ export function Logo3D({ className, layers = 60, src }: Logo3DProps) {
           ease: "linear",
         }}
       >
-        {/* Crown on Top */}
-        <motion.div
-          animate={{ scale: [1, 1.15, 1] }}
-          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-          className="text-lg sm:text-2xl text-amber-400 -mb-2 z-40"
-          style={{ transform: "translateZ(10px)" }}
-        >
-          👑
-        </motion.div>
-
         {/* Ultra-Dense 3D Glued Coin Block */}
         <div
           className="relative flex items-center justify-center"
@@ -66,16 +56,20 @@ export function Logo3D({ className, layers = 60, src }: Logo3DProps) {
           {Array.from({ length: actualLayers }).map((_, i) => {
             const isFront = i === 0;
             const isBack = i === actualLayers - 1;
+            const isFrontHalf = i < actualLayers / 2;
+            
             // Tighter step = denser coin body, more solid 3D feel
             const zOffset = -i * 0.38;
-            // Total depth of the coin block
-            const totalDepth = (actualLayers - 1) * 0.38;
 
-            // Back face: place at the rear of the coin block, then rotate 180° around Y
-            // and mirror X so the logo text reads correctly when viewed from behind
-            const layerTransform = isBack
-              ? `translateZ(${-totalDepth}px) rotateY(180deg) scaleX(-1)`
-              : `translateZ(${zOffset}px)`;
+            // Front half layers face forward, back half layers face backward and are flipped to read correctly
+            const layerTransform = isFrontHalf
+              ? `translateZ(${zOffset}px)`
+              : `translateZ(${zOffset}px) rotateY(180deg) scaleX(-1)`;
+
+            // Brightness styling for depth effect (symmetrical lighting)
+            const brightnessValue = isFrontHalf
+              ? Math.max(0.25, 0.95 - i * 0.02)
+              : Math.max(0.25, 0.95 - (actualLayers - 1 - i) * 0.02);
 
             return (
               <div
@@ -85,12 +79,12 @@ export function Logo3D({ className, layers = 60, src }: Logo3DProps) {
                   top: isFront ? "auto" : 0,
                   left: isFront ? "auto" : 0,
                   transform: layerTransform,
-                  backfaceVisibility: isFront || isBack ? "hidden" : "visible",
+                  backfaceVisibility: "hidden", // Hide backface for all layers to avoid mirrored bleed-through
                   filter: isFront
                     ? "drop-shadow(0 8px 16px rgba(0,0,0,0.9))"
                     : isBack
                     ? "drop-shadow(0 6px 12px rgba(0,0,0,0.8))"
-                    : `brightness(${Math.max(0.25, 0.95 - i * 0.02)}) contrast(1.1)`,
+                    : `brightness(${brightnessValue}) contrast(1.1)`,
                   opacity: 1,
                 }}
               >
