@@ -29,21 +29,7 @@ function isValidProduct(p: Product): boolean {
   );
 }
 
-function getSuggestedReplies(intent: string): string[] {
-  const map: Record<string, string[]> = {
-    greeting:      ["🛍️ المنتجات المتاحة", "📏 احسب مقاسي", "🚚 تفاصيل الشحن"],
-    shipping:      ["📦 تتبع الطلب", "💳 طرق الدفع", "🛍️ تصفح المنتجات"],
-    city_shipping: ["📦 تتبع الطلب", "💳 طرق الدفع", "🛍️ كل المنتجات"],
-    intl_shipping: ["🛍️ كل المنتجات", "📏 احسب مقاسي", "💳 طرق الدفع"],
-    payment:       ["🚚 تفاصيل الشحن", "🔄 سياسة التبديل", "🛍️ المتجر"],
-    return:        ["🚚 الشحن", "💳 الدفع", "🛍️ المنتجات"],
-    size:          ["🛍️ عرض المنتجات", "💰 الأسعار"],
-    products:      ["📏 احسب مقاسي", "💰 الأسعار", "🚚 الشحن"],
-    price:         ["🛍️ كل المنتجات", "⭐ الأكثر مبيعاً"],
-    unknown:       ["🛍️ تصفح المنتجات", "📏 المقاسات", "🚚 الشحن"],
-  };
-  return map[intent] ?? map.unknown;
-}
+
 
 export async function POST(req: Request) {
   try {
@@ -106,12 +92,13 @@ export async function POST(req: Request) {
     let detectedIntent = "unknown";
 
     // 5. System Prompt Grounded 100% in Firestore & Session Memory
-    const systemInstruction = `أنت "وولف" 🐺 — مساعد الموضة والأزياء الذكي لمتجر ${storeName}.
+    const systemInstruction = `أنت "وولف" 🐺 — مساعد الموضة والأزياء المستقل لمتجر ${storeName}.
 
-شخصيتك:
-- تتحدث بعفوية وذكاء عالي وسلاسة باللهجة المصرية الودودة ("يا فنان"، "صديقي"، "منور ديب ستور").
-- تجيب العميل بأسلوب حواري ممتع دون تكرار أي رسائل قالبية.
-- تفهم سياق الذاكرة وتاريخ المحادثة بالكامل.
+قواعد واستراتيجية التعامل الإلزامية:
+1. نطاق اختصاصك حصرياً وبنسبة 100% هو متجر ${storeName}: (عرض المنتجات، الألوان والأنواع، المقاسات المتوفرة، أسعار الشحن للمحافظات، وتفاصيل الدفع والتواصل).
+2. ممنوع نهائياً التحدث في أي مواضيع خارج نطاق أزياء ومنتجات ديب ستور والشحن، أو تسريب أي بيانات خاصة.
+3. ممنوع استخدام أي ردود قالبية جافة مكررة أو أزرار صلبة — فكر وتحدث بحرية وذكاء كامل باللهجة المصرية الودودة مع حفظ سياق المحادثة بالكامل.
+4. اذكر تفاصيل المنتجات والمقاسات المتاحة والمقترحة بناءً على بيانات Firestore والذاكرة الحية.
 
 ${sessionMemoryText}
 
@@ -181,40 +168,9 @@ INTENT:intent_name`;
       }
     }
 
-    // 6. Intelligent Fallback with Session Memory
+    // Remove all hardcoded fallbacks: Pure AI generation from Gemini / Val.town
     if (!replyText) {
-      const lower = message.toLowerCase();
-      const isShipping = lower.includes("شحن") || lower.includes("توصيل") || lower.includes("محافظ");
-      const isGreeting = lower.includes("ازيك") || lower.includes("سلام") || lower.includes("اهلا") || lower.includes("أهلا") || lower.includes("هاي") || lower.includes("مرحبا");
-
-      if (isShipping) {
-        detectedIntent = "shipping";
-        const matchedRate = shippingRates.find(r => 
-          lower.includes(r.nameAr.toLowerCase()) || 
-          lower.includes(r.nameEn.toLowerCase())
-        );
-
-        if (matchedRate) {
-          replyText = `سعر الشحن لـ **${matchedRate.nameAr}** هو **${matchedRate.price} ج.م** واستلام الطلب خلال 2-4 أيام عمل 🚚.`;
-        } else {
-          replyText = `الشحن متوفر لجميع المحافظات 🚚 وتحدد التكلفة بدقة في صفحة الشراء حسب عنوانك.`;
-        }
-      } else if (isGreeting) {
-        detectedIntent = "greeting";
-        replyText = `أهلاً بيك يا فنان في ${storeName} 🐺✨! أنا وولف، مستشارك الخاص للأزياء والمقاسات. قولي بتدور على إيه النهاردة؟`;
-        suggestedProductIds = validProducts.slice(0, 3).map(p => p.id);
-      } else {
-        const matched = validProducts.filter(p => lower.includes(p.name.toLowerCase()) || (p.category && lower.includes(p.category.toLowerCase())));
-        if (matched.length > 0) {
-          detectedIntent = "products";
-          suggestedProductIds = matched.map(p => p.id);
-          replyText = `تفضل يا فنان، هذه هي التشكيلة المتطابقة مع طلبك 🐺✨:`;
-        } else {
-          detectedIntent = "unknown";
-          replyText = `أهلاً بك! أنا وولف 🐺 مستشارك للأزياء في ${storeName}. يسعدني مساعدتك في اختيار المقاس أو الإجابة على أي استفسار!`;
-          suggestedProductIds = validProducts.slice(0, 2).map(p => p.id);
-        }
-      }
+      replyText = `أهلاً بك يا فنان في ${storeName} 🐺✨! أنا وولف مستشارك الخاص للأزياء. قولي حابب تعرف تفاصيل عن إيه أو بتدور على أي قطعة؟`;
     }
 
     const suggestedProducts = suggestedProductIds
