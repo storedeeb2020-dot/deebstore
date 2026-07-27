@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { CartSidebar } from "@/components/cart/CartSidebar";
 import { WishlistSidebar } from "@/components/wishlist/WishlistSidebar";
 import { IntroManager } from "@/components/home/IntroManager";
+import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 
 export default function StoreLayout({
   children,
@@ -11,6 +12,7 @@ export default function StoreLayout({
 }) {
   return (
     <IntroManager>
+      <AnnouncementBar />
       <Header />
       <CartSidebar />
       <WishlistSidebar />

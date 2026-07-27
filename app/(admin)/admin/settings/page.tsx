@@ -16,13 +16,14 @@ import {
   Info,
   Ruler,
   Plus,
+  Megaphone,
 } from "lucide-react";
 import { getSiteSettings, updateSiteSettings, type SiteSettings, type GlobalSizeChart } from "@/lib/firebase/firestore";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import { Spinner } from "@/components/ui/Spinner";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 
-type SettingsTab = "hero" | "brand" | "payments" | "sizeCharts" | "contact" | "about" | "legal";
+type SettingsTab = "hero" | "brand" | "payments" | "sizeCharts" | "contact" | "about" | "legal" | "announcement";
 
 export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -60,6 +61,11 @@ export default function AdminSettingsPage() {
     facebookUrl: "https://www.facebook.com/share/1BeVGnopec/",
     tiktokUrl: "https://www.tiktok.com/@eldeeb.stoer?_r=1&_t=ZS-98MVHwLnOtM",
     currency: "EGP",
+    whatsappNumber: "201012345678",
+    announcementEnabled: false,
+    announcementText: "🔥 شحن مجاني على جميع الطلبات فوق 500 جنيه!",
+    announcementColor: "#F59E0B",
+    announcementLink: "",
     aboutTitle: "عن ديب ستور — About DEEP STORE",
     aboutSubtitle: "نحدد أسلوب الأناقة العصرية من خلال الموضة الفاخرة وخامات الستريت وير الممتازة والتصاميم الاستثنائية.",
     aboutSection1Title: "الرقي والبساطة العصرية",
@@ -177,6 +183,7 @@ export default function AdminSettingsPage() {
   const tabs = [
     { id: "payments", label: "وسائل الدفع والتفعيل", icon: CreditCard },
     { id: "sizeCharts", label: "جدول المقاسات العامة", icon: Ruler },
+    { id: "announcement", label: "شريط الإعلانات", icon: Megaphone },
     { id: "brand", label: "لوجو الهوية والنصوص", icon: Type },
     { id: "hero", label: "وسائط وصور الهيرو", icon: Sparkles },
     { id: "contact", label: "التواصل والسوشيال ميديا", icon: Phone },
@@ -692,6 +699,111 @@ export default function AdminSettingsPage() {
                 className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
               />
             </div>
+          </div>
+        )}
+
+
+        {/* TAB: ANNOUNCEMENT BAR */}
+        {activeTab === "announcement" && (
+          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+              <div className="flex items-center gap-2">
+                <Megaphone size={20} className="text-amber-400" />
+                <h2 className="font-black text-base text-amber-400">شريط الإعلانات المتحرك</h2>
+              </div>
+              <span className="text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full">
+                يظهر فوق الهيدر
+              </span>
+            </div>
+
+            {/* Enable toggle */}
+            <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+              <div>
+                <p className="text-sm font-bold text-white">تفعيل شريط الإعلانات</p>
+                <p className="text-xs text-zinc-400 mt-0.5">يظهر الشريط فوق الهيدر مع نص الإعلان</p>
+              </div>
+              <ToggleSwitch
+                checked={settings.announcementEnabled ?? false}
+                onChange={(v) => setSettings({ ...settings, announcementEnabled: v })}
+              />
+            </div>
+
+            {/* Announcement text */}
+            <div className="space-y-2">
+              <label className="block text-[11px] font-bold text-zinc-300">نص الإعلان</label>
+              <input
+                type="text"
+                placeholder="مثال: 🔥 شحن مجاني على جميع الطلبات فوق 500 جنيه!"
+                value={settings.announcementText || ""}
+                onChange={(e) => setSettings({ ...settings, announcementText: e.target.value })}
+                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+              />
+            </div>
+
+            {/* Background color */}
+            <div className="space-y-2">
+              <label className="block text-[11px] font-bold text-zinc-300">لون خلفية الشريط</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={settings.announcementColor || "#F59E0B"}
+                  onChange={(e) => setSettings({ ...settings, announcementColor: e.target.value })}
+                  className="w-12 h-10 rounded-lg border border-zinc-700 bg-transparent cursor-pointer"
+                />
+                <span className="text-xs text-zinc-400 font-mono">{settings.announcementColor || "#F59E0B"}</span>
+                {/* Quick presets */}
+                <div className="flex gap-2">
+                  {["#F59E0B", "#EF4444", "#10B981", "#3B82F6", "#8B5CF6"].map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setSettings({ ...settings, announcementColor: c })}
+                      className="w-6 h-6 rounded-full border-2 border-zinc-700 hover:scale-110 transition-transform"
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Optional link */}
+            <div className="space-y-2">
+              <label className="block text-[11px] font-bold text-zinc-300">رابط اختياري (اضغط على الإعلان)</label>
+              <input
+                type="text"
+                placeholder="مثال: /#products أو رابط خارجي"
+                value={settings.announcementLink || ""}
+                onChange={(e) => setSettings({ ...settings, announcementLink: e.target.value })}
+                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+              />
+            </div>
+
+            {/* WhatsApp number */}
+            <div className="space-y-2">
+              <label className="block text-[11px] font-bold text-zinc-300">رقم واتساب الطلبات (بدون + مثال: 201012345678)</label>
+              <input
+                type="text"
+                placeholder="201012345678"
+                value={settings.whatsappNumber || ""}
+                onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
+                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+              />
+              <p className="text-[10px] text-zinc-500">سيُستخدم في زر "اطلب عبر واتساب" في صفحة كل منتج</p>
+            </div>
+
+            {/* Live preview */}
+            {settings.announcementText && (
+              <div className="space-y-2">
+                <label className="block text-[11px] font-bold text-zinc-300">معاينة حية للشريط:</label>
+                <div
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black text-black"
+                  style={{ backgroundColor: settings.announcementColor || "#F59E0B" }}
+                >
+                  <Megaphone size={12} />
+                  <span>{settings.announcementText}</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

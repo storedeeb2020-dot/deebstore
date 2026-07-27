@@ -1,11 +1,10 @@
-"use client";
-
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, Heart } from "lucide-react";
+import { Eye, Heart, ShoppingBag, Check } from "lucide-react";
 import { useWishlist } from "@/features/wishlist/WishlistProvider";
+import { useCart } from "@/features/cart/CartProvider";
 import { formatPrice, getDiscountPercentage } from "@/lib/utils";
 import type { Product } from "@/types/product";
 
@@ -17,7 +16,9 @@ interface ProductCardProps {
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const router = useRouter();
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { addItem, openCart } = useCart();
   const isFavorite = isInWishlist(product.id);
+  const [quickBought, setQuickBought] = useState(false);
   const displayPrice = product.salePrice ?? product.price;
   const hasDiscount = product.salePrice && product.salePrice < product.price;
   const discountPct = hasDiscount
@@ -59,6 +60,19 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
   const navigateToProduct = () => {
     router.push(`/products?id=${encodeURIComponent(product.id)}`);
+  };
+
+  // Quick Buy: add first available size of first variant directly
+  const handleQuickBuy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const firstVariant = product.variants?.[0];
+    const firstSize = firstVariant?.sizes?.find((s) => s.stock > 0)?.size || "قياسي";
+    const color = firstVariant
+      ? { name: firstVariant.colorName || "افتراضي", hex: firstVariant.colorHex || "#000", image: firstVariant.image || product.mainImage || "" }
+      : { name: "افتراضي", hex: "#000", image: product.mainImage || "" };
+    addItem(product, 1, firstSize, color);
+    setQuickBought(true);
+    setTimeout(() => { setQuickBought(false); openCart(); }, 700);
   };
 
   const currentImage = allImages[currentImgIndex] ?? product.mainImage;
@@ -109,16 +123,45 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             )}
           </div>
 
-          {/* Quick View Overlay */}
-          <div className="absolute inset-0 z-10 flex items-end justify-center pb-4 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
-            <motion.span
-              className="flex items-center gap-2 bg-black/80 text-white text-xs font-bold px-4 py-2 rounded-full shadow-xl backdrop-blur-sm"
-              initial={{ y: 10, opacity: 0 }}
-              whileHover={{ scale: 1.05 }}
-            >
-              <Eye size={13} />
-              عرض المنتج
-            </motion.span>
+          {/* Hover Overlay — View + Quick Buy */}
+          <div className="absolute inset-0 z-10 flex items-end justify-center pb-4 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300">
+            <div className="flex items-center gap-2">
+              {/* View Product */}
+              <motion.span
+                className="flex items-center gap-1.5 bg-black/80 text-white text-[11px] font-bold px-3 py-2 rounded-full shadow-xl backdrop-blur-sm pointer-events-none"
+                initial={{ y: 10, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+              >
+                <Eye size={12} />
+                عرض
+              </motion.span>
+
+              {/* Quick Buy button */}
+              <motion.button
+                type="button"
+                onClick={handleQuickBuy}
+                className="flex items-center gap-1.5 text-[11px] font-black px-3 py-2 rounded-full shadow-xl backdrop-blur-sm pointer-events-auto cursor-pointer"
+                style={{
+                  background: quickBought ? "rgba(16,185,129,0.9)" : "rgba(251,191,36,0.95)",
+                  color: "#000",
+                }}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.94 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
+                <AnimatePresence mode="wait">
+                  {quickBought ? (
+                    <motion.span key="check" className="flex items-center gap-1" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                      <Check size={12} /> تمت!
+                    </motion.span>
+                  ) : (
+                    <motion.span key="buy" className="flex items-center gap-1" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                      <ShoppingBag size={12} /> اشتري
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            </div>
           </div>
 
           {/* Image slideshow dots */}

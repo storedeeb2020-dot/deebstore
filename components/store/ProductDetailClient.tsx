@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, Minus, Plus, ChevronLeft, ChevronRight, Heart, X } from "lucide-react";
+import { ShoppingBag, Minus, Plus, ChevronLeft, ChevronRight, Heart, X, Share2, MessageCircle, Copy, Check, ZoomIn } from "lucide-react";
 import { toast } from "sonner";
-import { getProductBySlug } from "@/lib/firebase/firestore";
+import { getProductBySlug, getProducts, getSiteSettings } from "@/lib/firebase/firestore";
 import { useCart } from "@/features/cart/CartProvider";
 import { useWishlist } from "@/features/wishlist/WishlistProvider";
 import { formatPrice, getDiscountPercentage } from "@/lib/utils";
@@ -22,6 +22,8 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [whatsappNumber, setWhatsappNumber] = useState("201012345678");
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
@@ -29,6 +31,8 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const { addItem, openCart } = useCart();
 
@@ -50,7 +54,6 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
               "قياسي";
             setSelectedSize(firstInStock);
           } else {
-            // Default fallback for products without variants (e.g. phone models / covers)
             setSelectedColor({
               name: "افتراضي",
               hex: "#000000",
@@ -58,10 +61,23 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
             });
             setSelectedSize("قياسي");
           }
+          // Load related products (same category, exclude current)
+          getProducts({ limitCount: 8 }).then((all) => {
+            const related = all
+              .filter((p) => p.id !== data.id && (!data.category || p.category === data.category))
+              .slice(0, 4);
+            // fallback: any products if same category is empty
+            setRelatedProducts(related.length > 0 ? related : all.filter((p) => p.id !== data.id).slice(0, 4));
+          }).catch(console.error);
         }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
+
+    // Load whatsapp number from settings
+    getSiteSettings().then((s) => {
+      if (s?.whatsappNumber) setWhatsappNumber(s.whatsappNumber);
+    }).catch(console.error);
   }, [targetSlug]);
 
   if (loading) {
@@ -134,7 +150,7 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
     const finalColor = selectedColor || {
       name: "افتراضي",
       hex: "#000000",
-      image: product.mainImage || "",
+      image: product!.mainImage || "",
     };
 
     if (sizeStock === 0) {
@@ -142,11 +158,36 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
       return;
     }
     setAdding(true);
-    addItem(product, quantity, finalSize, finalColor);
+    addItem(product!, quantity, finalSize, finalColor);
     await new Promise((r) => setTimeout(r, 400));
     setAdding(false);
-    toast.success(`تمت إضافة ${product.name} إلى السلة بنجاح!`);
+    toast.success(`تمت إضافة ${product!.name} إلى السلة بنجاح!`);
     openCart();
+  };
+
+  const handleWhatsAppOrder = () => {
+    if (!product) return;
+    const msg = encodeURIComponent(
+      `👑 DEEP STORE - طلب جديد
+المنتج: ${product.name}
+اللون: ${selectedColor?.name || "-"}
+المقاس: ${selectedSize || "-"}
+الكمية: ${quantity}
+السعر: ${formatPrice(displayPrice)}
+الرابط: ${typeof window !== "undefined" ? window.location.href : ""}`
+    );
+    window.open(`https://wa.me/${whatsappNumber}?text=${msg}`, "_blank");
+  };
+
+  const handleShare = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    if (navigator.share) {
+      try { await navigator.share({ title: product?.name, url }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const handleClose = () => {
@@ -161,24 +202,42 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
     <div className="pt-14 sm:pt-16 pb-20 min-h-screen relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
         <div className="flex items-center justify-between mb-6 pb-3 border-b border-zinc-200/60 dark:border-zinc-800/60">
-          <button
+          {/* Animated back button */}
+          <motion.button
             type="button"
             onClick={handleClose}
-            className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-500 hover:text-amber-400 transition-colors cursor-pointer group"
+            whileHover={{ x: -4 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
           >
-            <ChevronLeft size={18} />
-            <span>العودة للمتجر / Back to Shop</span>
-          </button>
+            <motion.span whileHover={{ scale: 1.2 }} className="inline-block">
+              <ChevronLeft size={18} />
+            </motion.span>
+            <span>العودة للمتجر</span>
+          </motion.button>
 
-          <button
-            type="button"
-            onClick={handleClose}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-800 flex items-center justify-center transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
-            title="إغلاق / Close"
-            aria-label="Close product details"
-          >
-            <X size={20} />
-          </button>
+          {/* Share + Close */}
+          <div className="flex items-center gap-2">
+            <motion.button
+              type="button"
+              onClick={handleShare}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 hover:text-black dark:hover:text-white text-xs font-bold transition-all border border-zinc-200/80 dark:border-zinc-800 cursor-pointer"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {copied ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+              <span>{copied ? "تم النسخ!" : "مشاركة"}</span>
+            </motion.button>
+
+            <button
+              type="button"
+              onClick={handleClose}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-800 flex items-center justify-center transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
+              title="إغلاق"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
@@ -208,6 +267,16 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
                   />
                 </motion.div>
               </AnimatePresence>
+
+              {/* Zoom button */}
+              <button
+                type="button"
+                onClick={() => setZoomOpen(true)}
+                className="absolute bottom-3 left-3 z-10 p-2 rounded-xl bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 transition-all cursor-zoom-in"
+                title="تكبير الصورة"
+              >
+                <ZoomIn size={16} />
+              </button>
 
               {galleryImages.length > 1 && (
                 <>
@@ -428,6 +497,31 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
               </button>
             </div>
 
+            {/* Share & WhatsApp order buttons */}
+            <div className="flex items-center gap-3 pt-2">
+              <motion.button
+                type="button"
+                onClick={handleWhatsAppOrder}
+                className="flex-1 h-11 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-colors cursor-pointer"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
+                <MessageCircle size={15} />
+                اطلب عبر واتساب
+              </motion.button>
+
+              <motion.button
+                type="button"
+                onClick={handleShare}
+                className="w-11 h-11 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 flex items-center justify-center hover:border-amber-400 hover:text-amber-500 transition-all cursor-pointer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {copied ? <Check size={16} className="text-emerald-500" /> : <Share2 size={16} />}
+              </motion.button>
+            </div>
+
             {sizeStock > 0 && (
               <p className="text-xs text-gray-400 mt-3">
                 {sizeStock} items available in stock
@@ -501,6 +595,94 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
           </div>
         )}
       </AnimatePresence>
+
+      {/* ─── Zoom Lightbox ─────────────────────────────────── */}
+      <AnimatePresence>
+        {zoomOpen && (
+          <motion.div
+            className="fixed inset-0 bg-black/95 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 cursor-zoom-out"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setZoomOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative max-w-3xl w-full max-h-[90vh] aspect-square"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={galleryImages[activeImage] || "/placeholder.jpg"}
+                alt={product.name}
+                fill
+                quality={100}
+                crossOrigin="anonymous"
+                className="object-contain"
+                priority
+              />
+              <button
+                onClick={() => setZoomOpen(false)}
+                className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-all"
+              >
+                <X size={18} />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Related Products ──────────────────────────────── */}
+      {relatedProducts.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-zinc-200/30 dark:border-zinc-800/30">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <p className="text-xs font-bold tracking-widest uppercase text-amber-400 mb-1">قد يعجبك أيضاً</p>
+            <h3 className="text-2xl font-black text-white mb-8">منتجات مشابهة</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+              {relatedProducts.map((rp, i) => {
+                const rpPrice = rp.salePrice ?? rp.price;
+                return (
+                  <motion.div
+                    key={rp.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    whileHover={{ y: -6 }}
+                    className="cursor-pointer group"
+                    onClick={() => router.push(`/products?id=${encodeURIComponent(rp.id)}`)}
+                  >
+                    <div className="aspect-[3/4] relative overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800 group-hover:border-amber-500/40 transition-colors">
+                      {rp.mainImage && (
+                        <Image
+                          src={rp.mainImage}
+                          alt={rp.name}
+                          fill
+                          quality={80}
+                          crossOrigin="anonymous"
+                          sizes="(max-width: 640px) 50vw, 25vw"
+                          className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
+                        />
+                      )}
+                    </div>
+                    <div className="pt-3 text-center">
+                      <p className="text-xs font-bold text-amber-400 truncate">{rp.name}</p>
+                      <p className="text-xs font-black text-white mt-1">{formatPrice(rpPrice)}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

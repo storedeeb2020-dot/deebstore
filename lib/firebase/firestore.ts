@@ -287,6 +287,13 @@ export interface SiteSettings {
   // Legal & Privacy CMS
   privacyPolicyText?: string;
   termsOfServiceText?: string;
+
+  // Announcement Bar
+  announcementEnabled?: boolean;    // تفعيل/إيقاف شريط الإعلانات
+  announcementText?: string;        // نص شريط الإعلان
+  announcementColor?: string;       // لون الخلفية hex e.g. "#F59E0B"
+  announcementLink?: string;        // رابط اختياري عند الضغط
+  whatsappNumber?: string;          // رقم واتساب الطلبات
 }
 
 export async function getSiteSettings(): Promise<SiteSettings | null> {
