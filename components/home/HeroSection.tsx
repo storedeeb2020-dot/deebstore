@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 import { getSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
@@ -10,6 +10,9 @@ export function HeroSection() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const { theme } = useTheme();
+
+  const desktopVideoRef = useRef<HTMLVideoElement>(null);
+  const mobileVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     getSiteSettings()
@@ -39,9 +42,21 @@ export function HeroSection() {
   }, [activeImageList]);
 
   const activeVideoUrl =
-    theme === "light"
-      ? settings?.heroVideoUrlLight || settings?.heroVideoUrlDark || "https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4"
-      : settings?.heroVideoUrlDark || settings?.heroVideoUrlLight || "https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4";
+    settings?.heroVideoUrlDark ||
+    settings?.heroVideoUrlLight ||
+    "https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4";
+
+  // Default to video mode unless explicitly configured as image in admin settings
+  const isVideoMode = settings?.heroMediaType === "video" || !settings?.heroMediaType || (settings?.heroMediaType !== "image");
+
+  useEffect(() => {
+    [desktopVideoRef, mobileVideoRef].forEach((ref) => {
+      if (ref.current) {
+        ref.current.muted = true;
+        ref.current.play().catch(() => {});
+      }
+    });
+  }, [activeVideoUrl, isVideoMode]);
 
   const mobileHeroImage =
     settings?.heroMobileImageUrl ||
@@ -61,14 +76,20 @@ export function HeroSection() {
       <section className="hidden md:flex relative h-screen w-full overflow-hidden bg-white dark:bg-black transition-colors flex-col items-center justify-center">
         {/* Background Media */}
         <div className="absolute inset-0 z-0">
-          {settings?.heroMediaType === "video" ? (
+          {isVideoMode ? (
             <video
+              ref={desktopVideoRef}
               key={activeVideoUrl}
               src={activeVideoUrl}
               autoPlay
               loop
               muted
               playsInline
+              preload="auto"
+              onCanPlay={(e) => {
+                e.currentTarget.muted = true;
+                e.currentTarget.play().catch(() => {});
+              }}
               className="w-full h-full object-cover"
             />
           ) : activeImageList && activeImageList.length > 0 ? (
@@ -143,15 +164,21 @@ export function HeroSection() {
       {/* ─── 2. MOBILE HERO VIEW (Matches Town Team layout: 16:9 Video Top + Full Image Banner Below) ─── */}
       <section className="block md:hidden w-full bg-white dark:bg-black overflow-hidden transition-colors">
         {/* Top Part: 16:9 Aspect Video */}
-        {settings?.heroMediaType === "video" && (
+        {isVideoMode && (
           <div className="w-full aspect-video bg-black relative overflow-hidden shadow-lg">
             <video
+              ref={mobileVideoRef}
               key={activeVideoUrl}
               src={activeVideoUrl}
               autoPlay
               loop
               muted
               playsInline
+              preload="auto"
+              onCanPlay={(e) => {
+                e.currentTarget.muted = true;
+                e.currentTarget.play().catch(() => {});
+              }}
               className="w-full h-full object-cover"
             />
           </div>
