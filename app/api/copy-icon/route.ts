@@ -23,14 +23,6 @@ export async function GET() {
       fs.copyFileSync(src, dest);
       status.copied = true;
       status.destExistsAfter = fs.existsSync(dest);
-      
-      // Also delete the old intro file if it exists
-      const oldFile = path.join(process.cwd(), "components", "intros", "NXTIntro.tsx");
-      status.oldFileExists = fs.existsSync(oldFile);
-      if (status.oldFileExists) {
-        fs.unlinkSync(oldFile);
-        status.oldFileDeleted = true;
-      }
     } else {
       status.error = "Source file does not exist at path: " + src;
     }

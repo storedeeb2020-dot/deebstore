@@ -17,12 +17,8 @@ try {
   if (fs.existsSync(src)) {
     fs.copyFileSync(src, dest);
   }
-  const oldFile = path.join(process.cwd(), "components", "intros", "NXTIntro.tsx");
-  if (fs.existsSync(oldFile)) {
-    fs.unlinkSync(oldFile);
-  }
 } catch (e) {
-  console.error("Error copying wolf icon/deleting old intro:", e);
+  console.error("Error copying wolf icon:", e);
 }
 
 const outfit = Outfit({
