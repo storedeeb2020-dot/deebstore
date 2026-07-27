@@ -3,9 +3,10 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, Send, Bot, User, ExternalLink } from "lucide-react";
+import { X, Send, Bot, User, ExternalLink, ShoppingBag, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProducts } from "@/lib/firebase/firestore";
+import { useCart } from "@/features/cart/CartProvider";
 import { db } from "@/lib/firebase/config";
 import { doc, setDoc, arrayUnion, serverTimestamp } from "firebase/firestore";
 import type { Product } from "@/types/product";
@@ -30,6 +31,281 @@ interface ChatMessage {
   suggestedProducts?: SuggestedProduct[];
   suggestedReplies?: string[];
   intent?: string;
+}
+
+// Subcomponent for rich product cards with instant Add to Cart
+function ChatProductCard({
+  product,
+  onCloseChat,
+}: {
+  product: SuggestedProduct;
+  onCloseChat: () => void;
+}) {
+  const { addItem, openCart } = useCart();
+  const [added, setAdded] = useState(false);
+
+  const variants = product.variants && product.variants.length > 0 ? product.variants : [
+    { colorName: "أسود", colorHex: "#000000", sizes: [{ size: "M", stock: 10 }, { size: "L", stock: 10 }, { size: "XL", stock: 10 }] }
+  ];
+
+  const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
+  const currentVariant = variants[selectedVariantIdx] || variants[0];
+  
+  const availableSizes = currentVariant.sizes?.map((s) => s.size) || ["S", "M", "L", "XL"];
+  const [selectedSize, setSelectedSize] = useState<string>(availableSizes[0] || "M");
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const fullProduct: Product = {
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      salePrice: product.salePrice,
+      mainImage: product.mainImage,
+      category: product.category,
+      images: [product.mainImage],
+      description: "",
+      stock: 100,
+      createdAt: "",
+      updatedAt: "",
+    };
+
+    addItem(
+      fullProduct,
+      1,
+      selectedSize,
+      {
+        name: currentVariant.colorName || "افتراضي",
+        hex: currentVariant.colorHex || "#000000",
+        image: product.mainImage || "",
+      }
+    );
+
+    setAdded(true);
+    setTimeout(() => {
+      setAdded(false);
+      onCloseChat();
+      openCart();
+    }, 800);
+  };
+
+  return (
+    <div className="flex flex-col gap-2 p-2.5 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 transition-all shadow-md">
+      <div className="flex items-center gap-2.5">
+        {product.mainImage && (
+          <img
+            src={product.mainImage}
+            alt={product.name}
+            className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-zinc-700/80"
+          />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1 mb-0.5">
+            <p className="font-bold text-zinc-100 text-xs truncate flex-1">{product.name}</p>
+            {product.bestSeller && <span className="text-[8px] bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded px-1 flex-shrink-0">⭐ مبيعاً</span>}
+          </div>
+          <p className="text-[10px] text-zinc-400">{product.category}</p>
+          <p className="text-xs font-extrabold text-amber-400 mt-0.5">
+            {product.salePrice ? (
+              <>
+                <span>{product.salePrice} ج.م</span>
+                <span className="line-through text-zinc-600 mr-1 font-normal">{product.price}</span>
+              </>
+            ) : (
+              <span>{product.price} ج.م</span>
+            )}
+          </p>
+        </div>
+        <Link
+          href={`/products/${product.slug}`}
+          onClick={onCloseChat}
+          className="p-1.5 text-zinc-500 hover:text-amber-400 transition-colors"
+          title="عرض التفاصيل"
+        >
+          <ExternalLink size={14} />
+        </Link>
+      </div>
+
+      {/* Color selection */}
+      {variants.length > 0 && (
+        <div className="flex items-center gap-1.5 pt-1 border-t border-zinc-800/60">
+          <span className="text-[10px] text-zinc-400 font-semibold">اللون:</span>
+          <div className="flex gap-1 flex-wrap">
+            {variants.map((v, vi) => (
+              <button
+                key={vi}
+                type="button"
+                onClick={() => {
+                  setSelectedVariantIdx(vi);
+                  if (v.sizes && v.sizes.length > 0) {
+                    setSelectedSize(v.sizes[0].size);
+                  }
+                }}
+                title={v.colorName}
+                className={`w-4 h-4 rounded-full border transition-all cursor-pointer ${
+                  selectedVariantIdx === vi ? "border-amber-400 scale-110 shadow-sm shadow-amber-400/40" : "border-zinc-700 opacity-70"
+                }`}
+                style={{ backgroundColor: v.colorHex || "#555" }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Size selection & Add to Cart button */}
+      <div className="flex items-center justify-between gap-2 pt-1">
+        <div className="flex gap-1 flex-wrap">
+          {availableSizes.slice(0, 5).map((sz) => (
+            <button
+              key={sz}
+              type="button"
+              onClick={() => setSelectedSize(sz)}
+              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                selectedSize === sz
+                  ? "bg-amber-500 text-black border-amber-400 shadow-sm"
+                  : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:border-zinc-600"
+              }`}
+            >
+              {sz}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          disabled={added}
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer shadow-md flex-shrink-0 ${
+            added
+              ? "bg-emerald-600 text-white"
+              : "bg-gradient-to-r from-amber-500 to-amber-400 text-black hover:from-amber-400 hover:to-yellow-300"
+          }`}
+        >
+          {added ? (
+            <>
+              <Check size={13} className="stroke-[3]" />
+              <span>تمت الإضافة</span>
+            </>
+          ) : (
+            <>
+              <ShoppingBag size={13} />
+              <span>أضف للسلة</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Direct WhatsApp Quick Order Button */}
+      <WhatsAppOrderButton
+        productName={product.name}
+        size={selectedSize}
+        color={currentVariant.colorName || "افتراضي"}
+        price={product.salePrice || product.price}
+      />
+    </div>
+  );
+}
+
+// Subcomponent for direct WhatsApp Order button generator
+function WhatsAppOrderButton({
+  productName,
+  size,
+  color,
+  price,
+  phone = "201020451206",
+}: {
+  productName: string;
+  size: string;
+  color: string;
+  price: number;
+  phone?: string;
+}) {
+  const [name, setName] = useState("");
+  const [address, setAddress] = useState("");
+  const [userPhone, setUserPhone] = useState("");
+  const [showForm, setShowForm] = useState(false);
+
+  const cleanPhone = phone.replace(/\D/g, "");
+
+  const handleSendWhatsApp = (e: React.FormEvent) => {
+    e.preventDefault();
+    const message = `👋 مرحباً DEEP STORE! أريد تأكيد طلب جديد من خلال مساعد وولف 🐺:
+- **المنتج:** ${productName}
+- **اللون:** ${color}
+- **المقاس:** ${size}
+- **السعر:** ${price} ج.م
+- **اسم العميل:** ${name || "غير محدد"}
+- **رقم الهاتف:** ${userPhone || "غير محدد"}
+- **العنوان:** ${address || "غير محدد"}`;
+
+    const encoded = encodeURIComponent(message);
+    const waUrl = `https://wa.me/${cleanPhone}?text=${encoded}`;
+    window.open(waUrl, "_blank");
+  };
+
+  if (!showForm) {
+    return (
+      <button
+        type="button"
+        onClick={() => setShowForm(true)}
+        className="w-full mt-2 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+      >
+        <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+        <span>إتمام طلب (${productName}) عبر الواتساب 💬</span>
+      </button>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSendWhatsApp} className="mt-2.5 p-3 rounded-2xl bg-zinc-950 border border-emerald-500/40 text-xs space-y-2 dir-rtl text-right">
+      <div className="flex items-center justify-between border-b border-zinc-800 pb-1.5 mb-2">
+        <span className="font-extrabold text-emerald-400">تأكيد طلب الواتساب المباشر 💬</span>
+        <button type="button" onClick={() => setShowForm(false)} className="text-zinc-500 hover:text-white text-[10px]">إلغاء</button>
+      </div>
+      <div>
+        <label className="text-[10px] text-zinc-400 block mb-0.5">الاسم بالكامل *</label>
+        <input
+          type="text"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="أدخل اسمك الكريم"
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-white placeholder-zinc-600 text-xs focus:outline-none focus:border-emerald-500"
+        />
+      </div>
+      <div>
+        <label className="text-[10px] text-zinc-400 block mb-0.5">رقم الموبايل *</label>
+        <input
+          type="tel"
+          required
+          value={userPhone}
+          onChange={(e) => setUserPhone(e.target.value)}
+          placeholder="010xxxxxxx"
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-white placeholder-zinc-600 text-xs focus:outline-none focus:border-emerald-500"
+        />
+      </div>
+      <div>
+        <label className="text-[10px] text-zinc-400 block mb-0.5">المحافظة والعنوان بالتفصيل *</label>
+        <input
+          type="text"
+          required
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder="المحافظة - الحي - الشارع"
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-white placeholder-zinc-600 text-xs focus:outline-none focus:border-emerald-500"
+        />
+      </div>
+      <button
+        type="submit"
+        className="w-full mt-1.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-extrabold text-xs shadow-lg hover:from-emerald-400 hover:to-teal-300 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+      >
+        <span>إرسال تفاصيل الطلب للواتساب الآن 🚀</span>
+      </button>
+    </form>
+  );
 }
 
 // Component to render clickable product links inside chatbot messages
@@ -309,8 +585,12 @@ export function ChatBot() {
               </button>
             </div>
 
-            {/* Messages Container */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-black/80 scrollbar-thin scrollbar-thumb-zinc-800">
+            {/* Messages Container with Strict Scroll Isolation */}
+            <div 
+              className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-black/80 scrollbar-thin scrollbar-thumb-amber-500/30 overscroll-contain touch-pan-y"
+              onWheel={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
               {messages.map((msg) => (
                 <div
                   key={msg.id}
@@ -336,61 +616,17 @@ export function ChatBot() {
                     }`}
                   >
                     <FormattedMessageText text={msg.text} onCloseChat={() => setIsOpen(false)} />
-                    {/* Rich Product Cards */}
+                    
+                    {/* Rich Product Cards with Direct Add to Cart */}
                     {msg.suggestedProducts && msg.suggestedProducts.length > 0 && (
                       <div className="mt-2 flex flex-col gap-2">
                         {msg.suggestedProducts
                           .filter((p) => p.name && p.name.trim().length >= 3 && p.slug && p.price > 0 && p.price < 50000)
                           .map((p) => (
-                          <Link
-                            key={p.id}
-                            href={`/products/${p.slug}`}
-                            onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-2.5 p-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 border border-zinc-700/60 hover:border-amber-500/50 transition-all group"
-                          >
-                            {p.mainImage && (
-                              <img
-                                src={p.mainImage}
-                                alt={p.name}
-                                className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-zinc-700"
-                              />
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1 mb-0.5">
-                                <p className="font-bold text-zinc-100 text-xs truncate group-hover:text-amber-300 transition-colors flex-1">{p.name}</p>
-                                {p.bestSeller && <span className="text-[8px] bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded px-1 flex-shrink-0">⭐ مبيعاً</span>}
-                                {p.isNewArrival && <span className="text-[8px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded px-1 flex-shrink-0">جديد</span>}
-                              </div>
-                              <p className="text-[10px] text-zinc-500">{p.category}</p>
-                              <p className="text-xs font-extrabold text-amber-400 mt-0.5">
-                                {p.salePrice ? (
-                                  <>
-                                    <span>{p.salePrice} ج.م</span>
-                                    <span className="line-through text-zinc-600 mr-1 font-normal">{p.price}</span>
-                                  </>
-                                ) : (
-                                  <span>{p.price} ج.م</span>
-                                )}
-                              </p>
-                              {p.variants && p.variants.length > 0 && (
-                                <div className="flex gap-1 mt-1 flex-wrap">
-                                  {p.variants.slice(0, 4).map((v, vi) => (
-                                    <span
-                                      key={vi}
-                                      title={v.colorName}
-                                      className="w-3 h-3 rounded-full border border-zinc-600 flex-shrink-0"
-                                      style={{ backgroundColor: v.colorHex || "#555" }}
-                                    />
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                            <ExternalLink size={12} className="text-zinc-600 group-hover:text-amber-400 transition-colors flex-shrink-0" />
-                          </Link>
-                        ))}
+                            <ChatProductCard key={p.id} product={p} onCloseChat={() => setIsOpen(false)} />
+                          ))}
                       </div>
                     )}
-
                   </div>
                 </div>
               ))}
