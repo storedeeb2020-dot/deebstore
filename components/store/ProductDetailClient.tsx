@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, Minus, Plus, ChevronLeft, ChevronRight, Heart, X, Share2, MessageCircle, Copy, Check, ZoomIn } from "lucide-react";
+import { ShoppingBag, Minus, Plus, ChevronLeft, ChevronRight, Heart, X, Share2, MessageCircle, Check, ZoomIn } from "lucide-react";
 import { toast } from "sonner";
 import { getProductBySlug, getProducts, getSiteSettings } from "@/lib/firebase/firestore";
 import { useCart } from "@/features/cart/CartProvider";

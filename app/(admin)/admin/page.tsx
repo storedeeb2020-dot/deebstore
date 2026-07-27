@@ -16,7 +16,6 @@ import {
 import { getOrders, getProducts } from "@/lib/firebase/firestore";
 import { formatPrice, formatDate } from "@/lib/utils";
 import type { Order } from "@/types/order";
-import type { Product } from "@/types/product";
 import { Spinner } from "@/components/ui/Spinner";
 
 // ─── Types ────────────────────────────────────────────────
@@ -179,8 +178,8 @@ export default function AdminDashboardPage() {
           dayMap[key] = 0;
         }
         orders.forEach((o) => {
-          const ts = o.createdAt as any;
-          const date: Date = ts?.toDate ? ts.toDate() : new Date(ts);
+          const ts = o.createdAt as { toDate?: () => Date } | Date | string | number;
+          const date: Date = ts && typeof ts === "object" && "toDate" in ts && ts.toDate ? ts.toDate() : new Date(ts as string | number | Date);
           const key = date.toLocaleDateString("en-CA");
           if (key in dayMap && o.status !== "cancelled") {
             dayMap[key] += o.total;

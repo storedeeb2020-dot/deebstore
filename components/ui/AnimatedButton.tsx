@@ -105,11 +105,6 @@ export function AnimatedButton({
 }
 
 // ─── Animated Link ────────────────────────────────────────
-interface AnimatedLinkProps {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-}
 
 export function AnimatedNavLink({ children, className }: { children: React.ReactNode; className?: string }) {
   return (

@@ -788,7 +788,7 @@ export default function AdminSettingsPage() {
                 onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
                 className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
               />
-              <p className="text-[10px] text-zinc-500">سيُستخدم في زر "اطلب عبر واتساب" في صفحة كل منتج</p>
+              <p className="text-[10px] text-zinc-500">سيُستخدم في زر &quot;اطلب عبر واتساب&quot; في صفحة كل منتج</p>
             </div>
 
             {/* Live preview */}
