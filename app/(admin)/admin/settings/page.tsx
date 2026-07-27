@@ -48,7 +48,7 @@ export default function AdminSettingsPage() {
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
 
   const [settings, setSettings] = useState<SiteSettings>({
-    storeName: "DEEP STORE",
+    storeName: "DEEB STORE",
     logoUrl: "/logo.png",
     heroTagline: "ديب ستور — عالم الموضة والستريت وير الفاخر 🐺",
     heroButtonText: "تسوق الآن — SHOP NOW",
@@ -59,7 +59,7 @@ export default function AdminSettingsPage() {
     heroImagesDark: [],
     featuredTitle: "التشكيلات العصرية",
     featuredSubtitle: "مصممة بعناية لتناسب أسلوب حياتك",
-    introTagline: "DEEP STORE ROYAL STREETWEAR 🐺",
+    introTagline: "DEEB STORE ROYAL STREETWEAR 🐺",
     footerDescription: "متجر ديب ستور الفاخر لملابس الستريت وير والموضة العصرية في مصر والوطن العربي.",
     storeEmail: "storedeeb2020@gmail.com",
     storePhone: "+20 101 234 5678",
@@ -79,10 +79,10 @@ export default function AdminSettingsPage() {
     announcementText: "🔥 شحن مجاني على جميع الطلبات فوق 500 جنيه!",
     announcementColor: "#F59E0B",
     announcementLink: "",
-    aboutTitle: "عن ديب ستور — About DEEP STORE",
+    aboutTitle: "عن ديب ستور — About DEEB STORE",
     aboutSubtitle: "نحدد أسلوب الأناقة العصرية من خلال الموضة الفاخرة وخامات الستريت وير الممتازة والتصاميم الاستثنائية.",
     aboutSection1Title: "الرقي والبساطة العصرية",
-    aboutSection1Text: "في ديب ستور DEEP STORE، نؤمن بأن الأسلوب هو انعكاس للهوية. نصمم ملابس تبرز خطوط الأناقة وتعتمد على الخامات الفاخرة التي تدوم طويلاً وتمنحك التميز المطلق.",
+    aboutSection1Text: "في ديب ستور DEEB STORE، نؤمن بأن الأسلوب هو انعكاس للهوية. نصمم ملابس تبرز خطوط الأناقة وتعتمد على الخامات الفاخرة التي تدوم طويلاً وتمنحك التميز المطلق.",
     aboutSection1Image: "",
     aboutSection2Title: "جودة بدون مساومة",
     aboutSection2Text: "نختار أجود أنواع الأقمشة لضمان أقصى درجات الراحة والمتانة مع كل قطعة ترتديها.",
@@ -98,7 +98,7 @@ export default function AdminSettingsPage() {
 
 للتواصل معنا بشأن الخصوصية: storedeeb2020@gmail.com`,
     termsOfServiceText: `الموافقة على الشروط:
-استخدامك لمتجر ديب ستور DEEP STORE يعني موافقتك الكاملة على هذه الشروط والأحكام.
+استخدامك لمتجر ديب ستور DEEB STORE يعني موافقتك الكاملة على هذه الشروط والأحكام.
 
 الطلبات والدفع:
 جميع الطلبات تخضع لتوافر المنتج. يتم الدفع عن طريق الدفع عند الاستلام، فودافون كاش، أو انستاباي.
@@ -640,10 +640,11 @@ export default function AdminSettingsPage() {
                           const url = await uploadVideoToCloudinary(file);
                           setSettings((prev) => ({
                             ...prev,
+                            heroMediaType: "video",
                             heroVideoUrlDark: url,
                             heroVideoUrlLight: url,
                           }));
-                          toast.success("تم رفع الفيديو بنجاح 🐺", { id: loadingToast });
+                          toast.success("تم رفع الفيديو وتفعيله للواجهة بنجاح 🐺", { id: loadingToast });
                         } catch (err) {
                           console.error(err);
                           toast.error("فشل رفع الفيديو، يرجى تجربة ملف آخر", { id: loadingToast });
@@ -661,7 +662,7 @@ export default function AdminSettingsPage() {
                       type="text"
                       placeholder="أو أدخل رابط الفيديو يدويًا..."
                       value={settings.heroVideoUrlDark || ""}
-                      onChange={(e) => setSettings({ ...settings, heroVideoUrlDark: e.target.value, heroVideoUrlLight: e.target.value })}
+                      onChange={(e) => setSettings({ ...settings, heroMediaType: "video", heroVideoUrlDark: e.target.value, heroVideoUrlLight: e.target.value })}
                       className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 font-mono"
                     />
                   </div>

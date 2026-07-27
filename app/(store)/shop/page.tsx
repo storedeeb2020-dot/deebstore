@@ -70,7 +70,7 @@ function ShopContent() {
       {/* Header */}
       <div className="text-center mb-10">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 text-amber-500 flex items-center justify-center gap-2">
-          تشكيلة منتجات DEEP STORE <img src="/api/wolf-icon" alt="Wolf" className="w-8 h-8 object-contain invert mix-blend-screen" />
+          تشكيلة منتجات DEEB STORE <img src="/api/wolf-icon" alt="Wolf" className="w-8 h-8 object-contain invert mix-blend-screen" />
         </h1>
         <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
           تصفح أحدث تصاميم الملابس والأزياء الفاخرة المصممة بعناية لتعكس أسلوبك الخاص.

@@ -193,7 +193,7 @@ export function Header() {
             >
               <div className="flex items-center justify-between absolute top-6 left-6 right-6 border-b border-gray-100 dark:border-zinc-900 pb-4">
                 <span className="text-lg font-black tracking-tighter text-amber-500 flex items-center gap-1.5">
-                  DEEP STORE <img src="/api/wolf-icon" alt="Wolf" className="w-5 h-5 object-contain dark:invert" />
+                  DEEB STORE <img src="/api/wolf-icon" alt="Wolf" className="w-5 h-5 object-contain dark:invert" />
                 </span>
                 <button
                   onClick={() => setMobileOpen(false)}

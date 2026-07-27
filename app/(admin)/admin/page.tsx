@@ -274,7 +274,7 @@ export default function AdminDashboardPage() {
         <div>
           <h1 className="text-3xl font-black tracking-tight text-white">نظرة عامة والتحليلات الحية 🐺</h1>
           <p className="text-zinc-400 text-xs mt-1">
-            متابعة إحصائيات المبيعات، الطلبات الحية، وإدارة منتجات DEEP STORE.
+            متابعة إحصائيات المبيعات، الطلبات الحية، وإدارة منتجات DEEB STORE.
           </p>
         </div>
         <div className="flex gap-3">

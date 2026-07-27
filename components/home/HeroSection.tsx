@@ -48,16 +48,39 @@ export function HeroSection() {
     }
   }, [activeImageList]);
 
-  // Default to video mode unless explicitly configured as image in admin settings
-  const isVideoMode = settings?.heroMediaType === "video" || !settings?.heroMediaType || (settings?.heroMediaType !== "image");
+  // Enable video mode whenever video is set or no image list exists
+  const isVideoMode =
+    settings?.heroMediaType === "video" ||
+    !settings?.heroMediaType ||
+    (settings?.heroMediaType === "image" && activeImageList.length === 0);
 
+  // Force play on all video elements
   useEffect(() => {
-    [desktopVideoRef, mobileVideoRef].forEach((ref) => {
-      if (ref.current) {
-        ref.current.muted = true;
-        ref.current.play().catch(() => {});
+    const triggerPlay = (v: HTMLVideoElement | null) => {
+      if (v) {
+        v.muted = true;
+        v.playsInline = true;
+        v.setAttribute("muted", "true");
+        v.setAttribute("playsinline", "true");
+        v.play().catch(() => {});
       }
-    });
+    };
+
+    triggerPlay(desktopVideoRef.current);
+    triggerPlay(mobileVideoRef.current);
+
+    const handleUserTouch = () => {
+      triggerPlay(desktopVideoRef.current);
+      triggerPlay(mobileVideoRef.current);
+    };
+
+    window.addEventListener("touchstart", handleUserTouch, { once: true });
+    window.addEventListener("click", handleUserTouch, { once: true });
+
+    return () => {
+      window.removeEventListener("touchstart", handleUserTouch);
+      window.removeEventListener("click", handleUserTouch);
+    };
   }, [videoSrc, isVideoMode]);
 
   const mobileHeroImage =
@@ -82,7 +105,6 @@ export function HeroSection() {
             <video
               ref={desktopVideoRef}
               key={videoSrc}
-              src={videoSrc}
               autoPlay
               loop
               muted
@@ -97,7 +119,10 @@ export function HeroSection() {
                 e.currentTarget.play().catch(() => {});
               }}
               className="w-full h-full object-cover"
-            />
+            >
+              <source src={videoSrc} type="video/mp4" />
+              <source src={videoSrc} />
+            </video>
           ) : activeImageList && activeImageList.length > 0 ? (
             <div className="relative w-full h-full bg-black">
               <AnimatePresence mode="wait">
@@ -123,7 +148,7 @@ export function HeroSection() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <motion.img
             src="/logo.png"
-            alt="DEEP STORE"
+            alt="DEEB STORE"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
@@ -173,7 +198,6 @@ export function HeroSection() {
             <video
               ref={mobileVideoRef}
               key={videoSrc}
-              src={videoSrc}
               autoPlay
               loop
               muted
@@ -185,7 +209,10 @@ export function HeroSection() {
                 e.currentTarget.play().catch(() => {});
               }}
               className="w-full h-full object-cover"
-            />
+            >
+              <source src={videoSrc} type="video/mp4" />
+              <source src={videoSrc} />
+            </video>
           </div>
         )}
 

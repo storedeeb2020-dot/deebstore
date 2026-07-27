@@ -69,7 +69,7 @@ export function Footer() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.png"
-              alt="DEEP STORE Logo"
+              alt="DEEB STORE Logo"
               className="h-8 w-auto object-contain dark:invert"
             />
             <p className="mt-4 text-zinc-600 dark:text-gray-400 text-sm leading-relaxed max-w-sm">

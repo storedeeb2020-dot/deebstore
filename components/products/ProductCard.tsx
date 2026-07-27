@@ -201,7 +201,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 </motion.div>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-amber-500/40 text-3xl font-black tracking-widest">DEEP</span>
+                  <span className="text-amber-500/40 text-3xl font-black tracking-widest">DEEB</span>
                 </div>
               )}
             </AnimatePresence>

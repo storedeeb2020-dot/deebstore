@@ -59,12 +59,12 @@ export const metadata: Metadata = {
     "ملابس بحر رجالي",
     "مايوه بحر",
     "شورتات شاطئ",
-    "DEEP STORE",
-    "DEEP STORE Egypt",
-    "DEEP Streetwear",
-    "DEEP Clothing",
-    "DEEP Fashion",
-    "براند DEEP STORE",
+    "DEEB STORE",
+    "DEEB STORE Egypt",
+    "DEEB Streetwear",
+    "DEEB Clothing",
+    "DEEB Fashion",
+    "براند DEEB STORE",
 
     // 2. ملابس وفئات المتجر (Categories & Apparel)
     "ملابس الديب ستور",

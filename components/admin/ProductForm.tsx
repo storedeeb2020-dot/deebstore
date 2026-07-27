@@ -62,7 +62,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           price: initialData.price,
           salePrice: initialData.salePrice,
           category: initialData.category || "",
-          brand: initialData.brand || "DEEP STORE",
+          brand: initialData.brand || "DEEB STORE",
           mainImage: initialData.mainImage,
           variants: initialData.variants,
           featured: initialData.featured ?? false,
@@ -73,7 +73,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
         }
       : {
           category: "",
-          brand: "DEEP STORE",
+          brand: "DEEB STORE",
           variants: [],
           featured: false,
           bestSeller: false,

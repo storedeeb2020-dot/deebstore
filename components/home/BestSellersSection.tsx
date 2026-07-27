@@ -50,7 +50,7 @@ export function BestSellersSection() {
             أفضل المبيعات <span className="text-amber-500 font-light font-mono text-xl sm:text-2xl">/ BEST SELLERS</span>
           </motion.h2>
           <p className="text-xs sm:text-sm text-gray-500 dark:text-zinc-400">
-            التصاميم والتشكيلات الأكثر رواجاً وشعبية لدى عملاء DEEP STORE.
+            التصاميم والتشكيلات الأكثر رواجاً وشعبية لدى عملاء DEEB STORE.
           </p>
         </div>
 

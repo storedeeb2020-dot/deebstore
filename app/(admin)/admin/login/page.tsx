@@ -62,8 +62,8 @@ export default function AdminLoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="DEEP STORE Logo" className="h-14 w-auto mx-auto object-contain drop-shadow-[0_0_15px_rgba(212,175,55,0.6)] mb-3" />
-          <h1 className="text-2xl font-black text-amber-400 tracking-wider">DEEP STORE 🐺</h1>
+          <img src="/logo.png" alt="DEEB STORE Logo" className="h-14 w-auto mx-auto object-contain drop-shadow-[0_0_15px_rgba(212,175,55,0.6)] mb-3" />
+          <h1 className="text-2xl font-black text-amber-400 tracking-wider">DEEB STORE 🐺</h1>
           <p className="text-zinc-400 text-xs mt-1">سجّل دخولك للتحكم الكامل في المتجر الإداري</p>
         </div>
 

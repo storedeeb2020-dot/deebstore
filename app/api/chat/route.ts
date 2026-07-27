@@ -55,7 +55,7 @@ export async function POST(req: Request) {
 
     const validProducts = productsList.filter(isValidProduct);
 
-    const storeName = siteSettings?.storeName || "DEEP STORE";
+    const storeName = siteSettings?.storeName || "DEEB STORE";
     const storePhone = siteSettings?.storePhone || siteSettings?.whatsappNumber || "المتاح بصفحة التواصل";
     const vodafoneNumber = siteSettings?.vodafoneCash || "المتاح بصفحة الدفع";
     const instapayTag = siteSettings?.instapayUsername || "المتاح بصفحة الدفع";
