@@ -2,6 +2,74 @@ import { NextResponse } from "next/server";
 import { getProducts } from "@/lib/firebase/firestore";
 import type { Product } from "@/types/product";
 
+// ─── Products Cache (5 min TTL) ───────────────────────────────────────────────
+let _productsCache: Product[] = [];
+let _cacheTimestamp = 0;
+const CACHE_TTL = 5 * 60 * 1000;
+
+async function getCachedProducts(): Promise<Product[]> {
+  if (Date.now() - _cacheTimestamp < CACHE_TTL && _productsCache.length > 0) {
+    return _productsCache;
+  }
+  try {
+    _productsCache = await getProducts();
+    _cacheTimestamp = Date.now();
+  } catch (e) {
+    console.error("Products fetch error in Chat API:", e);
+  }
+  return _productsCache;
+}
+
+// ─── Egyptian Cities & International Dictionary ─────────────────────────────
+const EGYPT_CITIES = [
+  "قاهره", "القاهرة", "قاهرة", "اسكندريه", "اسكندرية", "الاسكندرية",
+  "جيزه", "الجيزة", "جيزة", "منصوره", "المنصورة", "منصورة",
+  "اسيوط", "أسيوط", "سوهاج", "أسوان", "اسوان", "قنا", "الأقصر", "الاقصر",
+  "مرسى مطروح", "مطروح", "الاسماعيلية", "اسماعيليه", "اسماعيلية",
+  "بورسعيد", "السويس", "سويس", "شرم", "الغردقة", "الغردقه", "غردقة",
+  "الفيوم", "فيوم", "بني سويف", "المنيا", "منيا", "المنوفية", "منوفيه",
+  "البحيرة", "بحيرة", "الشرقية", "شرقية", "الدقهلية", "دقهلية", "دمياط",
+  "كفر الشيخ", "كفر شيخ", "الوادي الجديد", "طنطا", "الزقازيق", "زقازيق",
+  "شبين", "دمنهور", "قليوبية", "قليوبيه", "العريش", "بنها", "المحلة", "محله"
+];
+
+const INTERNATIONAL_KEYWORDS = [
+  "برا مصر", "خارج مصر", "دول تانية", "دول اخرى", "دول أخرى",
+  "abroad", "international", "outside egypt", "خارج", "بره مصر",
+  "السعودية", "الامارات", "الإمارات", "الكويت", "قطر", "البحرين",
+  "الاردن", "الأردن", "لبنان", "ليبيا", "تونس", "المغرب", "العراق", "اليمن"
+];
+
+const STORE_POLICIES = {
+  returns: "سياسة الإرجاع 🔄\n- الإرجاع مقبول خلال 7 أيام من الاستلام بشرط المعاينة وسلامة القطعة.\n- التبديل بالمقاس متاح خلال 14 يوم.",
+  shipping: "تفاصيل الشحن 🚚\n- متاح لكل محافظات مصر في 2-4 أيام عمل.\n- تكلفة الشحن تحدد بالدقة عند صفحة الدفع.",
+  payment: "طرق الدفع 💳\n- دفع عند الاستلام 🚪\n- فودافون كاش 📱\n- انستاباي 💳"
+};
+
+function isValidProduct(p: Product): boolean {
+  return !!(
+    p.name && p.name.trim().length >= 3 &&
+    p.slug && p.slug.trim().length >= 2 &&
+    typeof p.price === "number" && p.price > 0 && p.price < 50000
+  );
+}
+
+function getSuggestedReplies(intent: string): string[] {
+  const map: Record<string, string[]> = {
+    greeting:      ["🛍️ كل المنتجات", "📏 احسب مقاسي", "🚚 الشحن والتوصيل", "💳 طرق الدفع"],
+    shipping:      ["📦 تتبع طلب", "💳 طرق الدفع", "🛍️ تصفح المنتجات"],
+    city_shipping: ["📦 تتبع طلب", "💳 طرق الدفع", "🛍️ كل المنتجات"],
+    intl_shipping: ["🛍️ كل المنتجات", "📏 احسب مقاسي", "💳 طرق الدفع"],
+    payment:       ["🚚 الشحن والتوصيل", "🔄 الإرجاع والتبديل", "🛍️ تصفح المنتجات"],
+    return:        ["🚚 الشحن والتوصيل", "💳 طرق الدفع", "🛍️ كل المنتجات"],
+    size:          ["🛍️ عرض المنتجات", "💰 الأسعار", "🎨 الألوان"],
+    products:      ["📏 احسب مقاسي", "💰 الأسعار", "🎨 الألوان المتاحة"],
+    price:         ["🛍️ كل المنتجات", "📏 احسب مقاسي", "⭐ الأكثر مبيعاً"],
+    unknown:       ["🛍️ كل المنتجات", "📏 احسب مقاسي", "🚚 الشحن"],
+  };
+  return map[intent] ?? map.unknown;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -9,74 +77,62 @@ export async function POST(req: Request) {
     const history: { role: string; text: string }[] = body.history || [];
 
     if (!message || typeof message !== "string") {
-      return NextResponse.json(
-        { error: "الرجاء إدخال رسالة نصية صحيحة." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "الرجاء إدخال رسالة صحيحة." }, { status: 400 });
     }
 
-    // 1. Fetch actual products from Firestore database
-    let productsList: Product[] = [];
-    try {
-      productsList = await getProducts();
-    } catch (e) {
-      console.error("Error fetching products inside chatbot API:", e);
-    }
+    // 1. Fetch & Filter Products
+    const productsList = await getCachedProducts();
+    const validProducts = productsList.filter(isValidProduct);
 
-    // 2. Build rich structured catalog for the AI (with product IDs)
-    // Filter out corrupt/test products first
-    const validProductsForCatalog = productsList.filter((p) =>
-      p.name && p.name.trim().length >= 3 &&
-      p.slug && p.slug.trim().length >= 2 &&
-      typeof p.price === "number" && p.price > 0 && p.price < 50000
-    );
-
-    const catalogLines = validProductsForCatalog.map((p) => {
-      const priceText = p.salePrice
-        ? `${p.salePrice} ج.م (بدلاً من ${p.price} ج.م)`
-        : `${p.price} ج.م`;
+    const catalogLines = validProducts.map((p) => {
+      const priceText = p.salePrice ? `${p.salePrice} ج.م (بدلاً من ${p.price} ج.م)` : `${p.price} ج.م`;
       const colors = p.variants?.map((v) => v.colorName).filter(Boolean).join("، ") || "متعدد";
-      const sizes = p.variants?.[0]?.sizes?.map((s) => `${s.size}(${s.stock > 0 ? "متوفر" : "نفد"})`).join(" ") || "S M L XL XXL";
-      const desc = (p.description || "").slice(0, 120).replace(/\n/g, " ");
-      return `[${p.id}] ${p.name} | سعر: ${priceText} | تصنيف: ${p.category} | ألوان: ${colors} | مقاسات: ${sizes} | وصف: ${desc} | رابط: /products/${p.slug}`;
+      const sizes = p.variants?.[0]?.sizes?.map((s) => `${s.size}(${s.stock > 0 ? "✓" : "✗"})`).join(" ") || "S M L XL XXL";
+      return `[${p.id}] ${p.name} | سعر: ${priceText} | تصنيف: ${p.category} | ألوان: ${colors} | مقاسات: ${sizes} | رابط: /products/${p.slug}`;
     });
-    const catalogText = catalogLines.length > 0
-      ? catalogLines.join("\n")
-      : "لا توجد منتجات متاحة حالياً.";
+    const catalogText = catalogLines.length > 0 ? catalogLines.join("\n") : "لا توجد منتجات حالياً.";
 
     const apiKey = process.env.GEMINI_API_KEY;
+    let replyText = "";
+    let suggestedProductIds: string[] = [];
+    let detectedIntent = "unknown";
 
-    const systemInstruction = `أنت "وولف" المساعد الذكي الفاخر لمتجر DEEP STORE للملابس الستريت وير والأزياء الأسود والذهبي في مصر.
+    // Build Wolf System Persona
+    const systemInstruction = `أنت "وولف" 🐺 — منسق الأزياء الفاخر والمساعد الذكي لـ DEEP STORE باللون الأسود والذهبي في مصر.
 
-قواعد الشخصية:
-- تتكلم بالعربية المصرية الودية والراقية.
-- أنت خبير أزياء وستريت وير ومقاسات متخصص.
-- دائماً استخدم أسماء المنتجات الحقيقية من القائمة. لا تخترع منتجات.
-- عند اقتراح أي منتج اذكر اسمه الحقيقي ورابطه: [اسم المنتج](/products/slug).
-- كن قصيراً ومباشراً ومفيداً.
+نبرتك:
+- مصري عصري وثاق وخشن ودود (Streetwear & Luxury style).
+- نادِ العميل بـ "يا فنان" أو "صديقي".
+- لا تبتكر منتجات ولا توعد بخصومات غير موجودة في الكتالوج.
+- التحدث باللهجة المصرية دائماً بدون فصحى جافة.
 
-قائمة المنتجات المتوفرة حالياً في قاعدة البيانات:
+معلومات المتجر والسياسات:
+- الشحن لمحافظات مصر فقط (2-4 أيام عمل). لا يوجد شحن دولي خارج مصر حالياً.
+- طرق الدفع: دفع عند الاستلام 🚪، فودافون كاش 📱، انستاباي 💳.
+- الإرجاع خلال 7 أيام والتبديل خلال 14 يوم.
+
+قائمة المنتجات الحالية:
 ${catalogText}
 
 جدول المقاسات:
-- طول أقل من 165سم / وزن أقل من 60كجم -> S
-- طول 165-175سم / وزن 60-72كجم -> M
-- طول 175-182سم / وزن 72-84كجم -> L
-- طول 182-190سم / وزن 84-95كجم -> XL
-- طول أكتر من 190سم / وزن أكتر من 95كجم -> XXL
+- <165سم / <60كجم -> S
+- 165-175سم / 60-72كجم -> M
+- 175-182سم / 72-84كجم -> L
+- 182-190سم / 84-95كجم -> XL
+- >190سم / >95كجم -> XXL
 
-في نهاية ردك أضف سطراً واحداً بالتنسيق التالي (IDs فقط من القائمة):
-PRODUCT_IDS:id1,id2`;
+طريقة الإجابة:
+1. أجِب بأسلوبك الذكي.
+2. إذا اقترحت منتجات، اذكر اسمها ورابطها: [اسم المنتج](/products/slug).
+3. في نهاية الرد تماماً أضف سطراً واحداً بالتنسيق:
+PRODUCT_IDS:id1,id2
+INTENT:intent_name`;
 
-    let replyText = "";
-    let suggestedProductIds: string[] = [];
-
-    // 3. Try Gemini AI with full conversation history
     if (apiKey) {
       try {
         const contents = [
           { role: "user", parts: [{ text: systemInstruction }] },
-          { role: "model", parts: [{ text: "حاضر! أنا وولف، مساعد DEEP STORE. جاهز لمساعدتك في اختيار أفضل القطع والمقاسات." }] },
+          { role: "model", parts: [{ text: "جاهز يا فنان! أنا وولف 🐺 مساعدك في DEEP STORE." }] },
           ...history.map((h: { role: string; text: string }) => ({
             role: h.role === "user" ? "user" : "model",
             parts: [{ text: h.text }]
@@ -96,122 +152,100 @@ PRODUCT_IDS:id1,id2`;
         const data = await response.json();
         const rawText: string = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-        const idLineMatch = rawText.match(/PRODUCT_IDS:([^\n]*)/);
-        if (idLineMatch) {
-          suggestedProductIds = idLineMatch[1]
+        const idMatch = rawText.match(/PRODUCT_IDS:([^\n]*)/);
+        if (idMatch) {
+          suggestedProductIds = idMatch[1]
             .split(",")
             .map((id: string) => id.trim())
-            .filter((id: string) => id.length > 0 && productsList.some((p) => p.id === id));
-          replyText = rawText.replace(/PRODUCT_IDS:[^\n]*/g, "").trim();
-        } else {
-          replyText = rawText.trim();
+            .filter((id: string) => id.length > 0 && validProducts.some((p) => p.id === id));
         }
+
+        const intentMatch = rawText.match(/INTENT:([^\n]*)/);
+        if (intentMatch) {
+          detectedIntent = intentMatch[1].trim();
+        }
+
+        replyText = rawText
+          .replace(/PRODUCT_IDS:[^\n]*/g, "")
+          .replace(/INTENT:[^\n]*/g, "")
+          .trim();
       } catch (err) {
-        console.error("Gemini API error:", err);
+        console.error("Gemini AI Call Error:", err);
       }
     }
 
-    // 4. Smart local fallback with full product awareness
+    // Smart Local Fallback Engine if AI key is missing or fails
     if (!replyText) {
       const lower = message.toLowerCase();
 
-      // Filter out corrupt/test products before anything else
-      const validProducts = productsList.filter((p) =>
-        p.name &&
-        p.name.trim().length >= 3 &&
-        p.slug &&
-        p.slug.trim().length >= 2 &&
-        typeof p.price === "number" &&
-        p.price > 0 &&
-        p.price < 50000
-      );
+      // Check Intent
+      const isIntl = INTERNATIONAL_KEYWORDS.some((k) => lower.includes(k));
+      const foundCity = EGYPT_CITIES.find((c) => lower.includes(c));
+      const isShipping = lower.includes("شحن") || lower.includes("توصيل") || lower.includes("يوصل");
+      const isPayment = lower.includes("دفع") || lower.includes("فودافون") || lower.includes("انستا") || lower.includes("كاش");
+      const isReturn = lower.includes("ارجاع") || lower.includes("إرجاع") || lower.includes("تبديل") || lower.includes("استرجاع");
+      const isGreeting = lower.includes("ازيك") || lower.includes("سلام") || lower.includes("اهلا") || lower.includes("أهلا") || lower.includes("مرحبا") || lower.includes("هاي") || lower.includes("hi");
 
-      // === Priority 1: Non-product intents (handle BEFORE any product search) ===
-
-      if (lower.includes("ازيك") || lower.includes("سلام") || lower.includes("اهلا") || lower.includes("أهلا") || lower.includes("مرحبا") || lower.includes("هاي") || lower.includes("hi") || lower.includes("hello")) {
-        replyText = `أهلاً بيك في DEEP STORE 🐺✨\n\nأنا وولف، مساعدك الشخصي! قولي إيه اللي بتدور عليه:\n- اكتب طولك ووزنك وهقولك مقاسك 📏\n- اسأل عن أي منتج وهعرضهولك 👕\n- أي سؤال عن الأسعار أو الشحن أو الألوان 🚚`;
+      if (isIntl) {
+        detectedIntent = "intl_shipping";
+        replyText = `للأسف يا فنان، DEEP STORE بيشحن داخل جمهورية مصر العربية فقط حالياً 🇪🇬.\n\nلو عندك عنوان داخل مصر نتشرف بتوصيل طلبك فوراً!`;
+      } else if (foundCity || (isShipping && foundCity)) {
+        detectedIntent = "city_shipping";
+        replyText = `الشحن لمدينة/محافظة **${foundCity || "مصر"}** متاح وبسرعة 🚚!\nيوصلك خلال 2-4 أيام عمل، والتكلفة بتظهر بالضبط في صفحة الشراء.`;
+      } else if (isShipping) {
+        detectedIntent = "shipping";
+        replyText = STORE_POLICIES.shipping;
+      } else if (isPayment) {
+        detectedIntent = "payment";
+        replyText = STORE_POLICIES.payment;
+      } else if (isReturn) {
+        detectedIntent = "return";
+        replyText = STORE_POLICIES.returns;
+      } else if (isGreeting) {
+        detectedIntent = "greeting";
+        replyText = `أهلاً بيك يا فنان في DEEP STORE 🐺✨!\n\nأنا وولف، مستشارك الخاص للأزياء والمقاسات. قول لي بتدور على إيه أو اكتب طولك ووزنك وهظبطك فوراً!`;
         suggestedProductIds = validProducts.slice(0, 3).map((p) => p.id);
-      } else if (lower.includes("شحن") || lower.includes("توصيل") || lower.includes("يوصل") || lower.includes("محافظ") || lower.includes("قاهره") || lower.includes("اسكندري")) {
-        replyText = `الشحن متاح لكل محافظات مصر 🚚\n\nيوصلك خلال 2-4 أيام عمل من تأكيد الطلب. تكلفة الشحن تتحدد حسب المحافظة عند إتمام الطلب على الموقع.`;
-      } else if (lower.includes("دفع") || lower.includes("فودافون") || lower.includes("انستا") || lower.includes("كاش") || lower.includes("بيتاش") || lower.includes("اونلاين")) {
-        replyText = `طرق الدفع المتاحة 💳\n- الدفع عند الاستلام 🚪\n- فودافون كاش 📱\n- انستاباي 💳\n\nكل الطرق متاحة عند إتمام الطلب.`;
-      } else if (lower.includes("مقاس") || lower.includes("حجم") || lower.includes("size") || (lower.includes("طول") && !lower.includes("طول") && lower.includes("وزن"))) {
-        replyText = `اكتبلي طولك بالسم ووزنك بالكيلو في نفس الرسالة\nمثال: طولي 178 ووزني 75 وهحسبلك المقاس فوراً 📏`;
       } else {
-        // === Priority 2: Size detection from numbers ===
+        // Size Number Check
         const nums = message.match(/\d+/g)?.map(Number) || [];
         if (nums.length >= 2) {
           const height = Math.max(...nums);
           const weight = Math.min(...nums);
           if (height >= 140 && height <= 220 && weight >= 40 && weight <= 150) {
+            detectedIntent = "size";
             let size = "M";
             if (height < 165 || weight < 60) size = "S";
             else if (height <= 175 && weight <= 72) size = "M";
             else if (height <= 182 && weight <= 84) size = "L";
             else if (height <= 190 && weight <= 95) size = "XL";
             else size = "XXL";
-            replyText = `بناءً على طولك (${height}سم) ووزنك (${weight}كجم)، مقاسك المضبوط هو **${size}** 🎯\n\nإليك أفضل قطعنا المتاحة:`;
+            replyText = `قياسك المضبوط في تشكيلة ديب هو **${size}** 🎯 (طول ${height}سم ووزن ${weight}كجم).\n\nشوف القطع المترشحة ليك بمقاسك:`;
             suggestedProductIds = validProducts.slice(0, 3).map((p) => p.id);
           }
         }
 
         if (!replyText) {
-          // === Priority 3: Price-range search ===
-          const priceNums = message.match(/\d+/g)?.map(Number) || [];
-          const isAskingPrice = lower.includes("سعر") || lower.includes("بكام") || lower.includes("تمن") || lower.includes("فلوس") || lower.includes("كام") || lower.includes("جنيه") || lower.includes("ج.م");
-          if (isAskingPrice && priceNums.length > 0) {
-            const maxPrice = Math.max(...priceNums);
-            const affordable = validProducts.filter((p) => (p.salePrice || p.price) <= maxPrice * 1.2);
-            if (affordable.length > 0) {
-              suggestedProductIds = affordable.map((p) => p.id);
-              replyText = `دول المنتجات اللي تقدر تلاقي في نطاق ميزانيتك 💰:`;
-            } else {
-              replyText = `مش عندنا منتجات في نطاق السعر ده. أقل أسعارنا هي:\n${validProducts.slice(0, 2).map((p) => `- ${p.name}: ${p.salePrice || p.price} ج.م`).join("\n")}`;
-            }
-          }
-        }
-
-        if (!replyText) {
-          // === Priority 4: Explicit product/catalog requests ===
-          const isProductRequest = lower.includes("منتج") || lower.includes("عندك") || lower.includes("متوفر") || lower.includes("تشكيل") || lower.includes("موجود") || lower.includes("products") || lower.includes("shop") || lower.includes("عرض") || lower.includes("اشتر");
-          const isColorRequest = lower.includes("لون") || lower.includes("الوان") || lower.includes("ألوان") || lower.includes("color");
-          const isPriceRequest = lower.includes("سعر") || lower.includes("بكام") || lower.includes("تمن") || lower.includes("كام");
-
-          if (isProductRequest || isColorRequest || isPriceRequest) {
+          const isProductReq = lower.includes("منتج") || lower.includes("عندك") || lower.includes("تشكيل") || lower.includes("عرض") || lower.includes("شوف");
+          if (isProductReq) {
+            detectedIntent = "products";
             suggestedProductIds = validProducts.map((p) => p.id);
-            if (isColorRequest) replyText = `دول المنتجات المتاحة بكل ألوانها 🎨:`;
-            else if (isPriceRequest) replyText = `دي قائمة منتجاتنا بالأسعار الكاملة 💰:`;
-            else replyText = `دي كل تشكيلة DEEP STORE المتاحة دلوقتي 🐺🔥:`;
-          }
-        }
-
-        if (!replyText) {
-          // === Priority 5: Keyword search in product data ===
-          const words = lower.split(/\s+/).filter((w) => w.length > 2);
-          const matched = validProducts.filter((p) => {
-            const name = (p.name || "").toLowerCase();
-            const cat = (p.category || "").toLowerCase();
-            const desc = (p.description || "").toLowerCase();
-            return words.some((w) => name.includes(w) || cat.includes(w) || desc.includes(w));
-          });
-
-          if (matched.length > 0) {
-            suggestedProductIds = matched.map((p) => p.id);
-            replyText = `وجدت ${matched.length} منتج يناسب بحثك 👕:`;
+            replyText = `دي كل تشكيلة DEEP STORE المتاحة دلوقتي 🐺🔥:`;
           } else {
-            replyText = `مش فاهم كويس 😅\nقولي أكتر — بتدور على نوع معين من الملابس؟ ولا عايز تعرف مقاسك؟`;
+            detectedIntent = "unknown";
+            replyText = `قولي أكتر يا فنان 😅 بتدور على قطعة معينة (هودي، تيشيرت، كارجو)؟ ولا حابب تحسب مقاسك المضبوط؟`;
           }
         }
       }
     }
 
-    // 5. Build final matched product objects
     const suggestedProducts = suggestedProductIds
-      .map((id) => productsList.find((p) => p.id === id))
+      .map((id) => validProducts.find((p) => p.id === id))
       .filter(Boolean) as Product[];
 
     return NextResponse.json({
       reply: replyText,
+      intent: detectedIntent,
+      suggestedReplies: getSuggestedReplies(detectedIntent),
       suggestedProducts: suggestedProducts.map((p) => ({
         id: p.id,
         name: p.name,
@@ -220,6 +254,8 @@ PRODUCT_IDS:id1,id2`;
         salePrice: p.salePrice,
         mainImage: p.mainImage,
         category: p.category,
+        bestSeller: p.bestSeller,
+        isNewArrival: p.isNewArrival,
         variants: p.variants?.map((v) => ({
           colorName: v.colorName,
           colorHex: v.colorHex,

@@ -10,20 +10,26 @@ import { db } from "@/lib/firebase/config";
 import { doc, setDoc, arrayUnion, serverTimestamp } from "firebase/firestore";
 import type { Product } from "@/types/product";
 
+interface SuggestedProduct {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  salePrice?: number;
+  mainImage: string;
+  category: string;
+  bestSeller?: boolean;
+  isNewArrival?: boolean;
+  variants?: { colorName: string; colorHex: string; sizes: { size: string; stock: number }[] }[];
+}
+
 interface ChatMessage {
   id: string;
   sender: "bot" | "user";
   text: string;
-  suggestedProducts?: {
-    id: string;
-    name: string;
-    slug: string;
-    price: number;
-    salePrice?: number;
-    mainImage: string;
-    category: string;
-    variants?: { colorName: string; colorHex: string; sizes: { size: string; stock: number }[] }[];
-  }[];
+  suggestedProducts?: SuggestedProduct[];
+  suggestedReplies?: string[];
+  intent?: string;
 }
 
 // Component to render clickable product links inside chatbot messages
@@ -209,6 +215,7 @@ export function ChatBot() {
       const data = await res.json();
       const botReply = data.reply || "عذراً، حدث خطأ أثناء الاتصال. حاول مرة أخرى.";
       const suggestedProducts = data.suggestedProducts || [];
+      const suggestedReplies = data.suggestedReplies || [];
 
       setMessages((prev) => [
         ...prev,
@@ -217,6 +224,7 @@ export function ChatBot() {
           sender: "bot",
           text: botReply,
           suggestedProducts,
+          suggestedReplies,
         },
       ]);
 
@@ -347,7 +355,11 @@ export function ChatBot() {
                               />
                             )}
                             <div className="flex-1 min-w-0">
-                              <p className="font-bold text-zinc-100 text-xs truncate group-hover:text-amber-300 transition-colors">{p.name}</p>
+                              <div className="flex items-center gap-1 mb-0.5">
+                                <p className="font-bold text-zinc-100 text-xs truncate group-hover:text-amber-300 transition-colors flex-1">{p.name}</p>
+                                {p.bestSeller && <span className="text-[8px] bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded px-1 flex-shrink-0">⭐ مبيعاً</span>}
+                                {p.isNewArrival && <span className="text-[8px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded px-1 flex-shrink-0">جديد</span>}
+                              </div>
                               <p className="text-[10px] text-zinc-500">{p.category}</p>
                               <p className="text-xs font-extrabold text-amber-400 mt-0.5">
                                 {p.salePrice ? (
@@ -374,6 +386,22 @@ export function ChatBot() {
                             </div>
                             <ExternalLink size={12} className="text-zinc-600 group-hover:text-amber-400 transition-colors flex-shrink-0" />
                           </Link>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Quick Replies below Bot Messages */}
+                    {msg.sender === "bot" && msg.suggestedReplies && msg.suggestedReplies.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1 pt-1.5 border-t border-zinc-800/60">
+                        {msg.suggestedReplies.map((replyText) => (
+                          <button
+                            key={replyText}
+                            type="button"
+                            onClick={() => handleSend(replyText.replace(/^[\u1F300-\u1F9FF\u2600-\u26FF]\s*/, ""))}
+                            className="text-[10px] px-2 py-1 rounded-full bg-zinc-800 hover:bg-amber-500/20 border border-zinc-700 hover:border-amber-400/50 text-zinc-300 hover:text-amber-300 transition-all font-medium cursor-pointer"
+                          >
+                            {replyText}
+                          </button>
                         ))}
                       </div>
                     )}
