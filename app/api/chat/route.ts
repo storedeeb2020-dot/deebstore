@@ -210,10 +210,10 @@ INTENT:intent_name`;
         if (matched.length > 0) {
           detectedIntent = "products";
           suggestedProductIds = matched.map(p => p.id);
-          replyText = `إليك القطع المتاحة 🐺✨:`;
+          replyText = `تفضل يا فنان، هذه هي التشكيلة المتطابقة مع طلبك 🐺✨:`;
         } else {
           detectedIntent = "unknown";
-          replyText = `أهلاً بك! أنا وولف 🐺 مساعد الموضة والأزياء في ${storeName}. يسعدني مساعدتك!`;
+          replyText = `أهلاً بك! أنا وولف 🐺 مستشارك للأزياء في ${storeName}. يسعدني مساعدتك في اختيار المقاس أو الإجابة على أي استفسار!`;
           suggestedProductIds = validProducts.slice(0, 2).map(p => p.id);
         }
       }
