@@ -376,7 +376,7 @@ export function ChatBot() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Generate or retrieve session ID for chat analytics
   useEffect(() => {
@@ -418,16 +418,19 @@ export function ChatBot() {
     if (isOpen && products.length === 0) {
       getProducts()
         .then((data) => {
-          if (data && data.length > 0) {
-            setProducts(data);
-          }
+          if (Array.isArray(data)) setProducts(data);
         })
         .catch((err) => console.error("ChatBot product fetch error:", err));
     }
   }, [isOpen, products.length]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
   };
 
   useEffect(() => {
@@ -596,6 +599,7 @@ export function ChatBot() {
 
             {/* Messages Container with Strict Scroll Isolation */}
             <div 
+              ref={chatContainerRef}
               className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-zinc-50/90 dark:bg-black/60 backdrop-blur-sm scrollbar-thin scrollbar-thumb-amber-500/30 overscroll-contain touch-pan-y z-10 relative"
               onWheel={(e) => e.stopPropagation()}
               onTouchMove={(e) => e.stopPropagation()}
