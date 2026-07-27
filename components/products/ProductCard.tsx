@@ -32,10 +32,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   if (product.mainImage) allImages.push(product.mainImage);
   if (product.variants) {
     for (const v of product.variants) {
-      if (v.images && Array.isArray(v.images)) {
-        for (const img of v.images) {
-          if (img && !allImages.includes(img)) allImages.push(img);
-        }
+      if (v.image && !allImages.includes(v.image)) {
+        allImages.push(v.image);
       }
     }
   }
