@@ -45,7 +45,7 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>({
     storeName: "DEEP STORE",
     logoUrl: "/logo.png",
-    heroTagline: "ديب ستور — عالم الموضة والستريت وير الفاخر 👑",
+    heroTagline: "ديب ستور — عالم الموضة والستريت وير الفاخر 🐺",
     heroButtonText: "تسوق الآن — SHOP NOW",
     heroMediaType: "image",
     heroVideoUrlLight: "https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4",
@@ -54,7 +54,7 @@ export default function AdminSettingsPage() {
     heroImagesDark: [],
     featuredTitle: "التشكيلات العصرية",
     featuredSubtitle: "مصممة بعناية لتناسب أسلوب حياتك",
-    introTagline: "DEEP STORE ROYAL STREETWEAR 👑",
+    introTagline: "DEEP STORE ROYAL STREETWEAR 🐺",
     footerDescription: "متجر ديب ستور الفاخر لملابس الستريت وير والموضة العصرية في مصر والوطن العربي.",
     storeEmail: "storedeeb2020@gmail.com",
     storePhone: "+20 101 234 5678",
@@ -129,7 +129,7 @@ export default function AdminSettingsPage() {
     setSaving(true);
     try {
       await updateSiteSettings(settings);
-      toast.success("تم حفظ إعدادات المتجر وتحديث جداول المقاسات ولوجو المحل بنجاح 👑");
+      toast.success("تم حفظ إعدادات المتجر وتحديث جداول المقاسات ولوجو المحل بنجاح 🐺");
     } catch (err) {
       console.error(err);
       toast.error("فشل حفظ الإعدادات");
@@ -196,7 +196,7 @@ export default function AdminSettingsPage() {
 
     setNewSizeChartName("");
     setNewSizeChartImage("");
-    toast.success("تمت إضافة جدول المقاسات الجديد بالقائمة 👑");
+    toast.success("تمت إضافة جدول المقاسات الجديد بالقائمة 🐺");
   };
 
   const removeSizeChart = (id: string) => {
@@ -404,7 +404,7 @@ export default function AdminSettingsPage() {
                 <label className="block text-xs font-bold text-zinc-300 mb-1.5">شعار الهيرو الفرعي (Hero Tagline)</label>
                 <input
                   type="text"
-                  value={settings.heroTagline || "ديب ستور — عالم الموضة والستريت وير الفاخر 👑"}
+                  value={settings.heroTagline || "ديب ستور — عالم الموضة والستريت وير الفاخر 🐺"}
                   onChange={(e) => setSettings({ ...settings, heroTagline: e.target.value })}
                   className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
                 />

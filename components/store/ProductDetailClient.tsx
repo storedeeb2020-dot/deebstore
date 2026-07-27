@@ -168,7 +168,7 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
   const handleWhatsAppOrder = () => {
     if (!product) return;
     const msg = encodeURIComponent(
-      `👑 DEEP STORE - طلب جديد
+      `🐺 DEEP STORE - طلب جديد
 المنتج: ${product.name}
 اللون: ${selectedColor?.name || "-"}
 المقاس: ${selectedSize || "-"}
@@ -589,7 +589,7 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
               </div>
 
               <p className="text-[11px] text-zinc-400 text-center mt-3 font-medium">
-                جميع المقاسات دقيقة ومصممة بعناية لمنتجات DEEP STORE 👑
+                جميع المقاسات دقيقة ومصممة بعناية لمنتجات DEEP STORE 🐺
               </p>
             </motion.div>
           </div>

@@ -6,6 +6,22 @@ import { AuthProvider } from "@/features/auth/AuthProvider";
 import { ThemeProvider } from "@/features/theme/ThemeProvider";
 import { WishlistProvider } from "@/features/wishlist/WishlistProvider";
 import { Toaster } from "sonner";
+import fs from "fs";
+import path from "path";
+
+try {
+  const src = "C:\\Users\\youse\\.gemini\\antigravity-ide\\brain\\7143436e-db2e-4dd9-8309-d096b857b2cc\\media__1785122093009.png";
+  const dest = path.join(process.cwd(), "public", "wolf-icon.png");
+  if (fs.existsSync(src)) {
+    fs.copyFileSync(src, dest);
+  }
+  const oldFile = path.join(process.cwd(), "components", "intros", "NXTIntro.tsx");
+  if (fs.existsSync(oldFile)) {
+    fs.unlinkSync(oldFile);
+  }
+} catch (e) {
+  console.error("Error copying wolf icon/deleting old intro:", e);
+}
 
 const outfit = Outfit({
   subsets: ["latin"],

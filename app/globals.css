@@ -41,6 +41,10 @@
   box-sizing: border-box;
 }
 
+input, textarea, button, select {
+  font-family: inherit;
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
@@ -48,7 +52,7 @@ html {
 }
 
 body {
-  font-family: var(--font-outfit);
+  font-family: var(--font-outfit), 'Cairo', 'Tajawal', sans-serif;
   background-color: var(--background);
   color: var(--foreground);
   overflow-x: hidden;

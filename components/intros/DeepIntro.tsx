@@ -8,7 +8,7 @@ interface IntroProps {
   onComplete: () => void;
 }
 
-export function NXTIntro({ onComplete }: IntroProps) {
+export function DeepIntro({ onComplete }: IntroProps) {
   const [hasStartedVideo, setHasStartedVideo] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isExiting, setIsExiting] = useState(false);

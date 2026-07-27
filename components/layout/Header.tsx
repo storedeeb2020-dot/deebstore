@@ -166,7 +166,9 @@ export function Header() {
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
             >
               <div className="flex items-center justify-between absolute top-6 left-6 right-6 border-b border-gray-100 dark:border-zinc-900 pb-4">
-                <span className="text-lg font-black tracking-tighter text-amber-500">DEEP STORE 👑</span>
+                <span className="text-lg font-black tracking-tighter text-amber-500 flex items-center gap-1.5">
+                  DEEP STORE <img src="/wolf-icon.png" alt="Wolf" className="w-5 h-5 object-contain dark:invert" />
+                </span>
                 <button
                   onClick={() => setMobileOpen(false)}
                   className="p-2 rounded-xl bg-gray-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400"

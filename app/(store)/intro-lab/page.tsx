@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Play, RefreshCw, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { NXTIntro } from "@/components/intros/NXTIntro";
+import { DeepIntro } from "@/components/intros/DeepIntro";
 
 export default function IntroLabPage() {
   const [playing, setPlaying] = useState(false);
@@ -12,7 +12,7 @@ export default function IntroLabPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center p-8 font-sans">
       {playing && (
-        <NXTIntro
+        <DeepIntro
           onComplete={() => setPlaying(false)}
         />
       )}

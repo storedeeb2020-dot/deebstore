@@ -81,16 +81,21 @@ export function HeroSection() {
           transition={{ duration: 0.8 }}
           className="h-20 sm:h-28 w-auto mx-auto object-contain mb-5"
         />
-        <motion.p
-          className="text-base sm:text-lg font-black tracking-widest text-amber-400"
+        <motion.div
+          className="text-base sm:text-lg font-black tracking-widest text-amber-400 flex items-center justify-center gap-2"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.8 }}
         >
-          {(!settings?.heroTagline || settings?.heroTagline.toLowerCase().includes("next"))
-            ? "ديب ستور — عالم الموضة والستريت وير الفاخر 👑"
-            : settings.heroTagline}
-        </motion.p>
+          {(!settings?.heroTagline || settings?.heroTagline.toLowerCase().includes("next")) ? (
+            <span className="flex items-center gap-2">
+              ديب ستور — عالم الموضة والستريت وير الفاخر
+              <img src="/wolf-icon.png" alt="Wolf" className="w-5 h-5 object-contain invert" />
+            </span>
+          ) : (
+            settings.heroTagline
+          )}
+        </motion.div>
       </div>
 
       {/* Luxury Royal Gold & Obsidian CTA Button */}

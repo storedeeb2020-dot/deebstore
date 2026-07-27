@@ -69,8 +69,8 @@ function ShopContent() {
     <div className="pt-28 pb-20 min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="text-center mb-10">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 text-amber-500">
-          تشكيلة منتجات DEEP STORE 👑
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 text-amber-500 flex items-center justify-center gap-2">
+          تشكيلة منتجات DEEP STORE <img src="/wolf-icon.png" alt="Wolf" className="w-8 h-8 object-contain dark:invert" />
         </h1>
         <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
           تصفح أحدث تصاميم الملابس والأزياء الفاخرة المصممة بعناية لتعكس أسلوبك الخاص.

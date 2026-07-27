@@ -1,7 +1,7 @@
 "use client";
 
-import { NXTIntro } from "@/components/intros/NXTIntro";
+import { DeepIntro } from "@/components/intros/DeepIntro";
 
 export function IntroScreen({ onComplete }: { onComplete: () => void }) {
-  return <NXTIntro onComplete={onComplete} />;
+  return <DeepIntro onComplete={onComplete} />;
 }

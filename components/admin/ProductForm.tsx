@@ -210,10 +210,10 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
     try {
       if (productId) {
         await updateProduct(productId, data);
-        toast.success("تم تحديث بيانات المنتج بنجاح 👑");
+        toast.success("تم تحديث بيانات المنتج بنجاح 🐺");
       } else {
         await createProduct(data);
-        toast.success("تم إضافة المنتج الجديد للمتجر بنجاح 👑");
+        toast.success("تم إضافة المنتج الجديد للمتجر بنجاح 🐺");
       }
       router.push("/admin/products");
     } catch (err) {
@@ -241,7 +241,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           disabled={saving}
           className="px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-400 text-black font-black text-xs rounded-xl hover:scale-105 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
         >
-          {saving ? "جاري الحفظ..." : productId ? "حفظ التعديلات" : "نشر المنتج الآن 👑"}
+          {saving ? "جاري الحفظ..." : productId ? "حفظ التعديلات" : "نشر المنتج الآن 🐺"}
         </button>
       </div>
 

@@ -29,8 +29,8 @@ const config: Config = {
         muted: "var(--muted)",
       },
       fontFamily: {
-        sans: ["var(--font-outfit)", "var(--font-inter)", "system-ui", "sans-serif"],
-        display: ["var(--font-outfit)", "system-ui", "sans-serif"],
+        sans: ["var(--font-outfit)", "var(--font-inter)", "'Cairo'", "'Tajawal'", "system-ui", "sans-serif"],
+        display: ["var(--font-outfit)", "'Cairo'", "'Tajawal'", "system-ui", "sans-serif"],
       },
       animation: {
         "fade-in": "fadeIn 0.6s ease forwards",

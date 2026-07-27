@@ -35,7 +35,6 @@ export function AnnouncementBar() {
   while (singleGroup.length < 15 && singleGroup.length > 0) {
     singleGroup = [...singleGroup, ...parsed];
   }
-  const marqueeItems = [...singleGroup, ...singleGroup]; // Double it for the -50% offset looping
 
   const show = !dismissed && settings?.announcementEnabled && parsed.length > 0;
 
@@ -68,26 +67,52 @@ export function AnnouncementBar() {
 
           <div className="relative flex items-center justify-start py-2.5 min-h-[36px] overflow-hidden">
             {/* Marquee Track Container */}
-            <div className="animate-marquee-track flex items-center gap-16">
-              {marqueeItems.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-3.5 shrink-0">
-                  <Megaphone size={12.5} className="text-black/75 shrink-0" />
-                  {settings?.announcementLink ? (
-                    <a
-                      href={settings.announcementLink}
-                      className="text-[11px] sm:text-xs font-black text-black tracking-wide hover:underline cursor-pointer"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {item}
-                    </a>
-                  ) : (
-                    <span className="text-[11px] sm:text-xs font-black text-black tracking-wide">
-                      {item}
-                    </span>
-                  )}
-                </div>
-              ))}
+            <div className="animate-marquee-track flex">
+              {/* Sub-Track 1 */}
+              <div className="flex items-center gap-16 pr-16 shrink-0">
+                {singleGroup.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-3.5 shrink-0">
+                    <Megaphone size={12.5} className="text-black/75 shrink-0" />
+                    {settings?.announcementLink ? (
+                      <a
+                        href={settings.announcementLink}
+                        className="text-[11px] sm:text-xs font-black text-black tracking-wide hover:underline cursor-pointer"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {item}
+                      </a>
+                    ) : (
+                      <span className="text-[11px] sm:text-xs font-black text-black tracking-wide">
+                        {item}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Sub-Track 2 (Identical duplicate for mathematically perfect seamless loop) */}
+              <div className="flex items-center gap-16 pr-16 shrink-0">
+                {singleGroup.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-3.5 shrink-0">
+                    <Megaphone size={12.5} className="text-black/75 shrink-0" />
+                    {settings?.announcementLink ? (
+                      <a
+                        href={settings.announcementLink}
+                        className="text-[11px] sm:text-xs font-black text-black tracking-wide hover:underline cursor-pointer"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {item}
+                      </a>
+                    ) : (
+                      <span className="text-[11px] sm:text-xs font-black text-black tracking-wide">
+                        {item}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Dismiss Button Overlay - Fading from Solid Theme Color to Transparent */}

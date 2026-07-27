@@ -32,7 +32,7 @@ export default function AdminLoginPage() {
     setLoading(true);
     try {
       await signInAdmin(data.email, data.password);
-      toast.success("مرحباً بك في لوحة تحكم ديب ستور 👑");
+      toast.success("مرحباً بك في لوحة تحكم ديب ستور 🐺");
       router.push("/admin");
     } catch (err: any) {
       console.error("Admin Login Error:", err);
@@ -63,7 +63,7 @@ export default function AdminLoginPage() {
         <div className="text-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.png" alt="DEEP STORE Logo" className="h-14 w-auto mx-auto object-contain drop-shadow-[0_0_15px_rgba(212,175,55,0.6)] mb-3" />
-          <h1 className="text-2xl font-black text-amber-400 tracking-wider">DEEP STORE 👑</h1>
+          <h1 className="text-2xl font-black text-amber-400 tracking-wider">DEEP STORE 🐺</h1>
           <p className="text-zinc-400 text-xs mt-1">سجّل دخولك للتحكم الكامل في المتجر الإداري</p>
         </div>
 
@@ -121,7 +121,7 @@ export default function AdminLoginPage() {
               {loading ? (
                 <span className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
               ) : (
-                "تسجيل الدخول الآن 👑"
+                "تسجيل الدخول الآن 🐺"
               )}
             </button>
           </form>

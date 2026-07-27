@@ -113,8 +113,8 @@ export default function AdminLayout({
       {/* Admin User Info Capsule */}
       <div className="px-4 py-4 border-b border-zinc-800/80 bg-zinc-900/50">
         <div className="flex items-center gap-3 px-2">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-black flex items-center justify-center text-xs font-black shadow-lg shadow-amber-500/20">
-            👑
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 flex items-center justify-center shadow-lg shadow-amber-500/20 p-1">
+            <img src="/wolf-icon.png" alt="Wolf" className="w-6 h-6 object-contain" />
           </div>
           <div className="overflow-hidden">
             <p className="text-xs font-black truncate text-amber-300">حساب المشرف العام</p>
@@ -222,7 +222,7 @@ export default function AdminLayout({
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3.5 py-1.5 rounded-full text-[11px] font-extrabold tracking-wider shadow-sm">
               <ShieldCheck size={14} className="text-amber-400" />
-              <span>لوحة الإدارة المشفرة والآمنة 👑</span>
+              <span>لوحة الإدارة المشفرة والآمنة 🐺</span>
             </div>
           </div>
         </header>

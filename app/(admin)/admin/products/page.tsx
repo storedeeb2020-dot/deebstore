@@ -55,7 +55,7 @@ export default function AdminProductsPage() {
     setDeleting(true);
     try {
       await deleteProduct(id);
-      toast.success("تم حذف المنتج بنجاح من قاعدة البيانات 👑");
+      toast.success("تم حذف المنتج بنجاح من قاعدة البيانات 🐺");
       setProducts((prev) => prev.filter((p) => p.id !== id));
       setDeleteId(null);
     } catch (err) {

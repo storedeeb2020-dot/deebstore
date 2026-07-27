@@ -272,7 +272,7 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-white">نظرة عامة والتحليلات الحية 👑</h1>
+          <h1 className="text-3xl font-black tracking-tight text-white">نظرة عامة والتحليلات الحية 🐺</h1>
           <p className="text-zinc-400 text-xs mt-1">
             متابعة إحصائيات المبيعات، الطلبات الحية، وإدارة منتجات DEEP STORE.
           </p>
