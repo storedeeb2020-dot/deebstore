@@ -298,7 +298,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
               <option value="">-- اختر الفئة / القسم للمنتج --</option>
               {categoriesList.map((cat) => (
                 <option key={cat.id} value={cat.slug || cat.name}>
-                  {cat.name}
+                  {cat.nameAr ? `${cat.nameAr} (${cat.name})` : cat.name}
                 </option>
               ))}
             </select>

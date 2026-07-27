@@ -110,7 +110,7 @@ function ShopContent() {
                   : "bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white"
               }`}
             >
-              {cat.name}
+              {cat.nameAr || cat.name}
             </button>
           ))}
         </div>

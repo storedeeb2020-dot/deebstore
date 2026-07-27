@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Image as ImageIcon, Upload, Loader2, Sparkles, FolderPlus, ArrowUp, ArrowDown, ChevronRight, ChevronLeft } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, Upload, Loader2, Sparkles, FolderPlus, ChevronRight, ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import { getCategories, createCategory, deleteCategory, updateCategoryOrder } from "@/lib/firebase/firestore";
 import { generateSlug } from "@/lib/utils";
@@ -16,6 +16,7 @@ export default function AdminCategoriesPage() {
   
   // Form fields
   const [newName, setNewName] = useState("");
+  const [newNameAr, setNewNameAr] = useState("");
   const [newSubtitle, setNewSubtitle] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -50,19 +51,21 @@ export default function AdminCategoriesPage() {
 
   const handleAdd = async () => {
     if (!newName.trim()) {
-      toast.error("يرجى كتابة اسم الفئة أو القسم أولاً");
+      toast.error("يرجى كتابة اسم الفئة بالإنجليزية (للرابط)");
       return;
     }
     setAdding(true);
     try {
       await createCategory({
         name: newName.trim(),
+        nameAr: newNameAr.trim() || newName.trim(),
         subtitle: newSubtitle.trim() || undefined,
         slug: generateSlug(newName.trim()),
         image: imageUrl || undefined,
         order: categories.length,
       });
       setNewName("");
+      setNewNameAr("");
       setNewSubtitle("");
       setImageUrl("");
       toast.success("تم إضافة الفئة الجديدة بنجاح 🐺");
@@ -97,7 +100,6 @@ export default function AdminCategoriesPage() {
     newCategories[index] = newCategories[targetIndex];
     newCategories[targetIndex] = temp;
 
-    // Update orders sequentially 0, 1, 2...
     const updatedOrders = newCategories.map((cat, i) => ({
       ...cat,
       order: i,
@@ -127,7 +129,7 @@ export default function AdminCategoriesPage() {
         </div>
         <h1 className="text-3xl font-black tracking-tight text-white">الأقسام وترتيب الظهور</h1>
         <p className="text-zinc-400 text-xs mt-1">
-          إضافة وصورة وتحديد ترتيب ظهور الفئات بالصفحة الرئيسية والمتجر (استخدم أسهم الترتيب للتقديم أو التأخير).
+          إضافة الأقسام بالإنجليزية (للرابط) وبالعربية (للعرض على الكروت في المتجر).
         </p>
       </div>
 
@@ -184,32 +186,53 @@ export default function AdminCategoriesPage() {
           {/* Text Inputs */}
           <div className="md:col-span-2 space-y-4 flex flex-col justify-between">
             <div className="space-y-4">
+              {/* Field 1: English Name for URL slug */}
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">اسم الفئة / القسم *</label>
+                <label className="block text-xs font-bold text-amber-400 mb-1.5">
+                  1. اسم الفئة بالإنجليزية (للرابط - English Name & Slug) *
+                </label>
                 <input
                   type="text"
-                  placeholder="مثال: Casual Shirt، Suits، Hoodies..."
+                  placeholder="مثال: Casual Shirt ، Suits ، Hoodies..."
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 font-mono"
                 />
+                <p className="text-[10px] text-zinc-500 mt-1">يُستخدم لبناء رابط الفئة بالإنجليزية.</p>
               </div>
 
+              {/* Field 2: Arabic Display Name */}
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">العنوان الفرعي (Subtitle - اختياري)</label>
+                <label className="block text-xs font-bold text-white mb-1.5">
+                  2. اسم الفئة بالعربي (الذي يظهر للعميل على الكارت والمنتجات) *
+                </label>
                 <input
                   type="text"
-                  placeholder="مثال: Shirt ، Modern Fit ، Summer Collection..."
+                  placeholder="مثال: قمصان كاجوال ، بدل ، هوديز عصرية..."
+                  value={newNameAr}
+                  onChange={(e) => setNewNameAr(e.target.value)}
+                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 font-sans"
+                />
+                <p className="text-[10px] text-zinc-500 mt-1">هذا هو الاسم الذي يظهر بخط عربي فاخر على بطاقات المتجر والمنتجات.</p>
+              </div>
+
+              {/* Field 3: Subtitle */}
+              <div>
+                <label className="block text-xs font-bold text-zinc-300 mb-1.5">
+                  3. العنوان الفرعي (Subtitle - اختياري)
+                </label>
+                <input
+                  type="text"
+                  placeholder="مثال: Shirt ، Modern Fit ، تشكيلة الصيف..."
                   value={newSubtitle}
                   onChange={(e) => setNewSubtitle(e.target.value)}
                   className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
                 />
-                <p className="text-[10px] text-zinc-500 mt-1">يُستغل لإعطاء لمسة جمالية في تصميم بطاقة القسم.</p>
               </div>
 
               {newName.trim() && (
                 <div className="p-3 bg-zinc-900/60 rounded-xl border border-zinc-800 text-[11px] text-zinc-400 font-mono">
-                  الرابط التلقائي (Slug): <span className="text-amber-400 font-bold">/{generateSlug(newName.trim())}</span>
+                  رابط الصفحة التلقائي (Slug): <span className="text-amber-400 font-bold">/{generateSlug(newName.trim())}</span>
                 </div>
               )}
             </div>
@@ -234,7 +257,7 @@ export default function AdminCategoriesPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-extrabold text-zinc-300">
-            الأقسام بترتيب ظهورها بالمتجر ({categories.length})
+            الأقسام المتاحة بالكتالوج ({categories.length})
           </h2>
           <p className="text-[11px] text-amber-400">استخدم أسهم الترتيب للتقديم أو التأخير ⚡</p>
         </div>
@@ -260,7 +283,7 @@ export default function AdminCategoriesPage() {
                   {cat.image ? (
                     <Image
                       src={cat.image}
-                      alt={cat.name}
+                      alt={cat.nameAr || cat.name}
                       fill
                       unoptimized
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -280,10 +303,15 @@ export default function AdminCategoriesPage() {
                     الترتيب #{idx + 1}
                   </div>
 
-                  {/* Styled Category Title Overlay */}
+                  {/* Styled Category Title Overlay (Displaying Arabic Name with elegant font) */}
                   <div className="absolute bottom-4 left-0 right-0 px-3 text-center">
-                    <h3 className="text-white font-bold text-base sm:text-xl drop-shadow-md tracking-tight">
-                      {cat.name} {cat.subtitle && <span className="font-serif italic font-normal text-amber-300/90 ml-0.5">{cat.subtitle}</span>}
+                    <h3 className="text-white font-extrabold text-base sm:text-xl drop-shadow-md tracking-tight leading-snug">
+                      {cat.nameAr || cat.name}
+                      {cat.subtitle && (
+                        <span className="block text-xs font-normal text-amber-300/90 mt-0.5 opacity-90">
+                          {cat.subtitle}
+                        </span>
+                      )}
                     </h3>
                   </div>
 
@@ -301,6 +329,7 @@ export default function AdminCategoriesPage() {
                 <div className="p-3 bg-zinc-900 border-t border-zinc-800 space-y-2">
                   <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono">
                     <span className="truncate">/{cat.slug}</span>
+                    <span className="text-zinc-500 font-sans font-bold">{cat.name}</span>
                   </div>
 
                   {/* Up / Down Order Buttons */}
