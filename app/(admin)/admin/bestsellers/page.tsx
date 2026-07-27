@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Flame, Search, Star, Package } from "lucide-react";
-import { getProducts, updateProduct } from "@/lib/firebase/firestore";
+import { getProducts, updateProduct, deleteAllProducts } from "@/lib/firebase/firestore";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types/product";
 import { Spinner } from "@/components/ui/Spinner";
@@ -69,20 +69,39 @@ export default function AdminBestSellersPage() {
 
   return (
     <div className="space-y-8 max-w-6xl pb-16 font-sans dir-rtl text-white" dir="rtl">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-6">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400 mb-1">
-            <Flame size={16} className="text-amber-500 fill-amber-500" />
-            إدارة معروضات الأكثر مبيعاً (Best Sellers)
+            <Flame size={16} />
+            إدارة منتجات الأكثر مبيعاً (Best Sellers)
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white">
-            منتجات الأكثر مبيعاً 🔥
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            تحديد المنتجات المعروضة في قسم الأكثر مبيعاً
           </h1>
           <p className="text-zinc-400 text-xs mt-1">
-            حدد المنتجات المفضلة التي تود إبرازها في قسم (أفضل المبيعات) بالصفحة الرئيسية للمتجر وفي المنيو.
+            اختر المنتجات التي ترغب بظهورها في شريط وقسم "أفضل المبيعات 🔥" في الصفحة الرئيسية والمنيو.
           </p>
         </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={async () => {
+              if (confirm("هل تريد إزالة كروت المنتجات القديمة والتجريبية من المتجر بالكامل؟")) {
+                setLoading(true);
+                await deleteAllProducts();
+                setProducts([]);
+                setLoading(false);
+                toast.success("تم مسح المنتجات القديمة بنجاح 🐺");
+              }
+            }}
+            className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          >
+            مسح المنتجات القديمة 🗑️
+          </button>
+        </div>
+      </div>
 
         {/* Counter Badge */}
         <div className="bg-zinc-950 border border-amber-500/30 px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-xl">
