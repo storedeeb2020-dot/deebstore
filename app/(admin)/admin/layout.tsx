@@ -114,7 +114,7 @@ export default function AdminLayout({
       <div className="px-4 py-4 border-b border-zinc-800/80 bg-zinc-900/50">
         <div className="flex items-center gap-3 px-2">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 flex items-center justify-center shadow-lg shadow-amber-500/20 p-1">
-            <img src="/api/wolf-icon" alt="Wolf" className="w-6 h-6 object-contain" />
+            <img src="/api/wolf-icon" alt="Wolf" className="w-6 h-6 object-contain mix-blend-multiply" />
           </div>
           <div className="overflow-hidden">
             <p className="text-xs font-black truncate text-amber-300">حساب المشرف العام</p>

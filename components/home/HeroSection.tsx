@@ -90,7 +90,7 @@ export function HeroSection() {
           {(!settings?.heroTagline || settings?.heroTagline.toLowerCase().includes("next")) ? (
             <span className="flex items-center gap-2">
               ديب ستور — عالم الموضة والستريت وير الفاخر
-              <img src="/api/wolf-icon" alt="Wolf" className="w-5 h-5 object-contain invert" />
+              <img src="/api/wolf-icon" alt="Wolf" className="w-5 h-5 object-contain invert mix-blend-screen" />
             </span>
           ) : (
             settings.heroTagline
