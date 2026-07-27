@@ -14,6 +14,8 @@ import { AnimatedNavLink } from "@/components/ui/AnimatedButton";
 
 const navLinks = [
   { href: "/", label: "الرئيسية" },
+  { href: "/#categories", label: "الأقسام" },
+  { href: "/shop?bestSeller=true", label: "الأكثر مبيعاً 🔥" },
   { href: "/#products", label: "المتجر" },
   { href: "/about", label: "عن المتجر" },
   { href: "/contact", label: "اتصل بنا والشكاوى" },

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { HeroSection } from "@/components/home/HeroSection";
 import { CollectionsGrid } from "@/components/home/CollectionsGrid";
+import { BestSellersSection } from "@/components/home/BestSellersSection";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { ProductGridSkeleton } from "@/components/products/ProductSkeleton";
 import type { Product } from "@/types/product";
@@ -26,6 +27,7 @@ export default function HomePage() {
     <>
       <HeroSection />
       <CollectionsGrid />
+      <BestSellersSection />
       <div id="products">
         {loading ? (
           <ProductGridSkeleton count={8} columns={4} />

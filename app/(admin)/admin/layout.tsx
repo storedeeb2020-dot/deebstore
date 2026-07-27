@@ -19,6 +19,7 @@ import {
   Truck,
   Menu,
   X,
+  Flame,
 } from "lucide-react";
 import { signOut } from "@/lib/firebase/auth";
 import { toast } from "sonner";
@@ -28,9 +29,10 @@ import { Spinner } from "@/components/ui/Spinner";
 const navItems = [
   { href: "/admin", label: "لوحة التحكم والتحليلات", icon: LayoutGrid },
   { href: "/admin/orders", label: "إدارة الطلبات المباشرة", icon: ShoppingBag },
+  { href: "/admin/bestsellers", label: "منتجات الأكثر مبيعاً 🔥", icon: Flame },
   { href: "/admin/shipping", label: "أسعار الشحن والمحافظات", icon: Truck },
   { href: "/admin/products", label: "إدارة قائمة المنتجات", icon: Boxes },
-  { href: "/admin/categories", label: "الفئات والأقسام الفرعية", icon: FolderTree },
+  { href: "/admin/categories", label: "الأقسام والفئات الرئيسية", icon: FolderTree },
   { href: "/admin/messages", label: "الرسائل والشكاوى الواردة", icon: MessageSquareQuote },
   { href: "/admin/errors", label: "أخطاء وسجلات النظام", icon: ShieldAlert },
   { href: "/admin/customers", label: "قاعدة بيانات العملاء", icon: UserCheck },
