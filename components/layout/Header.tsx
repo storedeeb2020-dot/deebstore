@@ -46,7 +46,7 @@ export function Header() {
                 onClick={toggleWishlistDrawer}
                 className={cn(
                   "relative p-2 transition-all duration-300 rounded-xl hover:bg-black/5 dark:hover:bg-white/5",
-                  "text-white hover:text-amber-400"
+                  "text-zinc-900 dark:text-white hover:text-amber-500"
                 )}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -76,8 +76,8 @@ export function Header() {
                     key={link.href}
                     href={link.href}
                     className={cn(
-                      "text-sm font-medium tracking-wide transition-all duration-300",
-                      "text-white hover:text-amber-400"
+                      "text-sm font-bold tracking-wide transition-all duration-300",
+                      "text-zinc-900 dark:text-white hover:text-amber-500"
                     )}
                   >
                     <AnimatedNavLink>{link.label}</AnimatedNavLink>
@@ -106,7 +106,7 @@ export function Header() {
                 onClick={toggleTheme}
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.92 }}
-                className="relative p-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700/60 dark:bg-zinc-900 dark:border-amber-500/30 text-amber-400 dark:text-amber-300 transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5 px-3"
+                className="relative p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 dark:bg-zinc-900 dark:border-amber-500/30 text-amber-600 dark:text-amber-300 transition-all shadow-sm cursor-pointer flex items-center justify-center gap-1.5 px-3"
                 aria-label="تبديل وضع الموقع"
                 title={theme === "dark" ? "التحويل للوضع المضيء" : "التحويل للوضع الليلي الفاخر"}
               >
@@ -117,7 +117,7 @@ export function Header() {
                   </>
                 ) : (
                   <>
-                    <Moon size={17} className="text-amber-400" />
+                    <Moon size={17} className="text-amber-600" />
                     <span className="text-[11px] font-bold hidden md:inline">الوضع الليلي</span>
                   </>
                 )}
@@ -128,7 +128,7 @@ export function Header() {
                 onClick={toggleCart}
                 className={cn(
                   "relative p-2 transition-all duration-300 rounded-xl hover:bg-black/5 dark:hover:bg-white/5",
-                  "text-white hover:text-amber-400"
+                  "text-zinc-900 dark:text-white hover:text-amber-500"
                 )}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -139,7 +139,7 @@ export function Header() {
                   {totalItems > 0 && (
                     <motion.span
                       key="badge"
-                      className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-black text-white dark:bg-white dark:text-black text-[9px] sm:text-[10px] font-bold rounded-full flex items-center justify-center"
+                      className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-amber-500 text-black dark:bg-white dark:text-black text-[9px] sm:text-[10px] font-bold rounded-full flex items-center justify-center"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       exit={{ scale: 0 }}
@@ -155,7 +155,7 @@ export function Header() {
               <button
                 className={cn(
                   "p-2 transition-colors rounded-xl hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer",
-                  "text-white hover:text-amber-400"
+                  "text-zinc-900 dark:text-white hover:text-amber-500"
                 )}
                 onClick={(e) => {
                   e.preventDefault();

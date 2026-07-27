@@ -18,6 +18,8 @@ import {
   Plus,
   Megaphone,
   Bot,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { getSiteSettings, updateSiteSettings, type SiteSettings, type GlobalSizeChart } from "@/lib/firebase/firestore";
 import { ImageUploader } from "@/components/admin/ImageUploader";
@@ -589,34 +591,73 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-zinc-800">
-              <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">
-                رفع صور بانرات الهيرو بالصفحة الرئيسية
-              </label>
+            <div className="space-y-6 pt-4 border-t border-zinc-800">
+              {/* Dark Mode Banners */}
+              <div className="space-y-3 p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
+                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                  <Moon size={14} /> صور بانرات الهيرو (الوضع الليلي / Dark Mode 🌙)
+                </label>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-                {settings.heroImagesDark?.map((img, i) => (
-                  <div key={i} className="relative aspect-video rounded-xl overflow-hidden border border-zinc-800 group bg-zinc-900">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img} alt={`Banner ${i + 1}`} className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeImageDark(i)}
-                      className="absolute top-1.5 right-1.5 p-1.5 bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                      title="حذف الصورة"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                ))}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                  {settings.heroImagesDark?.map((img, i) => (
+                    <div key={i} className="relative aspect-video rounded-xl overflow-hidden border border-zinc-800 group bg-zinc-950">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img} alt={`Dark Banner ${i + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeImageDark(i)}
+                        className="absolute top-1.5 right-1.5 p-1.5 bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        title="حذف الصورة"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <ImageUploader
+                  id="hero-images-dark-uploader"
+                  multiple={true}
+                  images={settings.heroImagesDark || []}
+                  onChange={(newImgs) => setSettings((prev) => ({ ...prev, heroImagesDark: newImgs }))}
+                />
               </div>
 
-              <ImageUploader
-                id="hero-images-uploader-tab"
-                multiple={true}
-                images={settings.heroImagesDark || []}
-                onChange={(newImgs) => setSettings((prev) => ({ ...prev, heroImagesDark: newImgs, heroImagesLight: newImgs }))}
-              />
+              {/* Light Mode Banners */}
+              <div className="space-y-3 p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
+                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                  <Sun size={14} /> صور بانرات الهيرو (الوضع المضيء / Light Mode ☀️)
+                </label>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                  {settings.heroImagesLight?.map((img, i) => (
+                    <div key={i} className="relative aspect-video rounded-xl overflow-hidden border border-zinc-800 group bg-zinc-950">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img} alt={`Light Banner ${i + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSettings((prev) => ({
+                            ...prev,
+                            heroImagesLight: prev.heroImagesLight?.filter((_, idx) => idx !== i),
+                          }));
+                        }}
+                        className="absolute top-1.5 right-1.5 p-1.5 bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        title="حذف الصورة"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <ImageUploader
+                  id="hero-images-light-uploader"
+                  multiple={true}
+                  images={settings.heroImagesLight || []}
+                  onChange={(newImgs) => setSettings((prev) => ({ ...prev, heroImagesLight: newImgs }))}
+                />
+              </div>
             </div>
           </div>
         )}

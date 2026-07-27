@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 import { getSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
+import { useTheme } from "@/features/theme/ThemeProvider";
 
 export function HeroSection() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const { theme } = useTheme();
 
   useEffect(() => {
     getSiteSettings()
@@ -17,14 +19,28 @@ export function HeroSection() {
       .catch(console.error);
   }, []);
 
+  const activeImageList =
+    theme === "light"
+      ? settings?.heroImagesLight && settings.heroImagesLight.length > 0
+        ? settings.heroImagesLight
+        : settings?.heroImagesDark || []
+      : settings?.heroImagesDark && settings.heroImagesDark.length > 0
+      ? settings.heroImagesDark
+      : settings?.heroImagesLight || [];
+
   useEffect(() => {
-    if (settings?.heroImagesDark && settings.heroImagesDark.length > 1) {
+    if (activeImageList && activeImageList.length > 1) {
       const interval = setInterval(() => {
-        setActiveImageIndex((prev) => (prev + 1) % settings.heroImagesDark!.length);
+        setActiveImageIndex((prev) => (prev + 1) % activeImageList.length);
       }, 5000);
       return () => clearInterval(interval);
     }
-  }, [settings?.heroImagesDark]);
+  }, [activeImageList]);
+
+  const activeVideoUrl =
+    theme === "light"
+      ? settings?.heroVideoUrlLight || settings?.heroVideoUrlDark || "https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4"
+      : settings?.heroVideoUrlDark || settings?.heroVideoUrlLight || "https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4";
 
   const handleScroll = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -35,24 +51,25 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-black flex flex-col items-center justify-center">
+    <section className="relative h-screen w-full overflow-hidden bg-white dark:bg-black transition-colors flex flex-col items-center justify-center">
       {/* Background Media */}
       <div className="absolute inset-0 z-0">
         {settings?.heroMediaType === "video" ? (
           <video
-            src={settings?.heroVideoUrlDark || settings?.heroVideoUrlLight || "https://res.cloudinary.com/aqszlz7k/video/upload/12_zsnepl.mp4"}
+            key={activeVideoUrl}
+            src={activeVideoUrl}
             autoPlay
             loop
             muted
             playsInline
             className="w-full h-full object-cover opacity-80"
           />
-        ) : settings?.heroImagesDark && settings.heroImagesDark.length > 0 ? (
+        ) : activeImageList && activeImageList.length > 0 ? (
           <div className="relative w-full h-full">
             <AnimatePresence mode="wait">
               <motion.img
-                key={activeImageIndex}
-                src={settings.heroImagesDark[activeImageIndex]}
+                key={`${theme}-${activeImageIndex}`}
+                src={activeImageList[activeImageIndex]}
                 alt="Hero Background"
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: 0.85, scale: 1 }}
@@ -63,11 +80,11 @@ export function HeroSection() {
             </AnimatePresence>
           </div>
         ) : (
-          <div className="w-full h-full bg-black" />
+          <div className="w-full h-full bg-white dark:bg-black" />
         )}
         
-        {/* Soft vignette overlay at top/bottom for readability, center is completely clear */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/45 pointer-events-none" />
+        {/* Soft vignette overlay at top/bottom for readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-white/60 dark:from-black/80 dark:via-transparent dark:to-black/45 pointer-events-none transition-colors" />
       </div>
 
       {/* Brand Central Hero Tagline & Subtitle */}

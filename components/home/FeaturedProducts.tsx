@@ -24,12 +24,12 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
   if (products.length === 0) return null;
 
   return (
-    <div className="w-full bg-black">
+    <div className="w-full bg-white dark:bg-black transition-colors">
       <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
           <div>
             <motion.p
-              className="text-xs font-semibold tracking-widest uppercase text-gray-400 mb-2"
+              className="text-xs font-semibold tracking-widest uppercase text-zinc-500 dark:text-gray-400 mb-2"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
@@ -37,7 +37,7 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
               {settings?.featuredSubtitle || "مختارة خصيصاً لك"}
             </motion.p>
             <motion.h2
-              className="text-3xl md:text-4xl font-bold tracking-tight text-white"
+              className="text-3xl md:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
