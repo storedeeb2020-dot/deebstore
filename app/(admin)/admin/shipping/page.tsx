@@ -20,7 +20,7 @@ export default function AdminShippingPage() {
       setRates(data);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load shipping rates");
+      toast.error("حدث خطأ أثناء تحميل أسعار الشحن");
     } finally {
       setLoading(false);
     }
@@ -46,10 +46,10 @@ export default function AdminShippingPage() {
     setSaving(true);
     try {
       await updateShippingRates(rates);
-      toast.success("Shipping rates for all Egyptian governorates saved successfully!");
+      toast.success("تم حفظ أسعار الشحن لجميع المحافظات بنجاح!");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to save shipping rates");
+      toast.error("حدث خطأ أثناء حفظ أسعار الشحن");
     } finally {
       setSaving(false);
     }
@@ -62,16 +62,16 @@ export default function AdminShippingPage() {
   );
 
   return (
-    <div className="space-y-8 font-sans">
+    <div className="space-y-8 font-sans" dir="rtl">
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-sm">
         <div>
           <h1 className="text-xl font-black text-zinc-900 tracking-tight flex items-center gap-2">
             <Truck className="text-amber-500" size={24} />
-            Egyptian Governorates Shipping Management (أسعار الشحن للمحافظات)
+            إدارة أسعار الشحن للمحافظات المصرية
           </h1>
           <p className="text-xs text-zinc-500 mt-1">
-            Configure custom shipping rates for all 27 Egyptian governorates. Changes apply instantly to customer checkout.
+            تحديد وتعديل أسعار الشحن المخصصة لجميع المحافظات الـ 27. تطبق التغييرات فوراً في صفحة الدفع للعملاء.
           </p>
         </div>
 
@@ -81,7 +81,7 @@ export default function AdminShippingPage() {
             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-zinc-200 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition-colors"
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-            Reload
+            إعادة تحميل
           </button>
 
           <button
@@ -90,20 +90,20 @@ export default function AdminShippingPage() {
             className="inline-flex items-center gap-2 bg-zinc-900 text-white font-extrabold text-xs px-5 py-2.5 rounded-xl hover:bg-zinc-800 transition-all shadow-md active:scale-95 disabled:opacity-50"
           >
             {saving ? <Spinner size="sm" className="border-white" /> : <Save size={15} />}
-            Save Shipping Rates
+            حفظ أسعار الشحن
           </button>
         </div>
       </div>
 
       {/* Search Input Bar */}
       <div className="relative max-w-md bg-white rounded-2xl border border-zinc-200/80 p-2 shadow-sm">
-        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+        <Search size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
         <input
           type="text"
-          placeholder="Search governorate by Arabic or English name..."
+          placeholder="ابحث عن اسم المحافظة بالعربية أو الإنجليزية..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-transparent text-xs font-semibold focus:outline-none"
+          className="w-full pr-10 pl-4 py-2 bg-transparent text-xs font-semibold focus:outline-none"
         />
       </div>
 
@@ -112,19 +112,19 @@ export default function AdminShippingPage() {
         <div className="bg-white rounded-2xl border border-zinc-200/80 p-16 flex items-center justify-center">
           <div className="text-center space-y-3">
             <Spinner size="lg" />
-            <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider">Loading Governorates Shipping Data...</p>
+            <p className="text-xs text-zinc-400 font-bold tracking-wider">جاري تحميل بيانات أسعار الشحن للمحافظات...</p>
           </div>
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-right">
               <thead>
-                <tr className="bg-zinc-50/80 border-b border-zinc-100 text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider">
-                  <th className="px-6 py-4 text-left">Governorate (المحافظة)</th>
-                  <th className="px-6 py-4 text-left">English Name</th>
-                  <th className="px-6 py-4 text-left">Shipping Price (سعر الشحن EGP)</th>
-                  <th className="px-6 py-4 text-center">Status</th>
+                <tr className="bg-zinc-50/80 border-b border-zinc-100 text-[11px] font-black text-zinc-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right">المحافظة</th>
+                  <th className="px-6 py-4 text-right">الاسم بالإنجليزية</th>
+                  <th className="px-6 py-4 text-right">سعر الشحن (ج.م)</th>
+                  <th className="px-6 py-4 text-center">الحالة</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100">
@@ -145,7 +145,7 @@ export default function AdminShippingPage() {
                           onChange={(e) => handlePriceChange(rate.id, parseFloat(e.target.value) || 0)}
                           className="w-24 px-3 py-1.5 border border-zinc-200 rounded-xl text-xs font-black text-zinc-900 focus:outline-none focus:border-zinc-900 bg-white"
                         />
-                        <span className="text-xs font-bold text-zinc-400">EGP</span>
+                        <span className="text-xs font-bold text-zinc-400">ج.م</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -157,7 +157,7 @@ export default function AdminShippingPage() {
                             : "bg-zinc-100 text-zinc-400 hover:bg-zinc-200"
                         }`}
                       >
-                        {rate.active ? "Active" : "Disabled"}
+                        {rate.active ? "مفعّل" : "غير مفعّل"}
                       </button>
                     </td>
                   </tr>

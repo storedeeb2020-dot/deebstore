@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getProducts, getSiteSettings } from "@/lib/firebase/firestore";
+import { getProducts, getSiteSettings, getShippingRates } from "@/lib/firebase/firestore";
 import type { Product } from "@/types/product";
 
-// ─── Products Cache (5 min TTL) ───────────────────────────────────────────────
+// ─── Products & Settings Cache (3 min TTL) ──────────────────────────────────
 let _productsCache: Product[] = [];
 let _cacheTimestamp = 0;
-const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_TTL = 3 * 60 * 1000;
 
 async function getCachedProducts(): Promise<Product[]> {
   if (Date.now() - _cacheTimestamp < CACHE_TTL && _productsCache.length > 0) {
@@ -20,33 +20,26 @@ async function getCachedProducts(): Promise<Product[]> {
   return _productsCache;
 }
 
-const INTERNATIONAL_KEYWORDS = [
-  "برا مصر", "خارج مصر", "دول تانية", "دول اخرى", "دول أخرى",
-  "abroad", "international", "outside egypt", "خارج", "بره مصر",
-  "السعودية", "الامارات", "الإمارات", "الكويت", "قطر", "البحرين",
-  "الاردن", "الأردن", "لبنان", "ليبيا", "تونس", "المغرب", "العراق", "اليمن"
-];
-
 function isValidProduct(p: Product): boolean {
   return !!(
-    p.name && p.name.trim().length >= 3 &&
-    p.slug && p.slug.trim().length >= 2 &&
-    typeof p.price === "number" && p.price > 0 && p.price < 50000
+    p.name && p.name.trim().length >= 2 &&
+    p.slug &&
+    typeof p.price === "number" && p.price > 0
   );
 }
 
 function getSuggestedReplies(intent: string): string[] {
   const map: Record<string, string[]> = {
-    greeting:      ["🛍️ كل المنتجات", "📏 احسب مقاسي", "🚚 الشحن والتوصيل", "💳 طرق الدفع"],
-    shipping:      ["📦 تتبع طلب", "💳 طرق الدفع", "🛍️ تصفح المنتجات"],
-    city_shipping: ["📦 تتبع طلب", "💳 طرق الدفع", "🛍️ كل المنتجات"],
+    greeting:      ["🛍️ المنتجات المتاحة", "📏 احسب مقاسي", "🚚 تفاصيل الشحن"],
+    shipping:      ["📦 تتبع الطلب", "💳 طرق الدفع", "🛍️ تصفح المنتجات"],
+    city_shipping: ["📦 تتبع الطلب", "💳 طرق الدفع", "🛍️ كل المنتجات"],
     intl_shipping: ["🛍️ كل المنتجات", "📏 احسب مقاسي", "💳 طرق الدفع"],
-    payment:       ["🚚 الشحن والتوصيل", "🔄 الإرجاع والتبديل", "🛍️ تصفح المنتجات"],
-    return:        ["🚚 الشحن والتوصيل", "💳 طرق الدفع", "🛍️ كل المنتجات"],
-    size:          ["🛍️ عرض المنتجات", "💰 الأسعار", "🎨 الألوان"],
-    products:      ["📏 احسب مقاسي", "💰 الأسعار", "🎨 الألوان المتاحة"],
-    price:         ["🛍️ كل المنتجات", "📏 احسب مقاسي", "⭐ الأكثر مبيعاً"],
-    unknown:       ["🛍️ كل المنتجات", "📏 احسب مقاسي", "🚚 الشحن"],
+    payment:       ["🚚 تفاصيل الشحن", "🔄 سياسة التبديل", "🛍️ المتجر"],
+    return:        ["🚚 الشحن", "💳 الدفع", "🛍️ المنتجات"],
+    size:          ["🛍️ عرض المنتجات", "💰 الأسعار"],
+    products:      ["📏 احسب مقاسي", "💰 الأسعار", "🚚 الشحن"],
+    price:         ["🛍️ كل المنتجات", "⭐ الأكثر مبيعاً"],
+    unknown:       ["🛍️ تصفح المنتجات", "📏 المقاسات", "🚚 الشحن"],
   };
   return map[intent] ?? map.unknown;
 }
@@ -61,62 +54,75 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "الرجاء إدخال رسالة صحيحة." }, { status: 400 });
     }
 
-    // 1. Fetch Products and Settings dynamically from Firestore Database
-    const [productsList, siteSettings] = await Promise.all([
+    // 1. Fetch Real Live Data Simultaneously from Firestore
+    const [productsList, siteSettings, shippingRates] = await Promise.all([
       getCachedProducts(),
-      getSiteSettings().catch(() => null)
+      getSiteSettings().catch(() => null),
+      getShippingRates().catch(() => [])
     ]);
+
     const validProducts = productsList.filter(isValidProduct);
 
-    // Dynamic Live Store Data from Database
+    // Dynamic Live Settings
+    const storeName = siteSettings?.storeName || "DEEP STORE";
     const storePhone = siteSettings?.storePhone || siteSettings?.whatsappNumber || "المتاح بصفحة التواصل";
     const vodafoneNumber = siteSettings?.vodafoneCash || "المتاح بصفحة الدفع";
     const instapayTag = siteSettings?.instapayUsername || "المتاح بصفحة الدفع";
     const announcement = siteSettings?.announcementEnabled ? siteSettings.announcementText : "";
 
+    // 2. Format Real Governorate Shipping Rates from Database
+    const shippingText = shippingRates.length > 0
+      ? shippingRates
+          .filter(r => r.active)
+          .map(r => `• ${r.nameAr} (${r.nameEn}): ${r.price} ج.م`)
+          .join("\n")
+      : "القاهرة والجيزة: 50 ج.م، الإسكندرية والدلتا: 60 ج.م، القناة والبحيرة: 65 ج.م، الصعيد: 75-85 ج.م";
+
+    // 3. Format Real Product Catalog
     const catalogLines = validProducts.map((p) => {
       const priceText = p.salePrice ? `${p.salePrice} ج.م (خصم من ${p.price} ج.م)` : `${p.price} ج.م`;
       const colors = p.variants?.map((v) => v.colorName).filter(Boolean).join("، ") || "متعدد";
-      const sizes = p.variants?.[0]?.sizes?.map((s) => `${s.size}(${s.stock > 0 ? "✓" : "✗"})`).join(" ") || "S M L XL XXL";
-      const desc = p.description ? p.description.replace(/\n/g, " ") : "قطن فاخر ستريت وير عالية الجودة";
-      return `[${p.id}] ${p.name} | سعر: ${priceText} | تصنيف: ${p.category} | ألوان: ${colors} | مقاسات: ${sizes} | وصف: ${desc} | رابط: /products/${p.slug}`;
+      const sizes = p.variants?.[0]?.sizes?.map((s) => `${s.size}(${s.stock > 0 ? "متوفر" : "غير متوفر"})`).join(" ") || "S M L XL XXL";
+      const desc = p.description ? p.description.replace(/\n/g, " ") : "خامة ستريت وير قطن فاخرة";
+      return `[${p.id}] ${p.name} | السعر: ${priceText} | القسم: ${p.category} | الألوان: ${colors} | المقاسات: ${sizes} | الوصف: ${desc} | الرابط: /products/${p.slug}`;
     });
-    const catalogText = catalogLines.length > 0 ? catalogLines.join("\n") : "لا توجد منتجات حالياً.";
+    const catalogText = catalogLines.length > 0 ? catalogLines.join("\n") : "لا توجد منتجات مسجلة حالياً.";
 
     const apiKey = process.env.GEMINI_API_KEY;
     let replyText = "";
     let suggestedProductIds: string[] = [];
     let detectedIntent = "unknown";
 
-    // Dynamic Prompt with 100% Firestore Database values & strict Persona guidelines
-    const systemInstruction = `أنت "وولف" 🐺 — مساعد الأزياء الفاخر والمنسق الذكي المباشر لمتجر ${siteSettings?.storeName || "DEEP STORE"}.
+    // 4. Build Professional Persona Prompt Grounded in Firestore
+    const systemInstruction = `أنت "وولف" 🐺 — مساعد الموضة والأزياء الذكي والتفاعلي لمتجر ${storeName}.
 
-مهمتك:
-- الإجابة التلقائية والسلسة والذكية جداً على كل أسئلة الزوار (بالعربية المصرية العصرية الودية: "يا فنان"، "صديقي").
-- فهم قصد العميل من أول مرة وسياق الكلام دون تكرار نفس السؤال أو الإجابة.
-- إذا سأل العميل عن الشحن لأي محافظة أو مدينة (مثل القاهرة، المنصورة، طنطا، أسوان، الإسكندرية...)، وضح له أن الشحن متوفر لكل المحافظات في 2-4 أيام عمل وتتحدد التكلفة الدقيقة بالجنيه في صفحة الشراء، أو قدم له السعر التقريبي.
-- إذا سأل عن منتج أو سعر أو مقاس، استخرج البيانات بدقة من الكتالوج التالي بدون أي تخمين أو اختراع.
+شخصيتك وقواعد الحوار:
+- تتحدث بعفوية وذكاء عالي وسلاسة باللهجة المصرية الودودة المحترمة ("يا فنان"، "صديقي"، "منور ديب ستور").
+- تجيب العميل بأسلوب حواري طبيعي ممتع دون تكرار رسائل قالبية أو خيارات مللت العميل.
+- تفهم سياق وتاريخ المحادثة السابقة بالكامل وتتذكر كل ما تم الحديث عنه.
 
-معلومات متجر ${siteSettings?.storeName || "DEEP STORE"} من قواعد البيانات:
-- التواصل والواتساب: ${storePhone}
+بيانات المتجر الحية المأخوذة مباشرة من قاعدة البيانات (Firestore):
+- اسم المتجر: ${storeName}
+- واتساب / هاتف التواصل: ${storePhone}
 - فودافون كاش: ${vodafoneNumber} | انستاباي: ${instapayTag}
-- الإعلانات المفعّلة: ${announcement || "شحن وتوصيل لجميع المحافظات"}
-- طرق الدفع: ${siteSettings?.codEnabled !== false ? "الدفع عند الاستلام 🚪، " : ""}${siteSettings?.vodafoneCashEnabled !== false ? `فودافون كاش 📱، ` : ""}${siteSettings?.instapayEnabled !== false ? `انستاباي 💳` : ""}
+- الإعلانات والخصومات الحالية: ${announcement || "شحن سريع لجميع المحافظات"}
+- طرق الدفع المتاحة: ${siteSettings?.codEnabled !== false ? "الدفع عند الاستلام 🚪، " : ""}${siteSettings?.vodafoneCashEnabled !== false ? `فودافون كاش 📱، ` : ""}${siteSettings?.instapayEnabled !== false ? `انستاباي 💳` : ""}
 
-كتالوج المنتجات الحقيقي والفعلي المسجل في قاعدة البيانات (Firestore):
+جدول أسعار الشحن الحقيقي والمباشر للمحافظات من قاعدة البيانات:
+${shippingText}
+
+كتالوج المنتجات الحقيقي والفعلي المسجل في المتجر:
 ${catalogText}
 
-قواعد الإجابة:
-1. كن ذكياً ومباشراً ولا تكرر خيارات القائمة إلا إذا طلب العميل ذلك.
-2. حدد المقاس الأنسب للعميل بناءً على طوله ووزنه بذكائك كخبير موضة وأزياء دون التزام بجداول صلبة.
-3. إذا اقترحت منتجاً، اذكر اسمه ورابطه بالشكل: [اسم المنتج](/products/slug).
-4. في نهاية الرد أضف سطراً واحداً بالتنسيق:
+تعليمات الهيكلة والرد:
+1. عند سؤال العميل عن أسعار الشحن لمحافظة أو مدينة معينة، استخرج السعر بالضبط من قائمة أسعار الشحن أعلاه واذكره له بوضوح.
+2. عند التوصية بمنتج، اذكر اسمه ورابطه بالشكل: [اسم المنتج](/products/slug).
+3. في السطر الأخير تماماً من ردك (بدون أن يراها العميل كجزء من النص)، أضف التنسيق التالي:
 PRODUCT_IDS:id1,id2
 INTENT:intent_name`;
 
     if (apiKey) {
       try {
-        // Build proper Gemini contents array from history
         const contents = [
           ...history.map((h: { role: string; text: string }) => ({
             role: h.role === "user" ? "user" : "model",
@@ -164,93 +170,36 @@ INTENT:intent_name`;
       }
     }
 
-    // Smart Local Fallback Engine (Runs ONLY if Gemini API network call fails or key missing)
+    // 5. Intelligent Native Natural Language Fallback (If AI Key offline)
     if (!replyText) {
       const lower = message.toLowerCase();
+      const isShipping = lower.includes("شحن") || lower.includes("توصيل") || lower.includes("محافظ");
+      const isPrice = lower.includes("سعر") || lower.includes("بكام") || lower.includes("كام") || lower.includes("اسعار");
+      const isGreeting = lower.includes("ازيك") || lower.includes("سلام") || lower.includes("اهلا") || lower.includes("أهلا") || lower.includes("هاي") || lower.includes("مرحبا");
 
-      const isIntl = INTERNATIONAL_KEYWORDS.some((k) => lower.includes(k));
-      const isShipping = lower.includes("شحن") || lower.includes("توصيل") || lower.includes("يوصل");
-      const isPayment = lower.includes("دفع") || lower.includes("فودافون") || lower.includes("انستا") || lower.includes("كاش");
-      const isReturn = lower.includes("ارجاع") || lower.includes("إرجاع") || lower.includes("تبديل") || lower.includes("استرجاع");
-      const isGreeting = lower.includes("ازيك") || lower.includes("سلام") || lower.includes("اهلا") || lower.includes("أهلا") || lower.includes("مرحبا") || lower.includes("هاي") || lower.includes("hi");
-      const isPriceQuery = lower.includes("سعر") || lower.includes("بكام") || lower.includes("تمن") || lower.includes("كام") || lower.includes("فلوس") || lower.includes("اسعار") || lower.includes("أسعار");
-      const isSpecsQuery = lower.includes("مواصفات") || lower.includes("موصفات") || lower.includes("خامة") || lower.includes("خامه") || lower.includes("تفاصيل") || lower.includes("وصف");
-      const isSummerBeach = lower.includes("بحر") || lower.includes("ساحل") || lower.includes("شورت") || lower.includes("صيف");
-
-      if (isIntl) {
-        detectedIntent = "intl_shipping";
-        replyText = `للأسف يا فنان، DEEP STORE بيشحن داخل جمهورية مصر العربية فقط حالياً 🇪🇬.\n\nلو عندك عنوان داخل مصر نتشرف بتوصيل طلبك فوراً!`;
-      } else if (isShipping) {
+      if (isShipping) {
         detectedIntent = "shipping";
-        replyText = `الشحن متاح لكل المحافظات في 2-4 أيام عمل 🚚 (القاهرة 50ج، الدلتا والإسكندرية 60ج، القناة 65ج، الصعيد 75-85ج).`;
-      } else if (isPayment) {
-        detectedIntent = "payment";
-        replyText = `طرق الدفع المتاحة 💳\n${siteSettings?.codEnabled !== false ? "• الدفع عند الاستلام 🚪\n" : ""}${siteSettings?.vodafoneCashEnabled !== false ? `• فودافون كاش 📱 (${vodafoneNumber})\n` : ""}${siteSettings?.instapayEnabled !== false ? `• انستاباي 💳 (${instapayTag})\n` : ""}`;
-      } else if (isReturn) {
-        detectedIntent = "return";
-        replyText = `سياسة الإرجاع والتبديل 🔄\n- الإرجاع مقبول خلال 7 أيام من الاستلام مع الحفاظ على سلامة المنتج.\n- التبديل بالمقاس متاح خلال 14 يوم.`;
+        // Find if user mentioned a specific governorate
+        const matchedRate = shippingRates.find(r => lower.includes(r.nameAr.toLowerCase()) || lower.includes(r.nameEn.toLowerCase()));
+        if (matchedRate) {
+          replyText = `سعر الشحن لـ **${matchedRate.nameAr}** هو **${matchedRate.price} ج.م** واستلام الطلب خلال 2-4 أيام عمل 🚚.`;
+        } else {
+          replyText = `الشحن متوفر لكل المحافظات 🚚!\n- القاهرة والجيزة: 50ج\n- الإسكندرية والدلتا: 60ج\n- باقي المحافظات والصعيد: 65-85ج.`;
+        }
       } else if (isGreeting) {
         detectedIntent = "greeting";
-        replyText = `أهلاً بيك يا فنان في DEEP STORE 🐺✨!\nأنا وولف، مستشارك الخاص للأزياء والمقاسات. قول لي إيه القطعة اللي بتدور عليها أو اكتب طولك ووزنك!`;
-        suggestedProductIds = validProducts.slice(0, 3).map((p) => p.id);
-      } else if (isSummerBeach) {
-        detectedIntent = "products";
-        const beachItems = validProducts.filter(p => p.name.includes("شورت") || p.category.includes("شورت") || p.description?.includes("بحر") || p.description?.includes("شورت"));
-        suggestedProductIds = (beachItems.length > 0 ? beachItems : validProducts).map(p => p.id);
-        replyText = `تشكيلة البحر والساحل الفاخرة من DEEP STORE 🏖️🔥:`;
-      } else if (isSpecsQuery) {
-        detectedIntent = "products";
-        suggestedProductIds = validProducts.slice(0, 2).map((p) => p.id);
-        const p1 = validProducts[0];
-        const descText = p1 ? `\n• **${p1.name}**: ${p1.description || "خامة ستريت وير قطن فاخر عالية الجودة ومعالجة ضد الانكماش"}` : "";
-        replyText = `مواصفات وخامات تشكيلة DEEP STORE 🐺🧵:\n- خامات قطنية فاخرة 100% ناعمة ومريحة.\n- تقفيل وترزية ستريت وير عالي الجودة.${descText}`;
+        replyText = `أهلاً بيك يا فنان في ${storeName} 🐺✨! أنا وولف، مستشارك الخاص للأزياء والمقاسات. قولي بتدور على إيه النهاردة؟`;
+        suggestedProductIds = validProducts.slice(0, 3).map(p => p.id);
       } else {
-        // Size Number Check
-        const nums = message.match(/\d+/g)?.map(Number) || [];
-        if (nums.length >= 2) {
-          const height = Math.max(...nums);
-          const weight = Math.min(...nums);
-          if (height >= 140 && height <= 220 && weight >= 40 && weight <= 150) {
-            detectedIntent = "size";
-            let size = "M";
-            if (height < 165 || weight < 60) size = "S";
-            else if (height <= 175 && weight <= 72) size = "M";
-            else if (height <= 182 && weight <= 84) size = "L";
-            else if (height <= 190 && weight <= 95) size = "XL";
-            else size = "XXL";
-            replyText = `قياسك المضبوط في تشكيلة ديب هو **${size}** 🎯 (طول ${height}سم ووزن ${weight}كجم).\nشوف القطع المترشحة ليك بمقاسك:`;
-            suggestedProductIds = validProducts.slice(0, 3).map((p) => p.id);
-          }
-        }
-
-        if (!replyText) {
-          // Direct Product Search Match by Words
-          const words = lower.split(/\s+/).filter(w => w.length > 2);
-          const matched = validProducts.filter(p => {
-            const name = p.name.toLowerCase();
-            const cat = (p.category || "").toLowerCase();
-            const desc = (p.description || "").toLowerCase();
-            return words.some(w => name.includes(w) || cat.includes(w) || desc.includes(w));
-          });
-
-          if (matched.length > 0) {
-            detectedIntent = "products";
-            suggestedProductIds = matched.map(p => p.id);
-            replyText = `إليك القطع المتطابقة مع بحثك 🐺✨:`;
-          } else {
-            const isProductReq = lower.includes("منتج") || lower.includes("عندك") || lower.includes("تشكيل") || lower.includes("عرض") || lower.includes("شوف") || lower.includes("كل المنتجات");
-            if (isPriceQuery || isProductReq) {
-              detectedIntent = "products";
-              suggestedProductIds = validProducts.map((p) => p.id);
-              replyText = isPriceQuery 
-                ? `دي قائمة منتجاتنا بالأسعار الكاملة 💰:` 
-                : `دي كل تشكيلة DEEP STORE المتاحة دلوقتي 🐺🔥:`;
-            } else {
-              detectedIntent = "unknown";
-              replyText = `تحت أمرك يا فنان 🐺! اسألني عن أي منتج، مواصفاته، مقاسك، أو أسعار الشحن.`;
-              suggestedProductIds = validProducts.slice(0, 2).map((p) => p.id);
-            }
-          }
+        const matched = validProducts.filter(p => lower.includes(p.name.toLowerCase()) || (p.category && lower.includes(p.category.toLowerCase())));
+        if (matched.length > 0) {
+          detectedIntent = "products";
+          suggestedProductIds = matched.map(p => p.id);
+          replyText = `إليك التفاصيل والقطع المتاحة 🐺✨:`;
+        } else {
+          detectedIntent = "unknown";
+          replyText = `أنا معاك يا فنان 🐺! اسألني عن المنتجات المتاحة، أسعار الشحن لمحافظتك، أو احسب مقاسك المضبوط وطولك ووزنك.`;
+          suggestedProductIds = validProducts.slice(0, 2).map(p => p.id);
         }
       }
     }
