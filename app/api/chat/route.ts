@@ -152,7 +152,7 @@ INTENT:intent_name`;
 
     // Try Val.town AI Server Proxy if Direct Key wasn't active or failed
     if (!replyText) {
-      const valTownReply = await callValTownStreamProxy(message, catalogText, storeName);
+      const valTownReply = await callValTownStreamProxy(message, catalogText, storeName, history, systemInstruction);
       if (valTownReply) {
         const idMatch = valTownReply.match(/PRODUCT_IDS:([^\n]*)/);
         if (idMatch) {

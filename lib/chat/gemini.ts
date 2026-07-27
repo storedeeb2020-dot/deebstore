@@ -37,16 +37,20 @@ export async function callGeminiRestAPI(
 export async function callValTownStreamProxy(
   message: string,
   catalogText: string,
-  storeName: string
+  storeName: string,
+  history: { role: string; text: string }[] = [],
+  systemInstruction?: string
 ): Promise<string> {
   try {
-    const valTownRes = await fetch("https://yousefeldeeb-chatgai.web.val.run", {
+    const valTownRes = await fetch("https://eldeebstore--e222cb10890211f196411607ee4eb77e.web.val.run/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         message,
         catalogText,
         storeName,
+        history,
+        systemInstruction,
       }),
     });
 
