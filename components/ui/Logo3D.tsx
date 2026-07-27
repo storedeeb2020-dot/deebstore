@@ -70,7 +70,8 @@ export function Logo3D({ className, text = "ELDEEB" }: Logo3DProps) {
                     ? "drop-shadow(0 6px 12px rgba(0,0,0,0.9))"
                     : `brightness(${Math.max(0.3, 1 - i * 0.03)})`,
                 }}
-                className="whitespace-nowrap font-black tracking-widest text-xl sm:text-2xl md:text-3xl uppercase font-mono select-none"
+                className="whitespace-nowrap font-black tracking-[0.25em] text-2xl sm:text-3xl md:text-4xl uppercase select-none font-serif italic"
+                style={{ fontFamily: "'Cinzel', 'Playfair Display', 'Outfit', serif" }}
               >
                 <span className={colorClass}>
                   {text}

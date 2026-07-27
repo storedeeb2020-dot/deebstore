@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getProducts, getSiteSettings, getShippingRates } from "@/lib/firebase/firestore";
+import { getSessionData, updateSessionData, extractEntitiesFromMessage } from "@/lib/chat/sessionMemory";
+import { analyzeIntentAndStream, callValTownStreamProxy } from "@/lib/chat/gemini";
 import type { Product } from "@/types/product";
 
-// ─── Products & Settings Cache (3 min TTL) ──────────────────────────────────
 let _productsCache: Product[] = [];
 let _cacheTimestamp = 0;
 const CACHE_TTL = 3 * 60 * 1000;
@@ -49,12 +50,17 @@ export async function POST(req: Request) {
     const body = await req.json();
     const message: string = body.userMessage || body.message || "";
     const history: { role: string; text: string }[] = body.history || [];
+    const sessionId: string = body.sessionId || "default_session";
 
     if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "الرجاء إدخال رسالة صحيحة." }, { status: 400 });
     }
 
-    // 1. Fetch Real Live Data Simultaneously from Firestore
+    // 1. Update Session Memory from user message
+    const extractedEntities = extractEntitiesFromMessage(message);
+    const session = updateSessionData(sessionId, extractedEntities);
+
+    // 2. Fetch Firestore Live Data (Products, Site Settings, Governorate Rates)
     const [productsList, siteSettings, shippingRates] = await Promise.all([
       getCachedProducts(),
       getSiteSettings().catch(() => null),
@@ -63,14 +69,13 @@ export async function POST(req: Request) {
 
     const validProducts = productsList.filter(isValidProduct);
 
-    // Dynamic Live Settings
     const storeName = siteSettings?.storeName || "DEEP STORE";
     const storePhone = siteSettings?.storePhone || siteSettings?.whatsappNumber || "المتاح بصفحة التواصل";
     const vodafoneNumber = siteSettings?.vodafoneCash || "المتاح بصفحة الدفع";
     const instapayTag = siteSettings?.instapayUsername || "المتاح بصفحة الدفع";
     const announcement = siteSettings?.announcementEnabled ? siteSettings.announcementText : "";
 
-    // 2. Format Real Governorate Shipping Rates from Database
+    // 3. Format Real Governorate Shipping Rates from Firestore
     const shippingText = shippingRates.length > 0
       ? shippingRates
           .filter(r => r.active)
@@ -78,7 +83,7 @@ export async function POST(req: Request) {
           .join("\n")
       : "القاهرة والجيزة: 50 ج.م، الإسكندرية والدلتا: 60 ج.م، القناة والبحيرة: 65 ج.م، الصعيد: 75-85 ج.م";
 
-    // 3. Format Real Product Catalog
+    // 4. Format Real Product Catalog from Firestore
     const catalogLines = validProducts.map((p) => {
       const priceText = p.salePrice ? `${p.salePrice} ج.م (خصم من ${p.price} ج.م)` : `${p.price} ج.م`;
       const colors = p.variants?.map((v) => v.colorName).filter(Boolean).join("، ") || "متعدد";
@@ -88,67 +93,58 @@ export async function POST(req: Request) {
     });
     const catalogText = catalogLines.length > 0 ? catalogLines.join("\n") : "لا توجد منتجات مسجلة حالياً.";
 
+    // Session Memory Context String
+    const sessionMemoryText = `
+بيانات ذاكرة العميل الحالية لهذه الجلسة:
+- مقاس العميل المحسوب: ${session.size || "لم يحدد بعد"}
+- محافظة/مدينة العميل: ${session.city || session.governorate || "لم تحدد بعد"}
+- القسم المفضل للعميل: ${session.preferredCategory || "لم يحدد بعد"}`;
+
     const apiKey = process.env.GEMINI_API_KEY;
     let replyText = "";
     let suggestedProductIds: string[] = [];
     let detectedIntent = "unknown";
 
-    // 4. Build Professional Persona Prompt Grounded in Firestore
-    const systemInstruction = `أنت "وولف" 🐺 — مساعد الموضة والأزياء الذكي والتفاعلي لمتجر ${storeName}.
+    // 5. System Prompt Grounded 100% in Firestore & Session Memory
+    const systemInstruction = `أنت "وولف" 🐺 — مساعد الموضة والأزياء الذكي لمتجر ${storeName}.
 
-شخصيتك وقواعد الحوار:
-- تتحدث بعفوية وذكاء عالي وسلاسة باللهجة المصرية الودودة المحترمة ("يا فنان"، "صديقي"، "منور ديب ستور").
-- تجيب العميل بأسلوب حواري طبيعي ممتع دون تكرار رسائل قالبية أو خيارات مللت العميل.
-- تفهم سياق وتاريخ المحادثة السابقة بالكامل وتتذكر كل ما تم الحديث عنه.
+شخصيتك:
+- تتحدث بعفوية وذكاء عالي وسلاسة باللهجة المصرية الودودة ("يا فنان"، "صديقي"، "منور ديب ستور").
+- تجيب العميل بأسلوب حواري ممتع دون تكرار أي رسائل قالبية.
+- تفهم سياق الذاكرة وتاريخ المحادثة بالكامل.
+
+${sessionMemoryText}
 
 بيانات المتجر الحية المأخوذة مباشرة من قاعدة البيانات (Firestore):
 - اسم المتجر: ${storeName}
 - واتساب / هاتف التواصل: ${storePhone}
 - فودافون كاش: ${vodafoneNumber} | انستاباي: ${instapayTag}
-- الإعلانات والخصومات الحالية: ${announcement || "شحن سريع لجميع المحافظات"}
+- الإعلانات والخصومات: ${announcement || "شحن سريع لجميع المحافظات"}
 - طرق الدفع المتاحة: ${siteSettings?.codEnabled !== false ? "الدفع عند الاستلام 🚪، " : ""}${siteSettings?.vodafoneCashEnabled !== false ? `فودافون كاش 📱، ` : ""}${siteSettings?.instapayEnabled !== false ? `انستاباي 💳` : ""}
 
-جدول أسعار الشحن الحقيقي والمباشر للمحافظات من قاعدة البيانات:
+جدول أسعار الشحن المباشر للمحافظات من قاعدة البيانات:
 ${shippingText}
 
-كتالوج المنتجات الحقيقي والفعلي المسجل في المتجر:
+كتالوج المنتجات الحقيقي والفعلي من قاعدة البيانات:
 ${catalogText}
 
 تعليمات الهيكلة والرد:
-1. عند سؤال العميل عن أسعار الشحن لمحافظة أو مدينة معينة، استخرج السعر بالضبط من قائمة أسعار الشحن أعلاه واذكره له بوضوح.
-2. عند التوصية بمنتج، اذكر اسمه ورابطه بالشكل: [اسم المنتج](/products/slug).
-3. في السطر الأخير تماماً من ردك (بدون أن يراها العميل كجزء من النص)، أضف التنسيق التالي:
+1. استخرج أسعار الشحن بدقة للمحافظة عند سؤال العميل عن الشحن.
+2. إذا كان مقاس العميل معروفاً من الذاكرة (${session.size || "S/M/L"}), اقترح المنتجات المتوفرة بمقاسه.
+3. عند التوصية بمنتج اذكر اسمه ورابطه بالشكل: [اسم المنتج](/products/slug).
+4. في السطر الأخير تماماً أضف:
 PRODUCT_IDS:id1,id2
 INTENT:intent_name`;
 
+    // Try Direct Gemini Stream API
     if (apiKey) {
       try {
-        const contents = [
-          ...history.map((h: { role: string; text: string }) => ({
-            role: h.role === "user" ? "user" : "model",
-            parts: [{ text: h.text }]
-          })),
-          { role: "user", parts: [{ text: message }] }
-        ];
+        const streamResult = await analyzeIntentAndStream(apiKey, systemInstruction, history, message);
+        for await (const chunk of streamResult.stream) {
+          replyText += chunk.text();
+        }
 
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              systemInstruction: {
-                parts: [{ text: systemInstruction }]
-              },
-              contents: contents
-            }),
-          }
-        );
-
-        const data = await response.json();
-        const rawText: string = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-        const idMatch = rawText.match(/PRODUCT_IDS:([^\n]*)/);
+        const idMatch = replyText.match(/PRODUCT_IDS:([^\n]*)/);
         if (idMatch) {
           suggestedProductIds = idMatch[1]
             .split(",")
@@ -156,30 +152,46 @@ INTENT:intent_name`;
             .filter((id: string) => id.length > 0 && validProducts.some((p) => p.id === id));
         }
 
-        const intentMatch = rawText.match(/INTENT:([^\n]*)/);
+        const intentMatch = replyText.match(/INTENT:([^\n]*)/);
         if (intentMatch) {
           detectedIntent = intentMatch[1].trim();
         }
 
-        replyText = rawText
+        replyText = replyText
           .replace(/PRODUCT_IDS:[^\n]*/g, "")
           .replace(/INTENT:[^\n]*/g, "")
           .trim();
       } catch (err) {
-        console.error("Gemini AI Call Error:", err);
+        console.error("Gemini Direct Stream Error:", err);
       }
     }
 
-    // 5. Intelligent Native Natural Language Fallback (If AI Key offline)
+    // Try Val.town AI Server Proxy if Direct Key wasn't active or failed
+    if (!replyText) {
+      const valTownReply = await callValTownStreamProxy(message, catalogText, storeName);
+      if (valTownReply) {
+        const idMatch = valTownReply.match(/PRODUCT_IDS:([^\n]*)/);
+        if (idMatch) {
+          suggestedProductIds = idMatch[1]
+            .split(",")
+            .map((id: string) => id.trim())
+            .filter((id: string) => id.length > 0 && validProducts.some((p) => p.id === id));
+        }
+        replyText = valTownReply
+          .replace(/PRODUCT_IDS:[^\n]*/g, "")
+          .replace(/INTENT:[^\n]*/g, "")
+          .trim();
+      }
+    }
+
+    // 6. Intelligent Fallback with Session Memory
     if (!replyText) {
       const lower = message.toLowerCase();
       const isShipping = lower.includes("شحن") || lower.includes("توصيل") || lower.includes("محافظ");
-      const isPrice = lower.includes("سعر") || lower.includes("بكام") || lower.includes("كام") || lower.includes("اسعار");
       const isGreeting = lower.includes("ازيك") || lower.includes("سلام") || lower.includes("اهلا") || lower.includes("أهلا") || lower.includes("هاي") || lower.includes("مرحبا");
 
       if (isShipping) {
         detectedIntent = "shipping";
-        // Search user message against real Firestore shipping rates array
         const matchedRate = shippingRates.find(r => 
           lower.includes(r.nameAr.toLowerCase()) || 
           lower.includes(r.nameEn.toLowerCase()) ||
@@ -189,15 +201,8 @@ INTENT:intent_name`;
 
         if (matchedRate) {
           replyText = `سعر الشحن لـ **${matchedRate.nameAr}** هو **${matchedRate.price} ج.م** واستلام الطلب خلال 2-4 أيام عمل 🚚.`;
-        } else if (shippingRates.length > 0) {
-          const ratesSummary = shippingRates
-            .filter(r => r.active)
-            .slice(0, 5)
-            .map(r => `• **${r.nameAr}**: ${r.price} ج.م`)
-            .join("\n");
-          replyText = `أسعار الشحن المتاحة حسب المحافظة 🚚:\n${ratesSummary}\n\nتحدد التكلفة بدقة في صفحة الشراء عند إدخال العنوان.`;
         } else {
-          replyText = `الشحن متوفر لجميع المحافظات 🚚 وتحدد التكلفة بالضبط في صفحة الشراء.`;
+          replyText = `الشحن متوفر لجميع المحافظات 🚚 وتحدد التكلفة بدقة في صفحة الشراء حسب عنوانك.`;
         }
       } else if (isGreeting) {
         detectedIntent = "greeting";
@@ -211,7 +216,7 @@ INTENT:intent_name`;
           replyText = `إليك القطع المتاحة 🐺✨:`;
         } else {
           detectedIntent = "unknown";
-          replyText = `أنا معاك يا فنان 🐺! اسألني عن المنتجات، أسعار الشحن لمحافظتك، أو اكتب طولك ووزنك لحساب مقاسك.`;
+          replyText = `أهلاً بك! أنا وولف 🐺 مساعد الموضة والأزياء في ${storeName}. يسعدني مساعدتك!`;
           suggestedProductIds = validProducts.slice(0, 2).map(p => p.id);
         }
       }
@@ -224,6 +229,7 @@ INTENT:intent_name`;
     return NextResponse.json({
       reply: replyText,
       intent: detectedIntent,
+      session,
       suggestedReplies: getSuggestedReplies(detectedIntent),
       suggestedProducts: suggestedProducts.map((p) => ({
         id: p.id,

@@ -208,6 +208,7 @@ export function ChatBot() {
         body: JSON.stringify({
           userMessage: textToSend,
           history: historyForApi,
+          sessionId: sessionId || "anon_session",
         }),
       });
 
