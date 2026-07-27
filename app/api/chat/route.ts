@@ -191,9 +191,7 @@ INTENT:intent_name`;
         detectedIntent = "shipping";
         const matchedRate = shippingRates.find(r => 
           lower.includes(r.nameAr.toLowerCase()) || 
-          lower.includes(r.nameEn.toLowerCase()) ||
-          (r.nameAr.includes("القاهرة") && (lower.includes("قاهره") || lower.includes("قاهرة") || lower.includes("جيزة") || lower.includes("جيزه"))) ||
-          (r.nameAr.includes("الدقهلية") && (lower.includes("منصورة") || lower.includes("منصوره")))
+          lower.includes(r.nameEn.toLowerCase())
         );
 
         if (matchedRate) {
@@ -224,10 +222,10 @@ INTENT:intent_name`;
       .filter(Boolean) as Product[];
 
     return NextResponse.json({
-      reply: replyText,
+      reply: replyText || "أهلاً بيك يا فنان! أنا وولف 🐺 مستشارك للأزياء، قولي محتاج تفاصيل عن إيه النهاردة؟",
       intent: detectedIntent,
       session,
-      suggestedReplies: getSuggestedReplies(detectedIntent),
+      suggestedReplies: [],
       suggestedProducts: suggestedProducts.map((p) => ({
         id: p.id,
         name: p.name,

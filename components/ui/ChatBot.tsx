@@ -93,7 +93,6 @@ export function ChatBot() {
       id: "welcome",
       sender: "bot",
       text: "أهلاً بك في DEEP STORE 🐺🔥!\nأنا **وولف**، مساعدك الشخصي ومستشارك للأزياء والمقاسات.\n\nقولي بتدور على إيه النهاردة؟ أو اكتب طولك ووزنك وهقترح عليك المقاس والقطع المناسبة فوراً!",
-      suggestedReplies: ["🛍️ كل المنتجات", "📏 احسب مقاسي", "🚚 الشحن والتوصيل", "💳 طرق الدفع"],
     },
   ]);
   const [input, setInput] = useState("");
@@ -392,21 +391,6 @@ export function ChatBot() {
                       </div>
                     )}
 
-                    {/* Quick Replies below Bot Messages */}
-                    {msg.sender === "bot" && msg.suggestedReplies && msg.suggestedReplies.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1 pt-1.5 border-t border-zinc-800/60">
-                        {msg.suggestedReplies.map((replyText) => (
-                          <button
-                            key={replyText}
-                            type="button"
-                            onClick={() => handleSend(replyText)}
-                            className="text-[10px] px-2 py-1 rounded-full bg-zinc-800 hover:bg-amber-500/20 border border-zinc-700 hover:border-amber-400/50 text-zinc-300 hover:text-amber-300 transition-all font-medium cursor-pointer"
-                          >
-                            {replyText}
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
@@ -421,26 +405,7 @@ export function ChatBot() {
             </div>
 
 
-            {/* Quick Action Chips */}
-            {messages.length <= 1 && !loading && (
-              <div className="px-3 pb-2 flex flex-wrap gap-1.5">
-                {[
-                  { label: "🛍️ كل المنتجات", text: "ايه كل المنتجات المتاحة عندك؟" },
-                  { label: "📏 احسب مقاسي", text: "عايز احسب مقاسي" },
-                  { label: "🚚 الشحن والتوصيل", text: "ايه تفاصيل الشحن والتوصيل؟" },
-                  { label: "💳 طرق الدفع", text: "ايه طرق الدفع المتاحة؟" },
-                ].map((chip) => (
-                  <button
-                    key={chip.label}
-                    type="button"
-                    onClick={() => handleSend(chip.text)}
-                    className="text-[10px] px-2.5 py-1.5 rounded-full bg-zinc-800 hover:bg-amber-500/20 border border-zinc-700 hover:border-amber-400/60 text-zinc-300 hover:text-amber-300 transition-all font-semibold cursor-pointer"
-                  >
-                    {chip.label}
-                  </button>
-                ))}
-              </div>
-            )}
+
 
             {/* Input Form */}
             <form
