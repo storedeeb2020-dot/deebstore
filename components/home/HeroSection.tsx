@@ -72,10 +72,10 @@ export function HeroSection() {
 
   return (
     <>
-      {/* ─── 1. DESKTOP / TABLET HERO VIEW (Full Screen Video Background) ─── */}
-      <section className="hidden md:flex relative h-screen w-full overflow-hidden bg-white dark:bg-black transition-colors flex-col items-center justify-center">
+      {/* ─── 1. DESKTOP / TABLET HERO VIEW (Pure Vibrant Video Background) ─── */}
+      <section className="hidden md:flex relative h-screen w-full overflow-hidden bg-black flex-col items-center justify-center">
         {/* Background Media */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 bg-black">
           {isVideoMode ? (
             <video
               ref={desktopVideoRef}
@@ -93,7 +93,7 @@ export function HeroSection() {
               className="w-full h-full object-cover"
             />
           ) : activeImageList && activeImageList.length > 0 ? (
-            <div className="relative w-full h-full">
+            <div className="relative w-full h-full bg-black">
               <AnimatePresence mode="wait">
                 <motion.img
                   key={`${theme}-${activeImageIndex}`}
@@ -108,10 +108,11 @@ export function HeroSection() {
               </AnimatePresence>
             </div>
           ) : (
-            <div className="w-full h-full bg-white dark:bg-black" />
+            <div className="w-full h-full bg-black" />
           )}
-          {/* Subtle Dark Gradient Overlay for Desktop */}
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+
+          {/* Clean Subtle Top and Bottom Vignette Only (No center grey blur) */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
         </div>
 
         {/* Brand Central Hero Tagline & Subtitle */}
@@ -123,10 +124,10 @@ export function HeroSection() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
-            className="h-24 lg:h-32 w-auto mx-auto object-contain mb-5 drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+            className="h-24 lg:h-32 w-auto mx-auto object-contain mb-5 drop-shadow-[0_10px_35px_rgba(0,0,0,0.95)]"
           />
           <motion.div
-            className="text-lg lg:text-xl font-black tracking-widest text-amber-400 flex items-center justify-center gap-2 drop-shadow-md"
+            className="text-lg lg:text-xl font-black tracking-widest text-amber-400 flex items-center justify-center gap-2 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
@@ -148,9 +149,9 @@ export function HeroSection() {
             onClick={handleScroll}
             whileHover={{ scale: 1.05, y: -3 }}
             whileTap={{ scale: 0.96 }}
-            className="relative inline-flex items-center justify-center p-[1.5px] rounded-full overflow-hidden bg-zinc-900 shadow-[0_20px_50px_rgba(0,0,0,0.9)] cursor-pointer border-none outline-none z-10"
+            className="relative inline-flex items-center justify-center p-[1.5px] rounded-full overflow-hidden bg-zinc-900 shadow-[0_20px_50px_rgba(0,0,0,0.95)] cursor-pointer border-none outline-none z-10"
           >
-            <div className="relative w-full h-full bg-zinc-950 hover:bg-gradient-to-r hover:from-amber-500 hover:to-amber-400 hover:text-black rounded-full px-10 py-4 flex items-center gap-3.5 transition-all duration-300 group">
+            <div className="relative w-full h-full bg-zinc-950/90 backdrop-blur-md hover:bg-gradient-to-r hover:from-amber-500 hover:to-amber-400 hover:text-black rounded-full px-10 py-4 flex items-center gap-3.5 transition-all duration-300 group border border-amber-500/30">
               <ShoppingBag size={18} className="text-amber-400 group-hover:text-black transition-colors" />
               <span className="font-bold text-base text-amber-400 group-hover:text-black transition-colors tracking-wide">
                 {settings?.heroButtonText || "تسوق الآن — SHOP NOW"}
@@ -162,7 +163,7 @@ export function HeroSection() {
       </section>
 
       {/* ─── 2. MOBILE HERO VIEW (Matches Town Team layout: 16:9 Video Top + Full Image Banner Below) ─── */}
-      <section className="block md:hidden w-full bg-white dark:bg-black overflow-hidden transition-colors">
+      <section className="block md:hidden w-full bg-black overflow-hidden">
         {/* Top Part: 16:9 Aspect Video */}
         {isVideoMode && (
           <div className="w-full aspect-video bg-black relative overflow-hidden shadow-lg">

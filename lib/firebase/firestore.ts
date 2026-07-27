@@ -48,6 +48,26 @@ export function cleanUndefined<T>(obj: T): T {
 
 // ─── Products ──────────────────────────────────────────
 
+export async function deleteFakeProducts(): Promise<void> {
+  try {
+    const snapshot = await getDocs(collection(db, "products"));
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data();
+      const name = (data.name || "").toLowerCase();
+      if (
+        name.includes("deep royal gold") ||
+        name.includes("هودي أسود فاخر") ||
+        name.includes("المخمل الذهبي") ||
+        name.includes("تيشيرت أوفرسايز ذهبي")
+      ) {
+        await deleteDoc(doc(db, "products", docSnap.id));
+      }
+    }
+  } catch (e) {
+    console.error("Failed to delete fake products:", e);
+  }
+}
+
 export async function getProducts(filters?: {
   featured?: boolean;
   bestSeller?: boolean;
@@ -55,49 +75,41 @@ export async function getProducts(filters?: {
   limitCount?: number;
 }): Promise<Product[]> {
   try {
-    const constraints: QueryConstraint[] = [orderBy("createdAt", "desc")];
+    // Self-healing: trigger deletion of old fake seed documents once
+    deleteFakeProducts().catch(() => {});
 
-    if (filters?.featured) constraints.push(where("featured", "==", true));
-    if (filters?.bestSeller) constraints.push(where("bestSeller", "==", true));
-    if (filters?.category) constraints.push(where("category", "==", filters.category));
-    if (filters?.limitCount && !filters?.featured && !filters?.bestSeller && !filters?.category) {
-      constraints.push(limit(filters.limitCount));
-    }
+    const snapshot = await getDocs(collection(db, "products"));
+    let items = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }) as Product);
 
-    const q = query(collection(db, "products"), ...constraints);
-    const snapshot = await getDocs(q);
-    let items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Product);
+    // Hard filter out any fake test products by name
+    items = items.filter((p) => {
+      const name = (p.name || "").toLowerCase();
+      return (
+        !name.includes("deep royal gold") &&
+        !name.includes("هودي أسود فاخر") &&
+        !name.includes("المخمل الذهبي") &&
+        !name.includes("تيشيرت أوفرسايز ذهبي")
+      );
+    });
 
-    if (filters?.limitCount && items.length > filters.limitCount) {
-      items = items.slice(0, filters.limitCount);
-    }
+    const getMillis = (val: any): number => {
+      if (!val) return 0;
+      if (typeof val.toMillis === "function") return val.toMillis();
+      if (typeof val.getTime === "function") return val.getTime();
+      return 0;
+    };
+
+    items.sort((a, b) => getMillis(b.createdAt) - getMillis(a.createdAt));
+
+    if (filters?.featured) items = items.filter((p) => p.featured);
+    if (filters?.bestSeller) items = items.filter((p) => p.bestSeller);
+    if (filters?.category) items = items.filter((p) => p.category === filters.category);
+    if (filters?.limitCount) items = items.slice(0, filters.limitCount);
+
     return items;
   } catch (err: any) {
-    // Robust Fallback: If Firestore index isn't built yet, fetch products and filter in memory
-    try {
-      const qFallback = query(collection(db, "products"));
-      const snapshot = await getDocs(qFallback);
-      let items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Product);
-
-      const getMillis = (val: any): number => {
-        if (!val) return 0;
-        if (typeof val.toMillis === "function") return val.toMillis();
-        if (typeof val.getTime === "function") return val.getTime();
-        return 0;
-      };
-
-      items.sort((a, b) => getMillis(b.createdAt) - getMillis(a.createdAt));
-
-      if (filters?.featured) items = items.filter((p) => p.featured);
-      if (filters?.bestSeller) items = items.filter((p) => p.bestSeller);
-      if (filters?.category) items = items.filter((p) => p.category === filters.category);
-      if (filters?.limitCount) items = items.slice(0, filters.limitCount);
-
-      return items;
-    } catch (fallbackErr) {
-      console.error("Failed to load products in fallback:", fallbackErr);
-      return [];
-    }
+    console.error("Failed to fetch products:", err);
+    return [];
   }
 }
 
