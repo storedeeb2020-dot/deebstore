@@ -529,26 +529,28 @@ export function ChatBot() {
         className="fixed bottom-6 right-6 z-50 cursor-grab active:cursor-grabbing touch-none select-none"
       >
         <motion.button
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.92 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-black shadow-[0_0_25px_rgba(251,191,36,0.6)] border-2 border-amber-300 focus:outline-none cursor-pointer p-1"
+          className="relative flex items-center justify-center w-16 h-16 focus:outline-none cursor-pointer p-0 bg-transparent border-0 drop-shadow-[0_10px_25px_rgba(245,158,11,0.6)]"
           aria-label="مساعد ملابس الديب ستور"
         >
           {isOpen ? (
-            <X className="w-6 h-6 text-black font-black" />
+            <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-black flex items-center justify-center shadow-2xl border-2 border-amber-300">
+              <X className="w-7 h-7 text-black font-black" />
+            </div>
           ) : (
             <div className="relative flex items-center justify-center w-full h-full">
-              {/* Official Wolf Icon inside Button */}
+              {/* Direct Transparent Wolf Image Icon */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/api/wolf-icon"
                 alt="DEEP STORE Wolf Assistant"
-                className="w-10 h-10 object-contain drop-shadow-md mix-blend-multiply"
+                className="w-full h-full object-contain filter drop-shadow-[0_4px_16px_rgba(251,191,36,0.8)] hover:scale-105 transition-transform"
               />
-              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+              <span className="absolute top-0 right-0 flex h-4 w-4">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-300 border border-amber-600"></span>
+                <span className="relative inline-flex rounded-full h-4 w-4 bg-amber-400 border border-black"></span>
               </span>
             </div>
           )}
@@ -569,8 +571,8 @@ export function ChatBot() {
             {/* Header */}
             <div className="p-4 bg-gradient-to-r from-zinc-900 via-zinc-950 to-black border-b border-amber-500/20 flex items-center justify-between z-10 relative">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center shadow-lg shadow-amber-500/20 p-1.5">
-                  <img src="/api/wolf-icon" alt="Wolf" className="w-7 h-7 object-contain mix-blend-multiply" />
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center shadow-lg shadow-amber-500/20 p-1">
+                  <img src="/api/wolf-icon" alt="Wolf" className="w-8 h-8 object-contain" />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-sm text-amber-400 flex items-center gap-1.5">
@@ -588,13 +590,13 @@ export function ChatBot() {
             </div>
 
             {/* Background Wolf Watermark inside Chat */}
-            <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-10">
-              <img src="/api/wolf-icon" alt="Wolf Watermark" className="w-64 h-64 object-contain invert" />
+            <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-30">
+              <img src="/api/wolf-icon" alt="Wolf Watermark" className="w-72 h-72 object-contain filter drop-shadow-[0_0_20px_rgba(245,158,11,0.2)]" />
             </div>
 
             {/* Messages Container with Strict Scroll Isolation */}
             <div 
-              className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-black/80 backdrop-blur-sm scrollbar-thin scrollbar-thumb-amber-500/30 overscroll-contain touch-pan-y z-10 relative"
+              className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-black/60 backdrop-blur-sm scrollbar-thin scrollbar-thumb-amber-500/30 overscroll-contain touch-pan-y z-10 relative"
               onWheel={(e) => e.stopPropagation()}
               onTouchMove={(e) => e.stopPropagation()}
             >
