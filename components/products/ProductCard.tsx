@@ -178,7 +178,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
           {/* Product Image with crossfade animation */}
           <div className="aspect-[3/4] relative overflow-hidden rounded-xl">
-            <AnimatePresence mode="crossfade">
+            <AnimatePresence mode="wait">
               {currentImage ? (
                 <motion.div
                   key={currentImage}
