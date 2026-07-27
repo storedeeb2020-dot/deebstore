@@ -22,7 +22,12 @@ export const productSchema = z.object({
   description: z.string().min(10, "الوصف يجب أن يكون 10 أحرف على الأقل"),
   price: z.number().min(0, "السعر يجب أن يكون موجباً"),
   salePrice: z.number().min(0).optional(),
-  category: z.string().min(1, "اختر الفئة"),
+  category: z
+    .string()
+    .min(1, "يرجى اختيار قسم للمنتج")
+    .refine((val) => val !== "all" && val.trim() !== "", {
+      message: "يرجى اختيار قسم محدد للمنتج من القائمة",
+    }),
   brand: z.string().min(1, "البراند مطلوب"),
   mainImage: z.string().url("صورة الغلاف الرئيسية مطلوبة"),
   variants: z.array(productVariantSchema).min(1, "أضف لون واحد على الأقل"),

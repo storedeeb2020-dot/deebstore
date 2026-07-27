@@ -1,110 +1,138 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
+import { getCategories } from "@/lib/firebase/firestore";
+import type { Category } from "@/types/category";
 
-const collections = [
+// High-resolution fallback stock fashion portraits if category has no uploaded image
+const FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=800&auto=format&fit=crop", // Casual Shirt
+  "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?q=80&w=800&auto=format&fit=crop", // Suit
+  "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=800&auto=format&fit=crop", // Black Shirt
+  "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop", // Blazer / Jacket
+];
+
+const PRESET_CATEGORIES: Partial<Category>[] = [
   {
-    id: "men",
-    title: "Men",
-    subtitle: "Modern essentials",
-    href: "/shop?category=men",
-    image: "/banner.png",
-    span: "lg:col-span-1 lg:row-span-2",
-    textPosition: "bottom-left",
+    name: "Casual",
+    subtitle: "Shirt",
+    slug: "casual-shirt",
+    image: FALLBACK_IMAGES[0],
   },
   {
-    id: "women",
-    title: "Women",
-    subtitle: "Elegant styles",
-    href: "/shop?category=women",
-    image: "/banner_light.png",
-    span: "lg:col-span-2 lg:row-span-1",
-    textPosition: "bottom-left",
+    name: "Suit",
+    subtitle: "",
+    slug: "suit",
+    image: FALLBACK_IMAGES[1],
   },
   {
-    id: "new",
-    title: "New Arrivals",
-    subtitle: "Latest drops",
-    href: "/shop?featured=true",
-    image: "/banner.png",
-    span: "lg:col-span-1 lg:row-span-1",
-    textPosition: "bottom-left",
+    name: "Formal",
+    subtitle: "Shirt",
+    slug: "formal-shirt",
+    image: FALLBACK_IMAGES[2],
   },
   {
-    id: "best",
-    title: "Best Sellers",
-    subtitle: "Fan favorites",
-    href: "/shop?bestSeller=true",
-    image: "/banner_light.png",
-    span: "lg:col-span-1 lg:row-span-1",
-    textPosition: "bottom-left",
+    name: "Blazer",
+    subtitle: "& Jackets",
+    slug: "blazers",
+    image: FALLBACK_IMAGES[3],
   },
 ];
 
 export function CollectionsGrid() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getCategories()
+      .then((data) => {
+        setCategories(data);
+      })
+      .catch((err) => {
+        console.error("Failed to load categories for collections grid:", err);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Display fetched categories, or preset fallbacks if empty
+  const displayItems =
+    categories.length > 0
+      ? categories.map((cat, idx) => ({
+          id: cat.id,
+          name: cat.name,
+          subtitle: cat.subtitle || "",
+          slug: cat.slug || cat.name,
+          image: cat.image || FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length],
+        }))
+      : PRESET_CATEGORIES.map((cat, idx) => ({
+          id: `preset-${idx}`,
+          name: cat.name!,
+          subtitle: cat.subtitle || "",
+          slug: cat.slug!,
+          image: cat.image!,
+        }));
+
   return (
-    <section
-      id="collections"
-      className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
-    >
-      <div className="mb-12 text-center">
+    <section id="categories" className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      {/* Section Title */}
+      <div className="mb-10 text-center space-y-2">
         <motion.p
-          className="text-xs font-semibold tracking-widest uppercase text-gray-400 mb-2"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          className="text-xs font-bold tracking-[0.25em] uppercase text-amber-500"
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          Shop by Category
+          أقسام المتجر الرئيسية
         </motion.p>
         <motion.h2
-          className="text-3xl md:text-4xl font-bold tracking-tight"
-          initial={{ opacity: 0, y: 20 }}
+          className="text-2xl md:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white"
+          initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
         >
-          Our Collections
+          اختر الفئة للتسوق
         </motion.h2>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-4 md:gap-6 auto-rows-[280px] lg:auto-rows-[300px]">
-        {collections.map((col, i) => (
+      {/* Grid Layout matching the provided design: 2 columns on mobile/tablet, 4 columns or 2x2 grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {displayItems.map((item, i) => (
           <motion.div
-            key={col.id}
-            className={`relative overflow-hidden rounded-2xl group cursor-pointer ${col.span}`}
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            key={item.id}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
-            transition={{ delay: i * 0.1, duration: 0.6 }}
+            transition={{ delay: i * 0.08, duration: 0.5 }}
+            className="group relative aspect-[3/4] w-full rounded-2xl overflow-hidden shadow-xl bg-zinc-900 cursor-pointer"
           >
-            <Link href={col.href} className="block w-full h-full">
-              {/* Background Image */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={col.image}
-                alt={col.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            <Link href={`/shop?category=${encodeURIComponent(item.slug)}`} className="block w-full h-full">
+              {/* Vertical Card Photo */}
+              <Image
+                src={item.image}
+                alt={item.name}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                priority={i < 4}
               />
 
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              {/* Subdued Dark Gradient Overlay at the bottom */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
 
-              {/* Text */}
-              <div className="absolute bottom-5 left-5">
-                <p className="text-white/60 text-xs uppercase tracking-wider mb-1">
-                  {col.subtitle}
-                </p>
-                <h3 className="text-white font-bold text-xl md:text-2xl">
-                  {col.title}
+              {/* Bottom Centered Title & Subtitle Matching Image Reference */}
+              <div className="absolute bottom-6 inset-x-0 px-4 text-center">
+                <h3 className="text-white text-2xl md:text-3xl font-light tracking-wide drop-shadow-md">
+                  <span className="font-semibold">{item.name}</span>{" "}
+                  {item.subtitle && (
+                    <span className="font-serif italic text-zinc-200 font-normal ml-1">
+                      {item.subtitle}
+                    </span>
+                  )}
                 </h3>
-                <motion.div
-                  className="h-0.5 bg-white mt-2 origin-left"
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.5 + i * 0.1 }}
-                />
               </div>
             </Link>
           </motion.div>

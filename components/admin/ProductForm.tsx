@@ -6,11 +6,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2, Palette, Upload, Ruler, AlertCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { createProduct, updateProduct, getSiteSettings, type GlobalSizeChart } from "@/lib/firebase/firestore";
+import { createProduct, updateProduct, getSiteSettings, getCategories, type GlobalSizeChart } from "@/lib/firebase/firestore";
 import { generateSlug, generateSKU } from "@/lib/utils";
 import { productSchema, type ProductFormData } from "@/lib/validations/product.schema";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import type { Product, SizeStock } from "@/types/product";
+import type { Category } from "@/types/category";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 
 interface ProductFormProps {
@@ -30,10 +31,16 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
   const [newColorHex, setNewColorHex] = useState("#000000");
   const [customSizeInputs, setCustomSizeInputs] = useState<Record<number, string>>({});
 
+  const [categoriesList, setCategoriesList] = useState<Category[]>([]);
+
   useEffect(() => {
-    getSiteSettings()
-      .then((s) => {
+    Promise.all([
+      getSiteSettings(),
+      getCategories(),
+    ])
+      .then(([s, cats]) => {
         if (s?.sizeCharts) setGlobalSizeCharts(s.sizeCharts);
+        setCategoriesList(cats || []);
       })
       .catch(console.error);
   }, []);
@@ -54,7 +61,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           description: initialData.description,
           price: initialData.price,
           salePrice: initialData.salePrice,
-          category: initialData.category || "all",
+          category: initialData.category || "",
           brand: initialData.brand || "DEEP STORE",
           mainImage: initialData.mainImage,
           variants: initialData.variants,
@@ -65,7 +72,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           sizeChartType: initialData.sizeChartType || "",
         }
       : {
-          category: "all",
+          category: "",
           brand: "DEEP STORE",
           variants: [],
           featured: false,
@@ -283,13 +290,24 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1.5">الفئة / القسم *</label>
-            <input
-              type="text"
-              placeholder="تيشيرتات، هوديز، بناطيل، إكسسوارات..."
-              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+            <label className="block text-xs font-bold text-zinc-300 mb-1.5">الفئة / القسم (إجباري) *</label>
+            <select
+              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:border-amber-500 focus:outline-none cursor-pointer"
               {...register("category")}
-            />
+            >
+              <option value="">-- اختر الفئة / القسم للمنتج --</option>
+              {categoriesList.map((cat) => (
+                <option key={cat.id} value={cat.slug || cat.name}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+            {errors.category && <p className="text-red-400 text-xs mt-1">{errors.category.message}</p>}
+            {categoriesList.length === 0 && (
+              <p className="text-amber-400 text-[10px] mt-1 font-medium">
+                تنبيه: لا توجد أقسام مسجلة حتى الآن. يمكنك إضافة أقسام من تبويب الأقسام في لوحة التحكم.
+              </p>
+            )}
           </div>
         </div>
 
