@@ -12,16 +12,34 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    document.documentElement.classList.add("dark");
-    localStorage.setItem("nxt-theme", "dark");
+    const savedTheme = localStorage.getItem("deep-theme") as Theme | null;
+    if (savedTheme === "light" || savedTheme === "dark") {
+      setTheme(savedTheme);
+      if (savedTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    } else {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("deep-theme", "dark");
+    }
   }, []);
 
   const toggleTheme = () => {
-    // Permanent Dark Mode for DEEP STORE
-    document.documentElement.classList.add("dark");
+    setTheme((prev) => {
+      const nextTheme = prev === "dark" ? "light" : "dark";
+      if (nextTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+      localStorage.setItem("deep-theme", nextTheme);
+      return nextTheme;
+    });
   };
 
   return (

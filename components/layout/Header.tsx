@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingBag, Menu, X, Heart } from "lucide-react";
+import { ShoppingBag, Menu, X, Heart, Sun, Moon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useScroll } from "@/hooks/useScroll";
 import { useCart } from "@/features/cart/CartProvider";
 import { useWishlist } from "@/features/wishlist/WishlistProvider";
+import { useTheme } from "@/features/theme/ThemeProvider";
 import { cn } from "@/lib/utils";
 import { Logo3D } from "@/components/ui/Logo3D";
 import { AnimatedNavLink } from "@/components/ui/AnimatedButton";
@@ -22,6 +23,7 @@ export function Header() {
   const { scrolled } = useScroll(40);
   const { totalItems, toggleCart } = useCart();
   const { wishlist, toggleWishlistDrawer } = useWishlist();
+  const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -97,8 +99,30 @@ export function Header() {
               </Link>
             </div>
 
-            {/* Right Section: Cart + Mobile Menu */}
-            <div className="flex items-center gap-2 sm:gap-4 z-20">
+            {/* Right Section: Theme Toggle + Cart + Mobile Menu */}
+            <div className="flex items-center gap-2 sm:gap-3 z-20">
+              {/* Theme Mode Toggle Button */}
+              <motion.button
+                onClick={toggleTheme}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
+                className="relative p-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700/60 dark:bg-zinc-900 dark:border-amber-500/30 text-amber-400 dark:text-amber-300 transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5 px-3"
+                aria-label="تبديل وضع الموقع"
+                title={theme === "dark" ? "التحويل للوضع المضيء" : "التحويل للوضع الليلي الفاخر"}
+              >
+                {theme === "dark" ? (
+                  <>
+                    <Sun size={17} className="text-amber-400 animate-spin-slow" />
+                    <span className="text-[11px] font-bold hidden md:inline">الوضع المضيء</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon size={17} className="text-amber-400" />
+                    <span className="text-[11px] font-bold hidden md:inline">الوضع الليلي</span>
+                  </>
+                )}
+              </motion.button>
+
               {/* Cart Toggle */}
               <motion.button
                 onClick={toggleCart}

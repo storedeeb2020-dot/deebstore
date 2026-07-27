@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Play, RefreshCw, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { DeepIntro } from "@/components/intros/DeepIntro";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function IntroLabPage() {
-  const [playing, setPlaying] = useState(false);
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/");
+  }, [router]);
+
+  return null;
+}
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center p-8 font-sans">

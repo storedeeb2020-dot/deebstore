@@ -102,6 +102,9 @@ body {
 .product-img-blend {
   mix-blend-mode: multiply;
 }
+.dark .product-img-blend {
+  mix-blend-mode: normal;
+}
 
 /* ─── Glass Morphism ─────────────────────────────────── */
 .glass {

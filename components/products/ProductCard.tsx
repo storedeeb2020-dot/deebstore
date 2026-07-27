@@ -177,7 +177,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           )}
 
           {/* Product Image with crossfade animation */}
-          <div className="aspect-[3/4] relative overflow-hidden rounded-xl">
+          <div className="aspect-[3/4] relative overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900/60 p-2 border border-zinc-200/60 dark:border-zinc-800/80 transition-colors">
             <AnimatePresence mode="wait">
               {currentImage ? (
                 <motion.div
@@ -222,24 +222,24 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 />
               ))}
               {product.variants.length > 5 && (
-                <span className="text-[10px] text-gray-400 font-bold">
+                <span className="text-[10px] text-zinc-500 dark:text-gray-400 font-bold">
                   +{product.variants.length - 5}
                 </span>
               )}
             </div>
           )}
 
-          {/* Product name — always yellow */}
-          <h3 className="text-xs sm:text-sm font-bold leading-tight text-amber-400 group-hover:text-amber-300 transition-colors duration-200">
+          {/* Product name */}
+          <h3 className="text-xs sm:text-sm font-bold leading-tight text-zinc-900 dark:text-amber-400 group-hover:text-amber-500 transition-colors duration-200">
             {product.name}
           </h3>
 
           <div className="flex items-center justify-center gap-2">
-            <span className="text-sm sm:text-base font-black text-white">
+            <span className="text-sm sm:text-base font-black text-amber-600 dark:text-white">
               {formatPrice(displayPrice)}
             </span>
             {hasDiscount && (
-              <span className="text-xs text-gray-400 line-through font-semibold">
+              <span className="text-xs text-zinc-400 dark:text-gray-400 line-through font-semibold">
                 {formatPrice(product.price)}
               </span>
             )}
