@@ -54,16 +54,48 @@ export async function getProducts(filters?: {
   category?: string;
   limitCount?: number;
 }): Promise<Product[]> {
-  const constraints: QueryConstraint[] = [orderBy("createdAt", "desc")];
+  try {
+    const constraints: QueryConstraint[] = [orderBy("createdAt", "desc")];
 
-  if (filters?.featured) constraints.push(where("featured", "==", true));
-  if (filters?.bestSeller) constraints.push(where("bestSeller", "==", true));
-  if (filters?.category) constraints.push(where("category", "==", filters.category));
-  if (filters?.limitCount) constraints.push(limit(filters.limitCount));
+    if (filters?.featured) constraints.push(where("featured", "==", true));
+    if (filters?.bestSeller) constraints.push(where("bestSeller", "==", true));
+    if (filters?.category) constraints.push(where("category", "==", filters.category));
+    if (filters?.limitCount && !filters?.featured && !filters?.bestSeller && !filters?.category) {
+      constraints.push(limit(filters.limitCount));
+    }
 
-  const q = query(collection(db, "products"), ...constraints);
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Product);
+    const q = query(collection(db, "products"), ...constraints);
+    const snapshot = await getDocs(q);
+    let items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Product);
+
+    if (filters?.limitCount && items.length > filters.limitCount) {
+      items = items.slice(0, filters.limitCount);
+    }
+    return items;
+  } catch (err: any) {
+    // Robust Fallback: If Firestore index isn't built yet, fetch products and filter in memory
+    try {
+      const qFallback = query(collection(db, "products"));
+      const snapshot = await getDocs(qFallback);
+      let items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Product);
+
+      items.sort((a, b) => {
+        const timeA = (a.createdAt as any)?.toMillis ? (a.createdAt as any).toMillis() : new Date(a.createdAt || 0).getTime();
+        const timeB = (b.createdAt as any)?.toMillis ? (b.createdAt as any).toMillis() : new Date(b.createdAt || 0).getTime();
+        return timeB - timeA;
+      });
+
+      if (filters?.featured) items = items.filter((p) => p.featured);
+      if (filters?.bestSeller) items = items.filter((p) => p.bestSeller);
+      if (filters?.category) items = items.filter((p) => p.category === filters.category);
+      if (filters?.limitCount) items = items.slice(0, filters.limitCount);
+
+      return items;
+    } catch (fallbackErr) {
+      console.error("Failed to load products in fallback:", fallbackErr);
+      return [];
+    }
+  }
 }
 
 export async function getProductBySlug(slugParam: string): Promise<Product | null> {
