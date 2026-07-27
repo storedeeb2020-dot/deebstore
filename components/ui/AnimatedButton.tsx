@@ -133,16 +133,20 @@ interface SocialIconButtonProps {
   href: string;
   label: string;
   children: React.ReactNode;
+  className?: string;
 }
 
-export function SocialIconButton({ href, label, children }: SocialIconButtonProps) {
+export function SocialIconButton({ href, label, children, className }: SocialIconButtonProps) {
   return (
     <motion.a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white relative overflow-hidden"
+      className={cn(
+        "w-10 h-10 bg-zinc-200/80 dark:bg-white/10 border border-zinc-300/60 dark:border-white/10 rounded-xl flex items-center justify-center text-zinc-800 dark:text-white relative overflow-hidden transition-colors hover:text-amber-600 dark:hover:text-amber-400",
+        className
+      )}
       whileHover={{ scale: 1.12, backgroundColor: "rgba(251, 191, 36, 0.2)" }}
       whileTap={{ scale: 0.95 }}
       transition={SPRING}
