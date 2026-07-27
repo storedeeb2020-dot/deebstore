@@ -243,24 +243,23 @@ export function HeroSection() {
               {settings?.heroTagline || "ديب ستور — عالم الموضة والستريت وير الفاخر 🐺"}
             </motion.p>
 
-            {/* Luxury Animated CTA Button for Mobile (Centered) */}
+            {/* Exact Desktop Luxury Royal Gold CTA Button for Mobile */}
             <motion.button
               onClick={handleScroll}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.96 }}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.15, duration: 0.5 }}
-              className="w-full max-w-[280px] sm:max-w-xs py-4 px-6 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 text-black font-black text-xs sm:text-sm rounded-2xl shadow-[0_10px_35px_rgba(245,158,11,0.5)] border border-amber-300/60 flex items-center justify-center gap-2.5 cursor-pointer relative overflow-hidden group"
+              className="relative inline-flex items-center justify-center p-[1.5px] rounded-full overflow-hidden bg-zinc-900 shadow-[0_20px_50px_rgba(0,0,0,0.95)] cursor-pointer border-none outline-none z-10 max-w-[280px] sm:max-w-xs w-full"
             >
-              {/* Subtle shimmer animation overlay */}
-              <div className="absolute inset-0 w-1/2 h-full bg-white/30 -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-out pointer-events-none" />
-
-              <ShoppingBag size={18} className="text-black flex-shrink-0" />
-              <span className="tracking-wide text-center font-black flex-1">
-                {settings?.heroButtonText || "تسوق الآن — SHOP NOW"}
-              </span>
-              <ArrowRight size={18} className="text-black flex-shrink-0" />
+              <div className="relative w-full h-full bg-zinc-950/90 active:bg-gradient-to-r active:from-amber-500 active:to-amber-400 active:text-black hover:bg-gradient-to-r hover:from-amber-500 hover:to-amber-400 hover:text-black rounded-full px-6 py-3.5 flex items-center justify-center gap-3 transition-all duration-300 group border border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.25)]">
+                <ShoppingBag size={18} className="text-amber-400 group-hover:text-black group-active:text-black transition-colors flex-shrink-0" />
+                <span className="font-extrabold text-xs sm:text-sm text-amber-400 group-hover:text-black group-active:text-black transition-colors tracking-wide text-center flex-1">
+                  {settings?.heroButtonText || "تسوق الآن — SHOP NOW"}
+                </span>
+                <ArrowRight size={18} className="text-amber-400 group-hover:text-black group-active:text-black transition-colors flex-shrink-0" />
+              </div>
             </motion.button>
           </div>
         </div>
