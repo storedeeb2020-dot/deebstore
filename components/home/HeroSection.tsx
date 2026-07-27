@@ -231,33 +231,33 @@ export function HeroSection() {
             </div>
           )}
 
-          {/* Dark Overlay for Text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent flex flex-col justify-end p-6 pb-14 sm:pb-16 text-center z-10">
+          {/* Dark Overlay for Text readability (Centered Content) */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70 flex flex-col items-center justify-center p-6 text-center z-10">
             {/* Tagline */}
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="text-amber-400 font-extrabold text-xs sm:text-sm tracking-wider mb-3.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] flex items-center justify-center gap-1.5"
+              className="text-amber-400 font-extrabold text-xs sm:text-sm tracking-wider mb-4 drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] flex items-center justify-center gap-1.5"
             >
               {settings?.heroTagline || "ديب ستور — عالم الموضة والستريت وير الفاخر 🐺"}
             </motion.p>
 
-            {/* Luxury Animated CTA Button for Mobile */}
+            {/* Luxury Animated CTA Button for Mobile (Centered) */}
             <motion.button
               onClick={handleScroll}
-              whileHover={{ scale: 1.03, y: -2 }}
+              whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="w-full py-4 px-6 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 text-black font-black text-xs sm:text-sm rounded-2xl shadow-[0_10px_30px_rgba(245,158,11,0.4)] border border-amber-300/50 flex items-center justify-center gap-2.5 cursor-pointer relative overflow-hidden group"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.15, duration: 0.5 }}
+              className="w-full max-w-[280px] sm:max-w-xs py-4 px-6 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 text-black font-black text-xs sm:text-sm rounded-2xl shadow-[0_10px_35px_rgba(245,158,11,0.5)] border border-amber-300/60 flex items-center justify-center gap-2.5 cursor-pointer relative overflow-hidden group"
             >
               {/* Subtle shimmer animation overlay */}
               <div className="absolute inset-0 w-1/2 h-full bg-white/30 -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-out pointer-events-none" />
 
               <ShoppingBag size={18} className="text-black flex-shrink-0" />
-              <span className="tracking-wide flex-1 text-center font-black">
+              <span className="tracking-wide text-center font-black flex-1">
                 {settings?.heroButtonText || "تسوق الآن — SHOP NOW"}
               </span>
               <ArrowRight size={18} className="text-black flex-shrink-0" />
