@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getProducts, getSiteSettings, getShippingRates } from "@/lib/firebase/firestore";
 import { getSessionData, updateSessionData, extractEntitiesFromMessage } from "@/lib/chat/sessionMemory";
-import { analyzeIntentAndStream, callValTownStreamProxy } from "@/lib/chat/gemini";
+import { callGeminiRestAPI, callValTownStreamProxy } from "@/lib/chat/gemini";
 import type { Product } from "@/types/product";
 
 let _productsCache: Product[] = [];
@@ -136,15 +136,12 @@ ${catalogText}
 PRODUCT_IDS:id1,id2
 INTENT:intent_name`;
 
-    // Try Direct Gemini Stream API
+    // Try Direct Gemini REST API
     if (apiKey) {
       try {
-        const streamResult = await analyzeIntentAndStream(apiKey, systemInstruction, history, message);
-        for await (const chunk of streamResult.stream) {
-          replyText += chunk.text();
-        }
+        const rawText = await callGeminiRestAPI(apiKey, systemInstruction, history, message);
 
-        const idMatch = replyText.match(/PRODUCT_IDS:([^\n]*)/);
+        const idMatch = rawText.match(/PRODUCT_IDS:([^\n]*)/);
         if (idMatch) {
           suggestedProductIds = idMatch[1]
             .split(",")
@@ -152,17 +149,17 @@ INTENT:intent_name`;
             .filter((id: string) => id.length > 0 && validProducts.some((p) => p.id === id));
         }
 
-        const intentMatch = replyText.match(/INTENT:([^\n]*)/);
+        const intentMatch = rawText.match(/INTENT:([^\n]*)/);
         if (intentMatch) {
           detectedIntent = intentMatch[1].trim();
         }
 
-        replyText = replyText
+        replyText = rawText
           .replace(/PRODUCT_IDS:[^\n]*/g, "")
           .replace(/INTENT:[^\n]*/g, "")
           .trim();
       } catch (err) {
-        console.error("Gemini Direct Stream Error:", err);
+        console.error("Gemini Direct REST Error:", err);
       }
     }
 

@@ -1,23 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-export interface IntentAnalysisResult {
-  intent: "greeting" | "shipping" | "size" | "products" | "price" | "payment" | "return" | "unknown";
-  suggestedProductIds: string[];
-  replyText?: string;
-}
-
-export async function analyzeIntentAndStream(
+export async function callGeminiRestAPI(
   apiKey: string,
   systemInstruction: string,
   history: { role: string; text: string }[],
   message: string
-) {
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-    systemInstruction,
-  });
-
+): Promise<string> {
   const contents = [
     ...history.map((h) => ({
       role: h.role === "user" ? "user" : "model",
@@ -26,12 +12,26 @@ export async function analyzeIntentAndStream(
     { role: "user", parts: [{ text: message }] },
   ];
 
-  // Return real streaming result
-  const resultStream = await model.generateContentStream({
-    contents,
-  });
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: systemInstruction }],
+        },
+        contents: contents,
+      }),
+    }
+  );
 
-  return resultStream;
+  if (!response.ok) {
+    throw new Error(`Gemini API HTTP Error ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 }
 
 export async function callValTownStreamProxy(
