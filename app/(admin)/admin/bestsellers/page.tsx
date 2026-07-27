@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import { Flame, Search, CheckCircle2, Sparkles, Star, Package } from "lucide-react";
+import { Flame, Search, Star, Package } from "lucide-react";
 import { getProducts, updateProduct } from "@/lib/firebase/firestore";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types/product";
 import { Spinner } from "@/components/ui/Spinner";
-import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 import { toast } from "sonner";
 
 export default function AdminBestSellersPage() {

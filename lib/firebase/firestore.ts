@@ -79,11 +79,14 @@ export async function getProducts(filters?: {
       const snapshot = await getDocs(qFallback);
       let items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Product);
 
-      items.sort((a, b) => {
-        const timeA = (a.createdAt as any)?.toMillis ? (a.createdAt as any).toMillis() : new Date(a.createdAt || 0).getTime();
-        const timeB = (b.createdAt as any)?.toMillis ? (b.createdAt as any).toMillis() : new Date(b.createdAt || 0).getTime();
-        return timeB - timeA;
-      });
+      const getMillis = (val: any): number => {
+        if (!val) return 0;
+        if (typeof val.toMillis === "function") return val.toMillis();
+        if (typeof val.getTime === "function") return val.getTime();
+        return 0;
+      };
+
+      items.sort((a, b) => getMillis(b.createdAt) - getMillis(a.createdAt));
 
       if (filters?.featured) items = items.filter((p) => p.featured);
       if (filters?.bestSeller) items = items.filter((p) => p.bestSeller);
