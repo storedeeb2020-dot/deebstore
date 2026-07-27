@@ -27,6 +27,7 @@ export async function GET() {
   }
 
   // 2. Local environment fallback
+  const srcContent = "C:\\Users\\youse\\.gemini\\antigravity-ide\\brain\\7143436e-db2e-4dd9-8309-d096b857b2cc\\media__1785122093009.png";
   try {
     if (fs.existsSync(srcContent)) {
       const fileBuffer = fs.readFileSync(srcContent);

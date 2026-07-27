@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 import { getSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
@@ -19,14 +19,15 @@ export function HeroSection() {
       .catch(console.error);
   }, []);
 
-  const activeImageList =
-    theme === "light"
+  const activeImageList = useMemo(() => {
+    return theme === "light"
       ? settings?.heroImagesLight && settings.heroImagesLight.length > 0
         ? settings.heroImagesLight
         : settings?.heroImagesDark || []
       : settings?.heroImagesDark && settings.heroImagesDark.length > 0
       ? settings.heroImagesDark
       : settings?.heroImagesLight || [];
+  }, [theme, settings?.heroImagesLight, settings?.heroImagesDark]);
 
   useEffect(() => {
     if (activeImageList && activeImageList.length > 1) {

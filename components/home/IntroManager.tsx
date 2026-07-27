@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { IntroScreen } from "./IntroScreen";
 
 export function IntroManager({ children }: { children: React.ReactNode }) {
