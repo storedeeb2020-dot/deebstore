@@ -532,20 +532,23 @@ export function ChatBot() {
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.92 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-400 text-black shadow-[0_8px_30px_rgba(245,158,11,0.5)] border border-amber-200/80 focus:outline-none cursor-pointer"
+          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-black shadow-[0_0_25px_rgba(251,191,36,0.6)] border-2 border-amber-300 focus:outline-none cursor-pointer p-1"
           aria-label="مساعد ملابس الديب ستور"
         >
           {isOpen ? (
             <X className="w-6 h-6 text-black font-black" />
           ) : (
-            <div className="relative flex items-center justify-center">
-              <MessageSquare className="w-7 h-7 text-black fill-black/10 stroke-[2.2]" />
-              <Sparkles className="w-3.5 h-3.5 text-amber-900 absolute -top-1 -right-1 animate-pulse" />
-              <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-black opacity-40"></span>
-                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-black text-amber-300 text-[8px] font-black items-center justify-center">
-                  AI
-                </span>
+            <div className="relative flex items-center justify-center w-full h-full">
+              {/* Official Wolf Icon inside Button */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/api/wolf-icon"
+                alt="DEEP STORE Wolf Assistant"
+                className="w-10 h-10 object-contain drop-shadow-md mix-blend-multiply"
+              />
+              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-300 border border-amber-600"></span>
               </span>
             </div>
           )}
@@ -560,14 +563,14 @@ export function ChatBot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[400px] h-[540px] max-h-[82vh] bg-zinc-950 border border-amber-500/40 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-white font-sans dir-rtl"
+            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[400px] h-[540px] max-h-[82vh] bg-zinc-950 border border-amber-500/40 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-white font-sans dir-rtl relative"
             dir="rtl"
           >
             {/* Header */}
-            <div className="p-4 bg-gradient-to-r from-zinc-900 via-zinc-950 to-black border-b border-amber-500/20 flex items-center justify-between">
+            <div className="p-4 bg-gradient-to-r from-zinc-900 via-zinc-950 to-black border-b border-amber-500/20 flex items-center justify-between z-10 relative">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center shadow-lg shadow-amber-500/20 p-1.5">
-                  <img src="/api/wolf-icon" alt="Wolf" className="w-6 h-6 object-contain mix-blend-multiply" />
+                  <img src="/api/wolf-icon" alt="Wolf" className="w-7 h-7 object-contain mix-blend-multiply" />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-sm text-amber-400 flex items-center gap-1.5">
@@ -584,9 +587,14 @@ export function ChatBot() {
               </button>
             </div>
 
+            {/* Background Wolf Watermark inside Chat */}
+            <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-10">
+              <img src="/api/wolf-icon" alt="Wolf Watermark" className="w-64 h-64 object-contain invert" />
+            </div>
+
             {/* Messages Container with Strict Scroll Isolation */}
             <div 
-              className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-black/80 scrollbar-thin scrollbar-thumb-amber-500/30 overscroll-contain touch-pan-y"
+              className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-black/80 backdrop-blur-sm scrollbar-thin scrollbar-thumb-amber-500/30 overscroll-contain touch-pan-y z-10 relative"
               onWheel={(e) => e.stopPropagation()}
               onTouchMove={(e) => e.stopPropagation()}
             >
