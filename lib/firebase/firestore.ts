@@ -124,27 +124,6 @@ export async function getProducts(filters?: {
   }
 }
 
-    const getMillis = (val: any): number => {
-      if (!val) return 0;
-      if (typeof val.toMillis === "function") return val.toMillis();
-      if (typeof val.getTime === "function") return val.getTime();
-      return 0;
-    };
-
-    items.sort((a, b) => getMillis(b.createdAt) - getMillis(a.createdAt));
-
-    if (filters?.featured) items = items.filter((p) => p.featured);
-    if (filters?.bestSeller) items = items.filter((p) => p.bestSeller);
-    if (filters?.category) items = items.filter((p) => p.category === filters.category);
-    if (filters?.limitCount) items = items.slice(0, filters.limitCount);
-
-    return items;
-  } catch (err: any) {
-    console.error("Failed to fetch products:", err);
-    return [];
-  }
-}
-
 export async function getProductBySlug(slugParam: string): Promise<Product | null> {
   if (!slugParam) return null;
 

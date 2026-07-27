@@ -113,7 +113,6 @@ export default function AdminBestSellersPage() {
             <span className="text-sm font-black text-amber-400">{bestSellersCount} منتج</span>
           </div>
         </div>
-      </div>
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
