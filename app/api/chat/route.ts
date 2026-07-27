@@ -20,18 +20,37 @@ async function getCachedProducts(): Promise<Product[]> {
   return _productsCache;
 }
 
-// ─── Egyptian Cities & International Dictionary ─────────────────────────────
-const EGYPT_CITIES = [
-  "قاهره", "القاهرة", "قاهرة", "اسكندريه", "اسكندرية", "الاسكندرية",
-  "جيزه", "الجيزة", "جيزة", "منصوره", "المنصورة", "منصورة",
-  "اسيوط", "أسيوط", "سوهاج", "أسوان", "اسوان", "قنا", "الأقصر", "الاقصر",
-  "مرسى مطروح", "مطروح", "الاسماعيلية", "اسماعيليه", "اسماعيلية",
-  "بورسعيد", "السويس", "سويس", "شرم", "الغردقة", "الغردقه", "غردقة",
-  "الفيوم", "فيوم", "بني سويف", "المنيا", "منيا", "المنوفية", "منوفيه",
-  "البحيرة", "بحيرة", "الشرقية", "شرقية", "الدقهلية", "دقهلية", "دمياط",
-  "كفر الشيخ", "كفر شيخ", "الوادي الجديد", "طنطا", "الزقازيق", "زقازيق",
-  "شبين", "دمنهور", "قليوبية", "قليوبيه", "العريش", "بنها", "المحلة", "محله"
+// ─── Egyptian Governorates & City Mapping ──────────────────────────────────
+interface GovernorateInfo {
+  name: string;
+  price: number;
+  deliveryDays: string;
+  cities: string[];
+}
+
+const EGYPT_GOVERNORATES: GovernorateInfo[] = [
+  { name: "القاهرة والجيزة", price: 50, deliveryDays: "1-2 أيام", cities: ["قاهره", "القاهرة", "قاهرة", "جيزه", "الجيزة", "جيزة", "مدينة نصر", "التجمع", "المعادي", "أكتوبر", "الشيخ زايد", "حلوان", "شبرا"] },
+  { name: "الدقهلية", price: 60, deliveryDays: "2-3 أيام", cities: ["منصوره", "المنصورة", "منصورة", "طلخا", "ميت غمر", "دكرنس", "بلقاس", "شربين", "منية النصر"] },
+  { name: "الإسكندرية", price: 60, deliveryDays: "2-3 أيام", cities: ["اسكندريه", "اسكندرية", "الاسكندرية", "المنتزه", "سموحة", "العجمي", "برج العرب"] },
+  { name: "الغربية والشرقية والمنوفية والقليوبية", price: 60, deliveryDays: "2-3 أيام", cities: ["طنطا", "المحلة", "محله", "محلة", "الزقازيق", "زقازيق", "شبين", "بنها", "قليوبية", "قليوبيه", "منوفية", "منوفيه"] },
+  { name: "البحيرة ودمياط وكفر الشيخ", price: 65, deliveryDays: "2-3 أيام", cities: ["دمنهور", "كفر الشيخ", "كفر شيخ", "دمياط", "رأس البر"] },
+  { name: "القناة (بورسعيد والسويس والإسماعيلية)", price: 65, deliveryDays: "2-3 أيام", cities: ["بورسعيد", "السويس", "سويس", "الاسماعيلية", "اسماعيليه", "اسماعيلية"] },
+  { name: "الصعيد (الفيوم وبني سويف والمنيا وأسيوط وسوهاج)", price: 75, deliveryDays: "3-4 أيام", cities: ["الفيوم", "فيوم", "بني سويف", "بنى سويف", "المنيا", "منيا", "اسيوط", "أسيوط", "سوهاج"] },
+  { name: "أقصى الصعيد (قنا والأقصر وأسوان)", price: 85, deliveryDays: "3-5 أيام", cities: ["قنا", "الأقصر", "الاقصر", "اقصر", "أسوان", "اسوان"] },
+  { name: "المحافظات الحدودية (مطروح والبحر الأحمر وسيناء)", price: 90, deliveryDays: "3-5 أيام", cities: ["مرسى مطروح", "مطروح", "الغردقة", "الغردقه", "شرم", "شرم الشيخ", "العريش", "تور سيناء", "دهب"] }
 ];
+
+function findGovernorate(query: string): { gov: GovernorateInfo; matchedCity: string } | null {
+  const lower = query.toLowerCase();
+  for (const gov of EGYPT_GOVERNORATES) {
+    for (const city of gov.cities) {
+      if (lower.includes(city)) {
+        return { gov, matchedCity: city };
+      }
+    }
+  }
+  return null;
+}
 
 const INTERNATIONAL_KEYWORDS = [
   "برا مصر", "خارج مصر", "دول تانية", "دول اخرى", "دول أخرى",
@@ -178,20 +197,20 @@ INTENT:intent_name`;
     if (!replyText) {
       const lower = message.toLowerCase();
 
-      // Check Intent
       const isIntl = INTERNATIONAL_KEYWORDS.some((k) => lower.includes(k));
-      const foundCity = EGYPT_CITIES.find((c) => lower.includes(c));
+      const govResult = findGovernorate(lower);
       const isShipping = lower.includes("شحن") || lower.includes("توصيل") || lower.includes("يوصل");
       const isPayment = lower.includes("دفع") || lower.includes("فودافون") || lower.includes("انستا") || lower.includes("كاش");
       const isReturn = lower.includes("ارجاع") || lower.includes("إرجاع") || lower.includes("تبديل") || lower.includes("استرجاع");
       const isGreeting = lower.includes("ازيك") || lower.includes("سلام") || lower.includes("اهلا") || lower.includes("أهلا") || lower.includes("مرحبا") || lower.includes("هاي") || lower.includes("hi");
+      const isPriceQuery = lower.includes("سعر") || lower.includes("بكام") || lower.includes("بكام") || lower.includes("تمن") || lower.includes("كام") || lower.includes("فلوس") || lower.includes("اسعار") || lower.includes("أسعار");
 
       if (isIntl) {
         detectedIntent = "intl_shipping";
         replyText = `للأسف يا فنان، DEEP STORE بيشحن داخل جمهورية مصر العربية فقط حالياً 🇪🇬.\n\nلو عندك عنوان داخل مصر نتشرف بتوصيل طلبك فوراً!`;
-      } else if (foundCity || (isShipping && foundCity)) {
+      } else if (govResult) {
         detectedIntent = "city_shipping";
-        replyText = `الشحن لمدينة/محافظة **${foundCity || "مصر"}** متاح وبسرعة 🚚!\nيوصلك خلال 2-4 أيام عمل، والتكلفة بتظهر بالضبط في صفحة الشراء.`;
+        replyText = `الشحن لـ **${govResult.matchedCity}** (محافظة ${govResult.gov.name}) متاح وسريع 🚚!\n- تكلفة الشحن: **${govResult.gov.price} ج.م**\n- التوصيل خلال: **${govResult.gov.deliveryDays}** من تأكيد الطلب.`;
       } else if (isShipping) {
         detectedIntent = "shipping";
         replyText = STORE_POLICIES.shipping;
@@ -225,14 +244,18 @@ INTENT:intent_name`;
         }
 
         if (!replyText) {
-          const isProductReq = lower.includes("منتج") || lower.includes("عندك") || lower.includes("تشكيل") || lower.includes("عرض") || lower.includes("شوف");
-          if (isProductReq) {
+          const isProductReq = lower.includes("منتج") || lower.includes("عندك") || lower.includes("تشكيل") || lower.includes("عرض") || lower.includes("شوف") || lower.includes("كل المنتجات");
+          if (isPriceQuery || isProductReq) {
             detectedIntent = "products";
             suggestedProductIds = validProducts.map((p) => p.id);
-            replyText = `دي كل تشكيلة DEEP STORE المتاحة دلوقتي 🐺🔥:`;
+            replyText = isPriceQuery 
+              ? `دي قائمة منتجاتنا الفاخرة بالأسعار الكاملة 💰:` 
+              : `دي كل تشكيلة DEEP STORE المتاحة دلوقتي 🐺🔥:`;
           } else {
+            // General conversational response using Wolf persona
             detectedIntent = "unknown";
-            replyText = `قولي أكتر يا فنان 😅 بتدور على قطعة معينة (هودي، تيشيرت، كارجو)؟ ولا حابب تحسب مقاسك المضبوط؟`;
+            replyText = `أنا معاك وفاهمك يا فنان 🐺! قولي إيه اللي محتاجه بالظبط:\n- عايز تعرف **سعر منتج معين** أو تشوف الكتالوج؟\n- حابب تعرف **مقاسك المضبوط** (اكتب طولك ووزنك)؟\n- ولا بتسأل عن **تفاصيل الشحن والدفع** لمدينتك؟`;
+            suggestedProductIds = validProducts.slice(0, 2).map((p) => p.id);
           }
         }
       }

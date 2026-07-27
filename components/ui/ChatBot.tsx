@@ -397,7 +397,7 @@ export function ChatBot() {
                           <button
                             key={replyText}
                             type="button"
-                            onClick={() => handleSend(replyText.replace(/^[\u1F300-\u1F9FF\u2600-\u26FF]\s*/, ""))}
+                            onClick={() => handleSend(replyText)}
                             className="text-[10px] px-2 py-1 rounded-full bg-zinc-800 hover:bg-amber-500/20 border border-zinc-700 hover:border-amber-400/50 text-zinc-300 hover:text-amber-300 transition-all font-medium cursor-pointer"
                           >
                             {replyText}
