@@ -237,6 +237,22 @@ export async function deleteCategory(id: string): Promise<void> {
   await deleteDoc(doc(db, "categories", id));
 }
 
+export async function updateCategory(
+  id: string,
+  data: Partial<Omit<Category, "id">>
+): Promise<void> {
+  await updateDoc(doc(db, "categories", id), cleanUndefined(data));
+}
+
+export async function updateCategoryOrder(
+  items: { id: string; order: number }[]
+): Promise<void> {
+  const promises = items.map((item) =>
+    updateDoc(doc(db, "categories", item.id), { order: item.order })
+  );
+  await Promise.all(promises);
+}
+
 export interface GlobalSizeChart {
   id: string;
   name: string;      // اسم جدول المقاسات (مثلاً: جدول مقاسات التيشيرتات)

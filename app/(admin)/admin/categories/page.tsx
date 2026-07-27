@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Image as ImageIcon, Upload, Loader2, Sparkles, FolderPlus } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, Upload, Loader2, Sparkles, FolderPlus, ArrowUp, ArrowDown, ChevronRight, ChevronLeft } from "lucide-react";
 import Image from "next/image";
-import { getCategories, createCategory, deleteCategory } from "@/lib/firebase/firestore";
+import { getCategories, createCategory, deleteCategory, updateCategoryOrder } from "@/lib/firebase/firestore";
 import { generateSlug } from "@/lib/utils";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import type { Category } from "@/types/category";
@@ -88,6 +88,35 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const handleMove = async (index: number, direction: "up" | "down") => {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= categories.length) return;
+
+    const newCategories = [...categories];
+    const temp = newCategories[index];
+    newCategories[index] = newCategories[targetIndex];
+    newCategories[targetIndex] = temp;
+
+    // Update orders sequentially 0, 1, 2...
+    const updatedOrders = newCategories.map((cat, i) => ({
+      ...cat,
+      order: i,
+    }));
+
+    setCategories(updatedOrders);
+
+    try {
+      await updateCategoryOrder(
+        updatedOrders.map((cat) => ({ id: cat.id, order: cat.order }))
+      );
+      toast.success("تم الترتيب وتغيير أولوية الظهور 🐺");
+    } catch (err) {
+      console.error(err);
+      toast.error("فشل حفظ الترتيب الجديد");
+      loadCategories();
+    }
+  };
+
   return (
     <div className="space-y-8 max-w-6xl pb-16 font-sans dir-rtl text-white" dir="rtl">
       {/* Header */}
@@ -96,9 +125,9 @@ export default function AdminCategoriesPage() {
           <FolderPlus size={14} />
           إدارة الأقسام والفئات الرئيسية
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-white">الأقسام والفئات</h1>
+        <h1 className="text-3xl font-black tracking-tight text-white">الأقسام وترتيب الظهور</h1>
         <p className="text-zinc-400 text-xs mt-1">
-          إضافة وصورة وتصميم الأقسام المعروضة في الصفحة الرئيسية وفي المتجر. الأقسام رئيسية فقط (بدون أقسام فرعية).
+          إضافة وصورة وتحديد ترتيب ظهور الفئات بالصفحة الرئيسية والمتجر (استخدم أسهم الترتيب للتقديم أو التأخير).
         </p>
       </div>
 
@@ -112,7 +141,7 @@ export default function AdminCategoriesPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Image Uploader */}
           <div className="md:col-span-1 space-y-2">
-            <label className="block text-xs font-bold text-zinc-300">صورة الفئة (اختياري)</label>
+            <label className="block text-xs font-bold text-zinc-300">صورة الفئة (بجودة عالية)</label>
             <div className="relative aspect-[3/4] rounded-2xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center p-3 overflow-hidden group hover:border-amber-500/50 transition-colors">
               {imageUrl ? (
                 <>
@@ -120,6 +149,7 @@ export default function AdminCategoriesPage() {
                     src={imageUrl}
                     alt="Category image preview"
                     fill
+                    unoptimized
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -138,7 +168,7 @@ export default function AdminCategoriesPage() {
                   <p className="text-[11px] text-zinc-400 font-bold">
                     {uploadingImage ? "جاري الرفع..." : "اضغط لرفع صورة الفئة"}
                   </p>
-                  <p className="text-[10px] text-zinc-500 mt-1">تنسيق عمودي (Portrait) مفضّل</p>
+                  <p className="text-[10px] text-zinc-500 mt-1">تنسيق عمودي HD مفضّل</p>
                 </div>
               )}
               <input
@@ -202,9 +232,12 @@ export default function AdminCategoriesPage() {
 
       {/* Categories Grid List */}
       <div className="space-y-4">
-        <h2 className="text-sm font-extrabold text-zinc-300">
-          الأقسام المتاحة بالكتالوج ({categories.length})
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-extrabold text-zinc-300">
+            الأقسام بترتيب ظهورها بالمتجر ({categories.length})
+          </h2>
+          <p className="text-[11px] text-amber-400">استخدم أسهم الترتيب للتقديم أو التأخير ⚡</p>
+        </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center h-48 space-y-4 text-amber-400">
@@ -216,8 +249,8 @@ export default function AdminCategoriesPage() {
             لا توجد أقسام مضافة بعد. استخدم النموذج أعلاه لإضافة أول قسم.
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((cat) => (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {categories.map((cat, idx) => (
               <div
                 key={cat.id}
                 className="group relative rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden shadow-xl flex flex-col justify-between"
@@ -229,6 +262,7 @@ export default function AdminCategoriesPage() {
                       src={cat.image}
                       alt={cat.name}
                       fill
+                      unoptimized
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
@@ -241,10 +275,15 @@ export default function AdminCategoriesPage() {
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
+                  {/* Order Badge Header */}
+                  <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-amber-400 font-black text-xs px-2.5 py-1 rounded-lg border border-amber-500/30">
+                    الترتيب #{idx + 1}
+                  </div>
+
                   {/* Styled Category Title Overlay */}
-                  <div className="absolute bottom-4 left-0 right-0 px-4 text-center">
-                    <h3 className="text-white font-bold text-xl drop-shadow-md tracking-tight">
-                      {cat.name} {cat.subtitle && <span className="font-serif italic font-normal text-amber-300/90 ml-1">{cat.subtitle}</span>}
+                  <div className="absolute bottom-4 left-0 right-0 px-3 text-center">
+                    <h3 className="text-white font-bold text-base sm:text-xl drop-shadow-md tracking-tight">
+                      {cat.name} {cat.subtitle && <span className="font-serif italic font-normal text-amber-300/90 ml-0.5">{cat.subtitle}</span>}
                     </h3>
                   </div>
 
@@ -258,10 +297,33 @@ export default function AdminCategoriesPage() {
                   </button>
                 </div>
 
-                {/* Footer details */}
-                <div className="p-3 bg-zinc-900/80 border-t border-zinc-800 text-[11px] text-zinc-400 font-mono flex items-center justify-between">
-                  <span className="truncate">/{cat.slug}</span>
-                  <span className="text-[10px] text-amber-400/80"># {cat.order + 1}</span>
+                {/* Footer details & Reordering Controls */}
+                <div className="p-3 bg-zinc-900 border-t border-zinc-800 space-y-2">
+                  <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono">
+                    <span className="truncate">/{cat.slug}</span>
+                  </div>
+
+                  {/* Up / Down Order Buttons */}
+                  <div className="flex items-center gap-1 pt-1">
+                    <button
+                      onClick={() => handleMove(idx, "up")}
+                      disabled={idx === 0}
+                      className="flex-1 inline-flex items-center justify-center gap-1 bg-zinc-950 hover:bg-amber-500 hover:text-black border border-zinc-800 text-amber-400 rounded-lg py-1.5 text-[11px] font-bold transition-all disabled:opacity-30 disabled:hover:bg-zinc-950 disabled:hover:text-amber-400 cursor-pointer disabled:cursor-not-allowed"
+                      title="تقديم للأول"
+                    >
+                      <ChevronRight size={14} />
+                      تقديم
+                    </button>
+                    <button
+                      onClick={() => handleMove(idx, "down")}
+                      disabled={idx === categories.length - 1}
+                      className="flex-1 inline-flex items-center justify-center gap-1 bg-zinc-950 hover:bg-amber-500 hover:text-black border border-zinc-800 text-amber-400 rounded-lg py-1.5 text-[11px] font-bold transition-all disabled:opacity-30 disabled:hover:bg-zinc-950 disabled:hover:text-amber-400 cursor-pointer disabled:cursor-not-allowed"
+                      title="تأخير للأخير"
+                    >
+                      تأخير
+                      <ChevronLeft size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
