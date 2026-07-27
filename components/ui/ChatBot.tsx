@@ -546,7 +546,7 @@ export function ChatBot() {
               <img
                 src="/api/wolf-icon"
                 alt="DEEP STORE Wolf Assistant"
-                className="w-full h-full object-contain filter drop-shadow-[0_4px_16px_rgba(251,191,36,0.8)] hover:scale-105 transition-transform"
+                className="w-full h-full object-contain filter drop-shadow-[0_4px_16px_rgba(251,191,36,0.8)] dark:drop-shadow-[0_4px_16px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform"
               />
               <span className="absolute top-0 right-0 flex h-4 w-4">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -565,38 +565,38 @@ export function ChatBot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[400px] h-[540px] max-h-[82vh] bg-zinc-950 border border-amber-500/40 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-white font-sans dir-rtl relative"
+            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[400px] h-[540px] max-h-[82vh] bg-white dark:bg-zinc-950 border border-amber-500/40 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.25)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-zinc-900 dark:text-white font-sans dir-rtl relative transition-colors"
             dir="rtl"
           >
             {/* Header */}
-            <div className="p-4 bg-gradient-to-r from-zinc-900 via-zinc-950 to-black border-b border-amber-500/20 flex items-center justify-between z-10 relative">
+            <div className="p-4 bg-gradient-to-r from-amber-50 via-zinc-100 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-black border-b border-amber-500/20 flex items-center justify-between z-10 relative">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center shadow-lg shadow-amber-500/20 p-1">
                   <img src="/api/wolf-icon" alt="Wolf" className="w-8 h-8 object-contain" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm text-amber-400 flex items-center gap-1.5">
-                    مساعد ملابس الديب ستور <img src="/api/wolf-icon" alt="Wolf" className="w-4 h-4 object-contain invert mix-blend-screen" />
+                  <h3 className="font-extrabold text-sm text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                    مساعد ملابس الديب ستور <img src="/api/wolf-icon" alt="Wolf" className="w-4 h-4 object-contain dark:invert" />
                   </h3>
-                  <p className="text-[11px] text-zinc-400">حاسبة المقاسات واقتراح التشكيلات المناسبة</p>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">حاسبة المقاسات واقتراح التشكيلات المناسبة</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-full hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1.5 rounded-full bg-zinc-200/60 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Background Wolf Watermark inside Chat */}
-            <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-30">
-              <img src="/api/wolf-icon" alt="Wolf Watermark" className="w-72 h-72 object-contain filter drop-shadow-[0_0_20px_rgba(245,158,11,0.2)]" />
+            <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-15 dark:opacity-30">
+              <img src="/api/wolf-icon" alt="Wolf Watermark" className="w-72 h-72 object-contain filter drop-shadow-[0_0_20px_rgba(245,158,11,0.2)] dark:invert" />
             </div>
 
             {/* Messages Container with Strict Scroll Isolation */}
             <div 
-              className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-black/60 backdrop-blur-sm scrollbar-thin scrollbar-thumb-amber-500/30 overscroll-contain touch-pan-y z-10 relative"
+              className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-zinc-50/90 dark:bg-black/60 backdrop-blur-sm scrollbar-thin scrollbar-thumb-amber-500/30 overscroll-contain touch-pan-y z-10 relative"
               onWheel={(e) => e.stopPropagation()}
               onTouchMove={(e) => e.stopPropagation()}
             >
@@ -610,8 +610,8 @@ export function ChatBot() {
                   <div
                     className={`w-7 h-7 rounded-full flex items-center justify-center text-xs flex-shrink-0 ${
                       msg.sender === "user"
-                        ? "bg-zinc-800 text-zinc-300"
-                        : "bg-amber-500/20 border border-amber-500/30 text-amber-400"
+                        ? "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                        : "bg-amber-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400"
                     }`}
                   >
                     {msg.sender === "user" ? <User size={14} /> : <Bot size={14} />}
@@ -621,7 +621,7 @@ export function ChatBot() {
                     className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed ${
                       msg.sender === "user"
                         ? "bg-gradient-to-r from-amber-500 to-amber-400 text-black font-semibold rounded-tr-none shadow-md"
-                        : "bg-zinc-900 border border-zinc-800 text-zinc-200 rounded-tl-none"
+                        : "bg-white text-zinc-900 border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-200 rounded-tl-none shadow-sm"
                     }`}
                   >
                     <FormattedMessageText text={msg.text} onCloseChat={() => setIsOpen(false)} />
@@ -641,16 +641,13 @@ export function ChatBot() {
               ))}
 
               {loading && (
-                <div className="flex items-center gap-2 text-amber-400 text-xs py-2">
-                  <Bot size={16} className="animate-spin text-amber-400" />
+                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-xs py-2 font-bold">
+                  <Bot size={16} className="animate-spin text-amber-500" />
                   <span>جاري حساب المقاس واقتراح المنتجات المناسبة...</span>
                 </div>
               )}
               <div ref={messagesEndRef} />
             </div>
-
-
-
 
             {/* Input Form */}
             <form
@@ -658,14 +655,14 @@ export function ChatBot() {
                 e.preventDefault();
                 handleSend();
               }}
-              className="p-3 bg-zinc-950 border-t border-zinc-900 flex items-center gap-2"
+              className="p-3 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-900 flex items-center gap-2 z-10 relative"
             >
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="اكتب طولك ووزنك أو استفسارك..."
-                className="flex-1 bg-zinc-900 border border-zinc-800 focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none transition-colors"
+                className="flex-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none transition-colors"
               />
               <button
                 type="submit"

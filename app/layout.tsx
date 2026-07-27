@@ -39,8 +39,8 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL || "https://eldeeb.shop"
   ),
   title: {
-    default: "DEEP STORE | البراند المفضل للملابس والستريت وير الفاخرة",
-    template: "%s | DEEP STORE",
+    default: "EL DEEB STORE",
+    template: "%s | EL DEEB STORE",
   },
   description:
     "تسوق أحدث تشكيلات الملابس والستريت وير العصرية من براند ديب ستور DEEP STORE. اكتشف أفضل الهوديز، التيشيرتات، والبنطلونات المصممة بأعلى جودة وخامات ممتازة في مصر والوطن العربي.",

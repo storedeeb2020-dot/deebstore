@@ -132,10 +132,7 @@ export function DeepIntro({ onComplete }: IntroProps) {
               />
             </div>
 
-            {/* Subtitle Brand Tagline */}
-            <p className="mt-4 text-xs sm:text-sm font-extrabold tracking-[0.4em] text-zinc-400 uppercase text-center opacity-80">
-              ROYAL STREETWEAR • EGYPT
-            </p>
+
           </div>
 
           {/* Custom Inline CSS Animations */}

@@ -15,20 +15,14 @@ export default function AboutPage() {
       .catch(console.error);
   }, []);
 
-  const aboutTitle = settings?.aboutTitle || "عن ديب ستور — About DEEP STORE";
-  const aboutSubtitle =
-    settings?.aboutSubtitle ||
-    "نحدد أسلوب الأناقة العصرية من خلال الموضة الفاخرة وخامات الستريت وير الممتازة والتصاميم الاستثنائية.";
+  const aboutTitle = settings?.aboutTitle || "عن ديب ستور";
+  const aboutSubtitle = settings?.aboutSubtitle || "";
 
-  const section1Title = settings?.aboutSection1Title || "الرقي والبساطة العصرية";
-  const section1Text =
-    settings?.aboutSection1Text ||
-    "في ديب ستور DEEP STORE، نؤمن بأن الأسلوب هو انعكاس للهوية. نصمم ملابس تبرز خطوط الأناقة وتعتمد على الخامات الفاخرة التي تدوم طويلاً وتمنحك التميز المطلق.";
+  const section1Title = settings?.aboutSection1Title || "";
+  const section1Text = settings?.aboutSection1Text || "";
   const section1Image = settings?.aboutSection1Image || "";
-  const section2Title = settings?.aboutSection2Title || "Uncompromising Quality";
-  const section2Text =
-    settings?.aboutSection2Text ||
-    "We source only the finest fabrics—from extra-long staple cottons to sustainable technical fibers. By partnering with responsible manufacturers who share our dedication to craftsmanship, we ensure that every garment is built to last and feel exceptional on your skin.";
+  const section2Title = settings?.aboutSection2Title || "";
+  const section2Text = settings?.aboutSection2Text || "";
   const section2Image = settings?.aboutSection2Image || "";
 
   return (
