@@ -337,16 +337,16 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
           >
             <div className="flex items-center gap-2 mb-2">
               {product.bestSeller && (
-                <Badge variant="default">Best Seller</Badge>
+                <Badge variant="default">الأكثر مبيعاً</Badge>
               )}
               {product.featured && (
-                <Badge variant="info">New Arrival</Badge>
+                <Badge variant="info">وصل حديثاً</Badge>
               )}
               {sizeStock <= 5 && sizeStock > 0 && (
-                <Badge variant="warning">Only {sizeStock} left</Badge>
+                <Badge variant="warning">متبقي {sizeStock} فقط</Badge>
               )}
               {sizeStock === 0 && (
-                <Badge variant="danger">Out of Stock</Badge>
+                <Badge variant="danger">نفد المخزون</Badge>
               )}
             </div>
 
@@ -478,7 +478,7 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
                 ) : (
                   <>
                     <ShoppingBag size={14} />
-                    {sizeStock === 0 ? "Out of Stock" : "إضافة للسلة / Add to Cart"}
+                    {sizeStock === 0 ? "نفد المخزون" : "إضافة للسلة — ADD TO CART"}
                   </>
                 )}
               </motion.button>
@@ -524,7 +524,7 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
 
             {sizeStock > 0 && (
               <p className="text-xs text-gray-400 mt-3">
-                {sizeStock} items available in stock
+                متوفر {sizeStock} قطعة في المخزون
               </p>
             )}
           </motion.div>

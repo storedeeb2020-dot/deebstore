@@ -14,6 +14,16 @@ interface ChatMessage {
   id: string;
   sender: "bot" | "user";
   text: string;
+  suggestedProducts?: {
+    id: string;
+    name: string;
+    slug: string;
+    price: number;
+    salePrice?: number;
+    mainImage: string;
+    category: string;
+    variants?: { colorName: string; colorHex: string; sizes: { size: string; stock: number }[] }[];
+  }[];
 }
 
 // Component to render clickable product links inside chatbot messages
@@ -41,31 +51,30 @@ function FormattedMessageText({
     parts.push({ type: "text", content: text.substring(lastIndex) });
   }
 
-  const links = parts.filter((p) => p.type === "link");
-
-  if (links.length === 0) {
+  if (parts.length === 0) {
     return <span className="whitespace-pre-line">{text}</span>;
   }
 
   return (
-    <div className="space-y-2">
-      <div className="whitespace-pre-line">
-        {parts.map((p, index) => (p.type === "text" ? <span key={index}>{p.content}</span> : null))}
-      </div>
-      <div className="flex flex-wrap gap-2 pt-1">
-        {links.map((link, idx) => (
-          <Link
-            key={idx}
-            href={link.url!}
-            onClick={onCloseChat}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/60 text-amber-300 hover:text-amber-200 text-xs font-extrabold transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer"
-          >
-            <span>{link.title}</span>
-            <ExternalLink size={12} className="text-amber-400" />
-          </Link>
-        ))}
-      </div>
-    </div>
+    <span className="whitespace-pre-line leading-relaxed">
+      {parts.map((p, index) => {
+        if (p.type === "text") {
+          return <span key={index}>{p.content}</span>;
+        } else {
+          return (
+            <Link
+              key={index}
+              href={p.url!}
+              onClick={onCloseChat}
+              className="inline-flex items-center gap-0.5 mx-1 px-1.5 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 hover:text-amber-200 transition-all font-bold cursor-pointer"
+            >
+              <span>{p.title}</span>
+              <ExternalLink size={11} className="text-amber-400 inline" />
+            </Link>
+          );
+        }
+      })}
+    </span>
   );
 }
 
@@ -178,31 +187,28 @@ export function ChatBot() {
     if (!customText) setInput("");
     setLoading(true);
 
-    // 1. Log the user message to Firestore
     await logMessageToFirestore("user", textToSend);
 
     try {
-      const historyForApi = messages.map((m) => ({
-        role: m.sender === "user" ? "user" : "model",
-        parts: [{ text: m.text }],
-      }));
+      // Send full conversation history for context
+      const historyForApi = messages
+        .filter((m) => m.id !== "welcome")
+        .map((m) => ({ role: m.sender === "user" ? "user" : "bot", text: m.text }));
 
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: historyForApi,
           userMessage: textToSend,
-          catalog: productsCatalog,
+          history: historyForApi,
         }),
       });
 
-      if (!res.ok) {
-        throw new Error("Chat request failed");
-      }
+      if (!res.ok) throw new Error("Chat request failed");
 
       const data = await res.json();
       const botReply = data.reply || "عذراً، حدث خطأ أثناء الاتصال. حاول مرة أخرى.";
+      const suggestedProducts = data.suggestedProducts || [];
 
       setMessages((prev) => [
         ...prev,
@@ -210,24 +216,18 @@ export function ChatBot() {
           id: (Date.now() + 1).toString(),
           sender: "bot",
           text: botReply,
+          suggestedProducts,
         },
       ]);
 
-      // 2. Log the bot reply to Firestore
       await logMessageToFirestore("bot", botReply);
     } catch (err) {
       console.error("ChatBot send error:", err);
       const fallbackText = "أهلاً بك في ديب ستور! يمكنك الاطلاع على المنتجات المتاحة فوراً عبر [صفحة المتجر](/shop).";
       setMessages((prev) => [
         ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          sender: "bot",
-          text: fallbackText,
-        },
+        { id: (Date.now() + 1).toString(), sender: "bot", text: fallbackText },
       ]);
-
-      // 3. Log the fallback bot reply to Firestore
       await logMessageToFirestore("bot", fallbackText);
     } finally {
       setLoading(false);
@@ -327,6 +327,54 @@ export function ChatBot() {
                     }`}
                   >
                     <FormattedMessageText text={msg.text} onCloseChat={() => setIsOpen(false)} />
+                    {/* Rich Product Cards */}
+                    {msg.suggestedProducts && msg.suggestedProducts.length > 0 && (
+                      <div className="mt-2 flex flex-col gap-2">
+                        {msg.suggestedProducts.map((p) => (
+                          <Link
+                            key={p.id}
+                            href={`/products/${p.slug}`}
+                            onClick={() => setIsOpen(false)}
+                            className="flex items-center gap-2.5 p-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 border border-zinc-700/60 hover:border-amber-500/50 transition-all group"
+                          >
+                            {p.mainImage && (
+                              <img
+                                src={p.mainImage}
+                                alt={p.name}
+                                className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-zinc-700"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-zinc-100 text-xs truncate group-hover:text-amber-300 transition-colors">{p.name}</p>
+                              <p className="text-[10px] text-zinc-500">{p.category}</p>
+                              <p className="text-xs font-extrabold text-amber-400 mt-0.5">
+                                {p.salePrice ? (
+                                  <>
+                                    <span>{p.salePrice} ج.م</span>
+                                    <span className="line-through text-zinc-600 mr-1 font-normal">{p.price}</span>
+                                  </>
+                                ) : (
+                                  <span>{p.price} ج.م</span>
+                                )}
+                              </p>
+                              {p.variants && p.variants.length > 0 && (
+                                <div className="flex gap-1 mt-1 flex-wrap">
+                                  {p.variants.slice(0, 4).map((v, vi) => (
+                                    <span
+                                      key={vi}
+                                      title={v.colorName}
+                                      className="w-3 h-3 rounded-full border border-zinc-600 flex-shrink-0"
+                                      style={{ backgroundColor: v.colorHex || "#555" }}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <ExternalLink size={12} className="text-zinc-600 group-hover:text-amber-400 transition-colors flex-shrink-0" />
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -340,6 +388,27 @@ export function ChatBot() {
               <div ref={messagesEndRef} />
             </div>
 
+
+            {/* Quick Action Chips */}
+            {messages.length <= 1 && !loading && (
+              <div className="px-3 pb-2 flex flex-wrap gap-1.5">
+                {[
+                  { label: "🛍️ كل المنتجات", text: "ايه كل المنتجات المتاحة عندك؟" },
+                  { label: "📏 احسب مقاسي", text: "عايز احسب مقاسي" },
+                  { label: "🚚 الشحن والتوصيل", text: "ايه تفاصيل الشحن والتوصيل؟" },
+                  { label: "💳 طرق الدفع", text: "ايه طرق الدفع المتاحة؟" },
+                ].map((chip) => (
+                  <button
+                    key={chip.label}
+                    type="button"
+                    onClick={() => handleSend(chip.text)}
+                    className="text-[10px] px-2.5 py-1.5 rounded-full bg-zinc-800 hover:bg-amber-500/20 border border-zinc-700 hover:border-amber-400/60 text-zinc-300 hover:text-amber-300 transition-all font-semibold cursor-pointer"
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Input Form */}
             <form
