@@ -4,16 +4,18 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ProductGrid } from "@/components/products/ProductGrid";
 import type { Product } from "@/types/product";
-import { getSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
+import { getProducts, getSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
 
-interface FeaturedProductsProps {
-  products: Product[];
-}
-
-export function FeaturedProducts({ products }: FeaturedProductsProps) {
+export function FeaturedProducts() {
+  const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
 
   useEffect(() => {
+    // Only fetch products explicitly marked as featured by admin
+    getProducts({ featured: true })
+      .then(setProducts)
+      .catch(console.error);
+
     getSiteSettings()
       .then((data) => {
         if (data) setSettings(data);
@@ -21,11 +23,12 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
       .catch(console.error);
   }, []);
 
+  // If no products are marked as featured by admin, render nothing
   if (products.length === 0) return null;
 
   return (
-    <div className="w-full bg-white dark:bg-black transition-colors">
-      <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div id="products" className="w-full bg-white dark:bg-black transition-colors">
+      <section className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
           <div>
             <motion.p
