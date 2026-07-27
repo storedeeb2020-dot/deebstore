@@ -72,10 +72,10 @@ export function TruckSubmitButton({
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="flex items-center gap-2 text-white font-extrabold"
+            className="flex items-center gap-2 text-emerald-300 font-extrabold"
           >
             <Check size={20} className="stroke-[3]" />
-            <span>ORDER CONFIRMED!</span>
+            <span>تم تأكيد الطلب بنجاح! 🎉</span>
           </motion.div>
         ) : isExecuting ? (
           <motion.div
@@ -84,17 +84,17 @@ export function TruckSubmitButton({
             className="flex items-center gap-2 text-amber-400 font-extrabold text-xs tracking-widest"
           >
             <Sparkles size={14} className="animate-spin" />
-            <span>DELIVERING ORDER...</span>
+            <span>جاري إرسال وتأكيد الطلب...</span>
           </motion.div>
         ) : (
           <div className="flex items-center justify-between w-full">
-            <span className="flex items-center gap-2 font-black tracking-widest">
-              <Truck size={18} className={disabled ? "text-zinc-400" : "text-amber-400"} />
-              CONFIRM ORDER NOW
+            <span className="flex items-center gap-2 font-black tracking-wider text-amber-300">
+              <Truck size={18} className={disabled ? "text-zinc-500" : "text-amber-400"} />
+              تأكيد وإتمام الطلب الآن
             </span>
 
             {totalText && (
-              <span className={`text-xs px-3 py-1 rounded-full font-mono ${disabled ? "bg-zinc-400/20 text-zinc-500" : "bg-white/10 dark:bg-black/10 text-zinc-200 dark:text-zinc-800"}`}>
+              <span className={`text-xs px-3 py-1 rounded-full font-mono font-bold ${disabled ? "bg-zinc-800 text-zinc-500" : "bg-amber-500/20 text-amber-300 border border-amber-500/30"}`}>
                 {totalText}
               </span>
             )}

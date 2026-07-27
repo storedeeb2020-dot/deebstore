@@ -267,13 +267,13 @@ export default function CheckoutPage() {
 
               {/* ── Section 1: Customer Info ── */}
               <motion.section
-                className="bg-gray-50 dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 space-y-5 border border-gray-100 dark:border-zinc-800"
+                className="bg-zinc-900/90 rounded-2xl p-6 sm:p-8 space-y-5 border border-amber-500/20 shadow-xl shadow-black/40 text-zinc-100"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
               >
-                <h2 className="font-bold text-lg flex items-center gap-2">
-                  <MapPin size={20} />
+                <h2 className="font-bold text-lg flex items-center gap-2 text-amber-400">
+                  <MapPin size={20} className="text-amber-400" />
                   بيانات الشحن
                 </h2>
 
@@ -305,21 +305,21 @@ export default function CheckoutPage() {
 
                   {/* Governorate */}
                   <div>
-                    <label className="block text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-amber-300 uppercase tracking-wider mb-1.5">
                       المحافظة *
                     </label>
                     <select
                       {...register("governorate")}
-                      className="w-full px-4 py-3 border border-gray-200 dark:border-zinc-700 bg-white text-gray-900 dark:bg-zinc-800/90 dark:text-zinc-100 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white cursor-pointer shadow-sm"
+                      className="w-full px-4 py-3 border border-amber-500/30 bg-zinc-800 text-amber-100 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer shadow-sm"
                     >
                       {shippingRates.map((rate) => (
-                        <option key={rate.id} value={rate.nameAr} className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-white">
+                        <option key={rate.id} value={rate.nameAr} className="bg-zinc-900 text-amber-100">
                           {rate.nameAr} — شحن {rate.price} ج.م
                         </option>
                       ))}
                     </select>
                     {errors.governorate && (
-                      <p className="text-red-500 text-xs font-bold mt-1.5">{errors.governorate.message}</p>
+                      <p className="text-red-400 text-xs font-bold mt-1.5">{errors.governorate.message}</p>
                     )}
                   </div>
                 </div>
@@ -333,26 +333,26 @@ export default function CheckoutPage() {
                 />
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-amber-300 uppercase tracking-wider mb-1.5">
                     العنوان بالتفصيل *
                   </label>
                   <textarea
-                    className="w-full px-4 py-3 border border-gray-200 dark:border-zinc-700 bg-white text-gray-900 placeholder:text-gray-400 dark:bg-zinc-800/90 dark:text-zinc-100 dark:placeholder:text-zinc-400 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white resize-none shadow-sm"
+                    className="w-full px-4 py-3 border border-amber-500/30 bg-zinc-800 text-amber-100 placeholder:text-zinc-500 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none shadow-sm"
                     rows={3}
                     placeholder="الشارع، رقم العمارة، الدور، رقم الشقة..."
                     {...register("address")}
                   />
                   {errors.address && (
-                    <p className="text-red-500 text-xs font-bold mt-1.5">{errors.address.message}</p>
+                    <p className="text-red-400 text-xs font-bold mt-1.5">{errors.address.message}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-amber-300 uppercase tracking-wider mb-1.5">
                     ملاحظات (اختياري)
                   </label>
                   <textarea
-                    className="w-full px-4 py-3 border border-gray-200 dark:border-zinc-700 bg-white text-gray-900 placeholder:text-gray-400 dark:bg-zinc-800/90 dark:text-zinc-100 dark:placeholder:text-zinc-400 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white resize-none shadow-sm"
+                    className="w-full px-4 py-3 border border-amber-500/30 bg-zinc-800 text-amber-100 placeholder:text-zinc-500 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none shadow-sm"
                     rows={2}
                     placeholder="أي تعليمات للمندوب..."
                     {...register("notes")}
@@ -362,12 +362,12 @@ export default function CheckoutPage() {
 
               {/* ── Section 2: Payment Method ── */}
               <motion.section
-                className="bg-gray-50 dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 border border-gray-100 dark:border-zinc-800 space-y-5"
+                className="bg-zinc-900/90 rounded-2xl p-6 sm:p-8 border border-amber-500/20 shadow-xl shadow-black/40 space-y-5 text-zinc-100"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.12 }}
               >
-                <h2 className="font-bold text-lg flex items-center gap-2">
+                <h2 className="font-bold text-lg flex items-center gap-2 text-amber-400">
                   💳 طريقة الدفع
                 </h2>
 
@@ -378,11 +378,11 @@ export default function CheckoutPage() {
                     onClick={() => setPaymentCategory("cash")}
                     className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
                       paymentCategory === "cash"
-                        ? "border-black dark:border-white bg-black text-white dark:bg-white dark:text-black shadow-lg"
-                        : "border-gray-200 dark:border-zinc-700 hover:border-gray-400 bg-white dark:bg-zinc-800"
+                        ? "border-amber-400 bg-amber-500/10 text-amber-300 shadow-lg shadow-amber-500/10"
+                        : "border-zinc-800 hover:border-zinc-700 bg-zinc-800/80 text-zinc-400"
                     }`}
                   >
-                    <Banknote size={22} />
+                    <Banknote size={22} className={paymentCategory === "cash" ? "text-amber-400" : ""} />
                     <span className="text-xs font-black">الدفع عند الاستلام</span>
                   </button>
 
@@ -392,11 +392,11 @@ export default function CheckoutPage() {
                       onClick={() => setPaymentCategory("online")}
                       className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
                         paymentCategory === "online"
-                          ? "border-black dark:border-white bg-black text-white dark:bg-white dark:text-black shadow-lg"
-                          : "border-gray-200 dark:border-zinc-700 hover:border-gray-400 bg-white dark:bg-zinc-800"
+                          ? "border-amber-400 bg-amber-500/10 text-amber-300 shadow-lg shadow-amber-500/10"
+                          : "border-zinc-800 hover:border-zinc-700 bg-zinc-800/80 text-zinc-400"
                       }`}
                     >
-                      <CreditCard size={22} />
+                      <CreditCard size={22} className={paymentCategory === "online" ? "text-amber-400" : ""} />
                       <span className="text-xs font-black">دفع أونلاين</span>
                     </button>
                   )}
@@ -412,9 +412,9 @@ export default function CheckoutPage() {
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="flex items-center gap-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl p-4">
-                        <CheckCircle2 size={20} className="text-green-600 flex-shrink-0" />
-                        <p className="text-xs font-semibold text-green-800 dark:text-green-300">
+                      <div className="flex items-center gap-3 bg-amber-950/30 border border-amber-500/30 rounded-xl p-4">
+                        <CheckCircle2 size={20} className="text-amber-400 flex-shrink-0" />
+                        <p className="text-xs font-semibold text-amber-300">
                           سيتم الدفع نقداً عند استلام الطلب. المندوب سيتواصل معك قبل التوصيل.
                         </p>
                       </div>
@@ -540,8 +540,8 @@ export default function CheckoutPage() {
 
             {/* ── RIGHT: Order Summary ── */}
             <div className="lg:col-span-2">
-              <div className="bg-gray-50 dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 sticky top-24 border border-gray-100 dark:border-zinc-800 space-y-6">
-                <h2 className="font-bold text-lg">ملخص الطلب</h2>
+              <div className="bg-zinc-900/90 rounded-2xl p-6 sm:p-8 sticky top-24 border border-amber-500/20 shadow-2xl shadow-black/60 space-y-6 text-zinc-100">
+                <h2 className="font-bold text-lg text-amber-400 border-b border-zinc-800 pb-3">ملخص الطلب</h2>
 
                 {/* Items */}
                 <div className="space-y-3 max-h-72 overflow-y-auto pl-1">
@@ -557,8 +557,8 @@ export default function CheckoutPage() {
                     const key = `${pId}-${pSize}-${pColorHex}`;
 
                     return (
-                      <div key={key} className="flex items-center gap-3 p-2 bg-white dark:bg-zinc-800 rounded-xl border border-gray-100 dark:border-zinc-700">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-50 dark:bg-zinc-700 flex-shrink-0">
+                      <div key={key} className="flex items-center gap-3 p-2.5 bg-zinc-800/80 rounded-xl border border-zinc-700/60">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-zinc-900 flex-shrink-0 border border-zinc-700">
                           <Image
                             src={pImage}
                             alt={pName}
@@ -568,35 +568,35 @@ export default function CheckoutPage() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold truncate">{pName}</p>
-                          <p className="text-[10px] text-gray-500">
+                          <p className="text-xs font-bold text-zinc-200 truncate">{pName}</p>
+                          <p className="text-[10px] text-amber-400/80 font-medium">
                             {pColorName} / {pSize} × {qty}
                           </p>
                         </div>
-                        <span className="text-xs font-black">{formatPrice(price * qty)}</span>
+                        <span className="text-xs font-black text-amber-300">{formatPrice(price * qty)}</span>
                       </div>
                     );
                   })}
                 </div>
 
                 {/* Totals */}
-                <div className="border-t border-gray-200 dark:border-zinc-700 pt-4 space-y-2.5 text-xs">
+                <div className="border-t border-zinc-800 pt-4 space-y-2.5 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">المجموع الفرعي</span>
-                    <span className="font-bold">{formatPrice(totalPrice)}</span>
+                    <span className="text-zinc-400">المجموع الفرعي</span>
+                    <span className="font-bold text-zinc-200">{formatPrice(totalPrice)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 flex items-center gap-1">
-                      <Truck size={13} className="text-amber-500" />
+                    <span className="text-zinc-400 flex items-center gap-1">
+                      <Truck size={13} className="text-amber-400" />
                       الشحن ({selectedGovernorate || "—"})
                     </span>
-                    <span className="font-bold text-amber-600">{formatPrice(currentShippingCost)}</span>
+                    <span className="font-bold text-amber-400">{formatPrice(currentShippingCost)}</span>
                   </div>
                 </div>
 
-                <div className="border-t border-gray-200 dark:border-zinc-700 pt-4 flex justify-between font-black text-lg">
+                <div className="border-t border-zinc-800 pt-4 flex justify-between font-black text-lg text-amber-300">
                   <span>الإجمالي</span>
-                  <span>{formatPrice(finalOrderTotal)}</span>
+                  <span className="text-amber-400 font-mono">{formatPrice(finalOrderTotal)}</span>
                 </div>
 
                 {/* Submit Button */}
