@@ -61,7 +61,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-black text-white font-sans">
+    <footer className="bg-zinc-100 dark:bg-black text-zinc-900 dark:text-white font-sans transition-colors border-t border-zinc-200 dark:border-zinc-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Brand */}
@@ -70,9 +70,9 @@ export function Footer() {
             <img
               src="/logo.png"
               alt="DEEP STORE Logo"
-              className="h-8 w-auto object-contain invert"
+              className="h-8 w-auto object-contain dark:invert"
             />
-            <p className="mt-4 text-gray-400 text-sm leading-relaxed max-w-sm">
+            <p className="mt-4 text-zinc-600 dark:text-gray-400 text-sm leading-relaxed max-w-sm">
               {settings?.footerDescription ||
                 "متجر ديب ستور الفاخر للستريت وير والموضة العصرية. تسوق أحدث التشكيلات بأفضل جودة وخامات ممتازة."}
             </p>
@@ -87,17 +87,17 @@ export function Footer() {
 
           {/* Shop */}
           <div>
-            <h4 className="font-bold text-sm tracking-widest uppercase mb-4 text-amber-400">
+            <h4 className="font-bold text-sm tracking-widest uppercase mb-4 text-amber-600 dark:text-amber-400">
               تسوق المتجر
             </h4>
-            <ul className="space-y-3 text-sm text-gray-400">
+            <ul className="space-y-3 text-sm text-zinc-600 dark:text-gray-400">
               {[
                 { href: "/#products", label: "التشكيلة العصرية" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="hover:text-amber-400 transition-colors"
+                    className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -108,10 +108,10 @@ export function Footer() {
 
           {/* Info */}
           <div>
-            <h4 className="font-bold text-sm tracking-widest uppercase mb-4 text-amber-400">
+            <h4 className="font-bold text-sm tracking-widest uppercase mb-4 text-amber-600 dark:text-amber-400">
               معلومات المتجر
             </h4>
-            <ul className="space-y-3 text-sm text-gray-400">
+            <ul className="space-y-3 text-sm text-zinc-600 dark:text-gray-400">
               {[
                 { href: "/about", label: "عن ديب ستور" },
                 { href: "/contact", label: "اتصل بنا والشكاوى" },
@@ -121,7 +121,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="hover:text-amber-400 transition-colors"
+                    className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -133,7 +133,7 @@ export function Footer() {
 
         {/* Bottom Credits */}
         <motion.div
-          className="mt-12 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-400"
+          className="mt-12 pt-6 border-t border-zinc-200 dark:border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-zinc-500 dark:text-gray-400"
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -143,14 +143,14 @@ export function Footer() {
 
           {/* Developer Credit & WhatsApp */}
           <div className="flex flex-col md:items-end items-center gap-1">
-            <p className="font-bold text-zinc-300">
+            <p className="font-bold text-zinc-800 dark:text-zinc-300">
               Developed by Yousef
             </p>
             <a
               href="https://wa.me/201020451206"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 font-mono transition-colors"
+              className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 font-mono transition-colors"
             >
               <MessageCircle size={14} />
               <span>01020451206</span>

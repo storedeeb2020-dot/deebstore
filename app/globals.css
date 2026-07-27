@@ -100,9 +100,6 @@ body {
   the product appears to "float" on the page.
 */
 .product-img-blend {
-  mix-blend-mode: multiply;
-}
-.dark .product-img-blend {
   mix-blend-mode: normal;
 }
 

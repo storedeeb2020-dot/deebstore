@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, Send, Bot, User, ExternalLink, ShoppingBag, Check } from "lucide-react";
+import { X, Send, Bot, User, ExternalLink, ShoppingBag, Check, MessageSquare, Sparkles, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProducts } from "@/lib/firebase/firestore";
 import { useCart } from "@/features/cart/CartProvider";
@@ -532,17 +532,20 @@ export function ChatBot() {
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.92 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-300 text-black shadow-[0_0_25px_rgba(255,215,0,0.5)] border-2 border-amber-200 focus:outline-none cursor-pointer"
+          className="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-400 text-black shadow-[0_8px_30px_rgba(245,158,11,0.5)] border border-amber-200/80 focus:outline-none cursor-pointer"
           aria-label="مساعد ملابس الديب ستور"
         >
           {isOpen ? (
             <X className="w-6 h-6 text-black font-black" />
           ) : (
-            <div className="relative flex items-center justify-center p-1">
-              <img src="/api/wolf-icon" alt="Wolf" className="w-7 h-7 object-contain drop-shadow-md mix-blend-multiply" />
-              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-300"></span>
+            <div className="relative flex items-center justify-center">
+              <MessageSquare className="w-7 h-7 text-black fill-black/10 stroke-[2.2]" />
+              <Sparkles className="w-3.5 h-3.5 text-amber-900 absolute -top-1 -right-1 animate-pulse" />
+              <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-black opacity-40"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-black text-amber-300 text-[8px] font-black items-center justify-center">
+                  AI
+                </span>
               </span>
             </div>
           )}
