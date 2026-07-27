@@ -11,6 +11,7 @@ cd /d "%~dp0"
 :: Create public directory and copy logo and banner assets
 if not exist public mkdir public
 node copy_intro.js >nul 2>&1
+copy /y "%~dp0public\ديب 3.png" "%~dp0public\wolf.png" >nul 2>&1
 copy /y "%~dp0logo\12-removebg-preview.png" "%~dp0public\logo.png" >nul
 copy /y "%~dp0logo\baner.png" "%~dp0public\banner.png" >nul
 copy /y "%~dp0logo\Screenshot 2026-07-23 041712.png" "%~dp0public\banner_light.png" >nul
