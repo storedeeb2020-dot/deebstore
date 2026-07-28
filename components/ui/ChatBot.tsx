@@ -377,6 +377,7 @@ export function ChatBot() {
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Generate or retrieve session ID for chat analytics
   useEffect(() => {
@@ -425,7 +426,9 @@ export function ChatBot() {
   }, [isOpen, products.length]);
 
   const scrollToBottom = () => {
-    if (chatContainerRef.current) {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    } else if (chatContainerRef.current) {
       chatContainerRef.current.scrollTo({
         top: chatContainerRef.current.scrollHeight,
         behavior: "smooth",
