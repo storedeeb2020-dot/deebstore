@@ -222,9 +222,9 @@ export default function AdminSettingsPage() {
 
   if (loading) {
     return (
-      <div className="py-20 flex flex-col items-center justify-center text-amber-400 space-y-3">
-        <Spinner size="lg" />
-        <p className="text-xs text-amber-400 font-bold uppercase tracking-widest">جاري تحميل لوحة الإعدادات...</p>
+      <div className="py-20 flex flex-col items-center justify-center text-[#FF274B] space-y-3">
+        <Spinner size="lg" className="border-[#FF274B] border-t-transparent" />
+        <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">جاري تحميل لوحة الإعدادات...</p>
       </div>
     );
   }
@@ -242,7 +242,7 @@ export default function AdminSettingsPage() {
   ];
 
   return (
-    <div className="space-y-8 max-w-6xl pb-16 font-sans dir-rtl text-zinc-900 dark:text-white" dir="rtl">
+    <div className="space-y-8 w-full max-w-7xl mx-auto pb-16 font-sans dir-rtl text-zinc-900 dark:text-white" dir="rtl">
       {/* Page Header */}
       <div>
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#FF274B] mb-1">
@@ -290,35 +290,35 @@ export default function AdminSettingsPage() {
       <form onSubmit={handleSave} className="space-y-8">
         {/* TAB 1: GLOBAL SIZE CHARTS CMS */}
         {activeTab === "sizeCharts" && (
-          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+          <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-4">
               <div className="flex items-center gap-2">
-                <Ruler size={20} className="text-amber-400" />
-                <h2 className="font-black text-base text-amber-400">
+                <Ruler size={20} className="text-[#FF274B]" />
+                <h2 className="font-black text-base text-[#FF274B]">
                   إدارة ورَفْع جداول المقاسات العامة للمنتجات
                 </h2>
               </div>
-              <span className="text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full">
+              <span className="text-xs font-bold bg-[#FF274B]/10 text-[#FF274B] border border-[#FF274B]/20 px-3 py-1 rounded-full">
                 جداول مخصصة
               </span>
             </div>
 
             {/* Add New Size Chart Box */}
-            <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-4">
-              <h3 className="text-xs font-bold text-white">إضافة جدول مقاسات عام جديد</h3>
+            <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] space-y-4">
+              <h3 className="text-xs font-bold text-zinc-900 dark:text-white">إضافة جدول مقاسات عام جديد</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-300 mb-1.5">اسم جدول المقاسات</label>
+                  <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">اسم جدول المقاسات</label>
                   <input
                     type="text"
                     placeholder="مثال: جدول مقاسات التيشيرتات والأوفرسايز"
                     value={newSizeChartName}
                     onChange={(e) => setNewSizeChartName(e.target.value)}
-                    className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                    className="w-full px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-300 mb-1.5">صورة جدول المقاسات</label>
+                  <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">صورة جدول المقاسات</label>
                   <ImageUploader
                     id="new-size-chart-uploader"
                     multiple={false}
@@ -330,7 +330,7 @@ export default function AdminSettingsPage() {
               <button
                 type="button"
                 onClick={addSizeChart}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-xl transition-all shadow-md cursor-pointer"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#FF274B] hover:bg-[#FF274B]/90 text-white font-extrabold text-xs rounded-xl transition-all shadow-md cursor-pointer"
               >
                 <Plus size={16} />
                 حفظ جدول المقاسات للقائمة
@@ -338,24 +338,24 @@ export default function AdminSettingsPage() {
             </div>
 
             {/* Uploaded Size Charts Grid */}
-            <div className="pt-4 border-t border-zinc-800 space-y-3">
-              <h3 className="text-xs font-bold text-zinc-300">جداول المقاسات المتاحة حالياً بالمتجر:</h3>
+            <div className="pt-4 border-t border-zinc-200 dark:border-white/[0.06] space-y-3">
+              <h3 className="text-xs font-bold text-zinc-700 dark:text-zinc-300">جداول المقاسات المتاحة حالياً بالمتجر:</h3>
               {(!settings.sizeCharts || settings.sizeCharts.length === 0) ? (
                 <p className="text-xs text-zinc-500 py-4">لم يتم إضافة جداول مقاسات عامة بعد.</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {settings.sizeCharts.map((item) => (
-                    <div key={item.id} className="relative bg-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-3 group">
-                      <div className="aspect-video w-full rounded-xl overflow-hidden bg-black border border-zinc-800">
+                    <div key={item.id} className="relative bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.06] rounded-2xl p-4 space-y-3 group">
+                      <div className="aspect-video w-full rounded-xl overflow-hidden bg-white dark:bg-black border border-zinc-200 dark:border-white/[0.08]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain p-1" />
                       </div>
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-bold text-white truncate">{item.name}</p>
+                        <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{item.name}</p>
                         <button
                           type="button"
                           onClick={() => removeSizeChart(item.id)}
-                          className="p-1.5 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
+                          className="p-1.5 text-zinc-400 hover:text-red-500 transition-colors cursor-pointer"
                           title="حذف هذا الجدول"
                         >
                           <Trash2 size={14} />
@@ -371,139 +371,90 @@ export default function AdminSettingsPage() {
 
         {/* TAB 2: BRAND COPY & LOGO */}
         {activeTab === "brand" && (
-          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center gap-2 border-b border-zinc-800 pb-4">
-              <Type size={18} className="text-amber-400" />
-              <h2 className="font-black text-sm text-amber-400 uppercase tracking-wider">
+          <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6">
+            <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/[0.06] pb-4">
+              <Type size={18} className="text-[#FF274B]" />
+              <h2 className="font-black text-sm text-[#FF274B] uppercase tracking-wider">
                 شعار المتجر ونصوص الهوية (Store Logo & Brand Copy)
               </h2>
             </div>
 
-            {/* Logo Image Uploader */}
-            <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3">
-              <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">
-                تغيير لوجو المحل الرسمي (Logo Upload CMS)
-              </label>
-              <p className="text-xs text-zinc-400 mb-3">
-                رفع صورة لوجو المحل الجديد (تظهر في الهيدر، الفوتر، لوحة الإدارة، والإنترو).
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-2xl bg-black border border-zinc-800 p-2 flex items-center justify-center overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={settings.logoUrl || "/logo.png"} alt="Store Logo" className="max-h-full max-w-full object-contain" />
-                </div>
-                <div className="flex-1">
-                  <ImageUploader
-                    id="logo-image-uploader"
-                    multiple={false}
-                    images={settings.logoUrl ? [settings.logoUrl] : []}
-                    onChange={(newImgs) => setSettings((prev) => ({ ...prev, logoUrl: newImgs[0] || "/logo.png" }))}
-                  />
-                </div>
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">اسم المتجر</label>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">اسم المتجر الرسمي</label>
                 <input
                   type="text"
-                  value={settings.storeName || "DEEP STORE"}
+                  value={settings.storeName || "DEEB STORE"}
                   onChange={(e) => setSettings({ ...settings, storeName: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">شعار الهيرو الفرعي (Hero Tagline)</label>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">الشعار الرئيسي (Hero Tagline)</label>
                 <input
                   type="text"
-                  value={settings.heroTagline || "ديب ستور — عالم الموضة والستريت وير الفاخر 🐺"}
+                  value={settings.heroTagline || ""}
                   onChange={(e) => setSettings({ ...settings, heroTagline: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">نص زر الهيرو (CTA Button)</label>
-                <input
-                  type="text"
-                  value={settings.heroButtonText || "تسوق الآن — SHOP NOW"}
-                  onChange={(e) => setSettings({ ...settings, heroButtonText: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">عنوان قسم التشكيلات الفاخرة</label>
-                <input
-                  type="text"
-                  value={settings.featuredTitle || "التشكيلات العصرية"}
-                  onChange={(e) => setSettings({ ...settings, featuredTitle: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1.5">الوصف المختصر بالفوتر</label>
-              <textarea
-                rows={3}
-                value={settings.footerDescription || ""}
-                onChange={(e) => setSettings({ ...settings, footerDescription: e.target.value })}
-                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 resize-none"
+            <div className="space-y-3 pt-2">
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300">لوجو المتجر الرسمي (Logo Upload)</label>
+              <ImageUploader
+                id="brand-logo-uploader"
+                multiple={false}
+                images={settings.logoUrl ? [settings.logoUrl] : []}
+                onChange={(newImgs) => setSettings((prev) => ({ ...prev, logoUrl: newImgs[0] || "" }))}
               />
             </div>
           </div>
         )}
 
-        {/* TAB 3: PAYMENT GATEWAYS & CONTROLS */}
+        {/* TAB 3: PAYMENTS CMS */}
         {activeTab === "payments" && (
-          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+          <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-4">
               <div className="flex items-center gap-2">
-                <CreditCard size={20} className="text-amber-400" />
-                <h2 className="font-black text-base text-amber-400">
+                <CreditCard size={20} className="text-[#FF274B]" />
+                <h2 className="font-black text-base text-zinc-900 dark:text-white">
                   لوحة التحكم في تفعيل وسائل الدفع الإلكتروني والدفع عند الاستلام
                 </h2>
               </div>
-              <span className="text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full">
+              <span className="text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full">
                 تحكم فوري مباشر
               </span>
             </div>
 
-            {/* Main Switch 1: Online Payments Overall Toggle */}
-            <div className="p-5 rounded-2xl bg-zinc-900/80 border border-amber-500/30 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-extrabold text-sm text-white">تفعيل خيار الدفع أونلاين بالكامل (Online Payment Master)</h3>
-                    {settings.onlinePaymentEnabled ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        مفعل حالياً
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-red-500/20 text-red-400 border border-red-500/30">
-                        معطل حالياً
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-zinc-400">
-                    عند إيقاف هذا الخيار، سيتم تعطيل خيارات التحويل الإلكتروني بالكامل في صفحة إنهاء الطلب وسيعمل الدفع عند الاستلام فقط.
-                  </p>
-                </div>
-
-                <ToggleSwitch
-                  checked={!!settings.onlinePaymentEnabled}
-                  onChange={(val) => setSettings({ ...settings, onlinePaymentEnabled: val })}
-                  size="lg"
-                />
+            {/* Master Online Payment Toggle */}
+            <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                  تفعيل خيار الدفع أونلاين بالكامل (Online Payment Master)
+                  {settings.onlinePaymentEnabled ? (
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">مُفعل حالياً</span>
+                  ) : (
+                    <span className="text-[10px] bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">معطل حالياً</span>
+                  )}
+                </h3>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
+                  عند إيقاف هذا الخيار، سيتم تعطيل خيارات التحويل الإلكتروني بالكامل في صفحة إيفاء الطلب، وسيجعل الدفع عند الاستلام فقط.
+                </p>
               </div>
+              <ToggleSwitch
+                checked={!!settings.onlinePaymentEnabled}
+                onChange={(val) => setSettings({ ...settings, onlinePaymentEnabled: val })}
+                size="md"
+              />
             </div>
 
             {/* Individual Sub Payment Methods */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
               {/* Vodafone Cash */}
-              <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3">
+              <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-amber-400">فودافون كاش (Vodafone Cash)</span>
+                  <span className="font-bold text-xs text-[#FF274B]">فودافون كاش (Vodafone Cash)</span>
                   <ToggleSwitch
                     checked={!!settings.vodafoneCashEnabled}
                     onChange={(val) => setSettings({ ...settings, vodafoneCashEnabled: val })}
@@ -511,20 +462,20 @@ export default function AdminSettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-400 mb-1">رقم محفظة فودافون كاش</label>
+                  <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 mb-1">رقم محفظة فودافون كاش</label>
                   <input
                     type="text"
                     value={settings.vodafoneCash || "01012345678"}
                     onChange={(e) => setSettings({ ...settings, vodafoneCash: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white focus:border-amber-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:border-[#FF274B] focus:outline-none font-bold"
                   />
                 </div>
               </div>
 
               {/* InstaPay */}
-              <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3">
+              <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-amber-400">انستاباي (InstaPay)</span>
+                  <span className="font-bold text-xs text-[#FF274B]">انستاباي (InstaPay)</span>
                   <ToggleSwitch
                     checked={!!settings.instapayEnabled}
                     onChange={(val) => setSettings({ ...settings, instapayEnabled: val })}
@@ -532,27 +483,27 @@ export default function AdminSettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-400 mb-1">معرف انستاباي IPA</label>
+                  <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 mb-1">معرف انستاباي IPA</label>
                   <input
                     type="text"
                     value={settings.instapayUsername || "@deepstore"}
                     onChange={(e) => setSettings({ ...settings, instapayUsername: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white focus:border-amber-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:border-[#FF274B] focus:outline-none font-bold"
                   />
                 </div>
               </div>
 
               {/* Cash on Delivery */}
-              <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3">
+              <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-amber-400">الدفع عند الاستلام (COD)</span>
+                  <span className="font-bold text-xs text-[#FF274B]">الدفع عند الاستلام (COD)</span>
                   <ToggleSwitch
                     checked={!!settings.codEnabled}
                     onChange={(val) => setSettings({ ...settings, codEnabled: val })}
                     size="sm"
                   />
                 </div>
-                <p className="text-[11px] text-zinc-400 leading-relaxed pt-2">
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed pt-2 font-medium">
                   تمكين العملاء من دفع قيمة الطلب نقداً للمندوب عند استلام الشحنة.
                 </p>
               </div>
@@ -562,16 +513,16 @@ export default function AdminSettingsPage() {
 
         {/* TAB 4: HERO BANNERS & MEDIA */}
         {activeTab === "hero" && (
-          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center gap-2 border-b border-zinc-800 pb-4">
-              <Sparkles size={18} className="text-amber-400" />
-              <h2 className="font-black text-sm text-amber-400 uppercase tracking-wider">
+          <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6">
+            <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/[0.06] pb-4">
+              <Sparkles size={18} className="text-[#FF274B]" />
+              <h2 className="font-black text-sm text-[#FF274B] uppercase tracking-wider">
                 وسائط وصور الهيرو والواجهة الرئيسية
               </h2>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
                 نوع وسائط واجهة الهيرو
               </label>
               <div className="grid grid-cols-2 gap-3">
@@ -580,8 +531,8 @@ export default function AdminSettingsPage() {
                   onClick={() => setSettings({ ...settings, heroMediaType: "image" })}
                   className={`flex items-center justify-center gap-2 p-3.5 rounded-xl border text-xs font-bold transition-all ${
                     settings.heroMediaType === "image"
-                      ? "bg-amber-500 text-black border-amber-400 font-black shadow-lg shadow-amber-500/20"
-                      : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800"
+                      ? "bg-[#FF274B] text-white border-[#FF274B] font-black shadow-lg shadow-[#FF274B]/20"
+                      : "bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-white"
                   }`}
                 >
                   <ImageIcon size={16} />
@@ -592,8 +543,8 @@ export default function AdminSettingsPage() {
                   onClick={() => setSettings({ ...settings, heroMediaType: "video" })}
                   className={`flex items-center justify-center gap-2 p-3.5 rounded-xl border text-xs font-bold transition-all ${
                     settings.heroMediaType === "video"
-                      ? "bg-amber-500 text-black border-amber-400 font-black shadow-lg shadow-amber-500/20"
-                      : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800"
+                      ? "bg-[#FF274B] text-white border-[#FF274B] font-black shadow-lg shadow-[#FF274B]/20"
+                      : "bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-white"
                   }`}
                 >
                   <Video size={16} />
@@ -602,19 +553,19 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            <div className="space-y-6 pt-4 border-t border-zinc-800">
+            <div className="space-y-6 pt-4 border-t border-zinc-200 dark:border-white/[0.06]">
               {/* Video File Uploader */}
-              <div className="space-y-3 p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
-                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <div className="space-y-3 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06]">
+                <label className="block text-xs font-bold text-[#FF274B] uppercase tracking-wider mb-1 flex items-center gap-1.5">
                   <Video size={14} /> رفع وتعديل فيديو الهيرو السينمائي (Video Uploader)
                 </label>
-                <p className="text-[10px] text-zinc-400">
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
                   قم برفع فيديو (.mp4 / .webm) مباشرة من جهازك وسيتم رفعه وتغذيته تلقائياً بالصفحة الرئيسية.
                 </p>
 
                 {/* Video Preview */}
                 {settings.heroVideoUrlDark && (
-                  <div className="relative aspect-video w-full max-w-md rounded-xl overflow-hidden bg-black border border-zinc-800 my-2">
+                  <div className="relative aspect-video w-full max-w-md rounded-xl overflow-hidden bg-black border border-zinc-200 dark:border-white/[0.08] my-2">
                     <video
                       src={settings.heroVideoUrlDark}
                       controls
@@ -624,10 +575,10 @@ export default function AdminSettingsPage() {
                 )}
 
                 <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-                  <label className="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-400 text-black font-extrabold text-xs rounded-xl hover:scale-[1.02] transition-all cursor-pointer inline-flex items-center gap-2 shadow-md">
+                  <label className="px-5 py-3 bg-[#FF274B] text-white font-extrabold text-xs rounded-xl hover:scale-[1.02] transition-all cursor-pointer inline-flex items-center gap-2 shadow-md">
                     {uploadingVideo ? (
                       <>
-                        <Spinner size="sm" className="border-black border-t-transparent" />
+                        <Spinner size="sm" className="border-white border-t-transparent" />
                         <span>جاري رفع الفيديو...</span>
                       </>
                     ) : (
@@ -671,18 +622,18 @@ export default function AdminSettingsPage() {
                       placeholder="أو أدخل رابط الفيديو يدويًا..."
                       value={settings.heroVideoUrlDark || ""}
                       onChange={(e) => setSettings({ ...settings, heroMediaType: "video", heroVideoUrlDark: e.target.value, heroVideoUrlLight: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 font-mono"
+                      className="w-full px-4 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-mono font-bold"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Mobile Hero Image Banner */}
-              <div className="space-y-3 p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
-                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <div className="space-y-3 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06]">
+                <label className="block text-xs font-bold text-[#FF274B] uppercase tracking-wider mb-1 flex items-center gap-1.5">
                   <ImageIcon size={14} /> صورة بانر الموبايل (تظهر أسفل الفيديو في شاشات الموبايل 📱)
                 </label>
-                <p className="text-[10px] text-zinc-400 mb-2">
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-2 font-medium">
                   صورة موديلز/منتجات تعليقيه تظهر تحت فيديو العرض في الموبايل تماماً كما في الصورة المرفقة.
                 </p>
                 <ImageUploader
@@ -694,14 +645,14 @@ export default function AdminSettingsPage() {
               </div>
 
               {/* Dark Mode Banners */}
-              <div className="space-y-3 p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
-                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <div className="space-y-3 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06]">
+                <label className="block text-xs font-bold text-[#FF274B] uppercase tracking-wider mb-1 flex items-center gap-1.5">
                   <Moon size={14} /> صور بانرات الهيرو (الوضع الليلي / Dark Mode 🌙)
                 </label>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                   {settings.heroImagesDark?.map((img, i) => (
-                    <div key={i} className="relative aspect-video rounded-xl overflow-hidden border border-zinc-800 group bg-zinc-950">
+                    <div key={i} className="relative aspect-video rounded-xl overflow-hidden border border-zinc-200 dark:border-white/[0.08] group bg-white dark:bg-zinc-950">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={img} alt={`Dark Banner ${i + 1}`} className="w-full h-full object-cover" />
                       <button
@@ -725,14 +676,14 @@ export default function AdminSettingsPage() {
               </div>
 
               {/* Light Mode Banners */}
-              <div className="space-y-3 p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
-                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <div className="space-y-3 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06]">
+                <label className="block text-xs font-bold text-[#FF274B] uppercase tracking-wider mb-1 flex items-center gap-1.5">
                   <Sun size={14} /> صور بانرات الهيرو (الوضع المضيء / Light Mode ☀️)
                 </label>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                   {settings.heroImagesLight?.map((img, i) => (
-                    <div key={i} className="relative aspect-video rounded-xl overflow-hidden border border-zinc-800 group bg-zinc-950">
+                    <div key={i} className="relative aspect-video rounded-xl overflow-hidden border border-zinc-200 dark:border-white/[0.08] group bg-white dark:bg-zinc-950">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={img} alt={`Light Banner ${i + 1}`} className="w-full h-full object-cover" />
                       <button
@@ -765,58 +716,58 @@ export default function AdminSettingsPage() {
 
         {/* TAB 5: CONTACT & SOCIALS */}
         {activeTab === "contact" && (
-          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center gap-2 border-b border-zinc-800 pb-4">
-              <Phone size={18} className="text-amber-400" />
-              <h2 className="font-black text-sm text-amber-400 uppercase tracking-wider">
+          <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6">
+            <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/[0.06] pb-4">
+              <Phone size={18} className="text-[#FF274B]" />
+              <h2 className="font-black text-sm text-[#FF274B] uppercase tracking-wider">
                 معلومات التواصل وحسابات السوشيال ميديا
               </h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">البريد الإلكتروني للشكاوى والدعم</label>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">البريد الإلكتروني للشكاوى والدعم</label>
                 <input
                   type="email"
                   value={settings.storeEmail || "storedeeb2020@gmail.com"}
                   onChange={(e) => setSettings({ ...settings, storeEmail: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">رقم تليفون المبيعات والدعم</label>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">رقم تليفون المبيعات والدعم</label>
                 <input
                   type="text"
                   value={settings.storePhone || "+20 101 234 5678"}
                   onChange={(e) => setSettings({ ...settings, storePhone: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">رابط حساب انستجرام Instagram</label>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">رابط حساب انستجرام Instagram</label>
                 <input
                   type="url"
                   value={settings.instagramUrl || ""}
                   onChange={(e) => setSettings({ ...settings, instagramUrl: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">رابط فيسبوك Facebook</label>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">رابط فيسبوك Facebook</label>
                 <input
                   type="url"
                   value={settings.facebookUrl || ""}
                   onChange={(e) => setSettings({ ...settings, facebookUrl: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">رابط تيك توك TikTok</label>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">رابط تيك توك TikTok</label>
                 <input
                   type="url"
                   value={settings.tiktokUrl || ""}
                   onChange={(e) => setSettings({ ...settings, tiktokUrl: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
               </div>
             </div>
@@ -825,31 +776,31 @@ export default function AdminSettingsPage() {
 
         {/* TAB 6: ABOUT US PAGE */}
         {activeTab === "about" && (
-          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center gap-2 border-b border-zinc-800 pb-4">
-              <Info size={18} className="text-amber-400" />
-              <h2 className="font-black text-sm text-amber-400 uppercase tracking-wider">
+          <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6">
+            <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/[0.06] pb-4">
+              <Info size={18} className="text-[#FF274B]" />
+              <h2 className="font-black text-sm text-[#FF274B] uppercase tracking-wider">
                 محتوى صفحة عن المتجر (About Us CMS)
               </h2>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">العنوان الرئيسي للصفحة</label>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">العنوان الرئيسي للصفحة</label>
                 <input
                   type="text"
-                  value={settings.aboutTitle || "عن ديب ستور — About DEEP STORE"}
+                  value={settings.aboutTitle || "عن ديب ستور — About DEEB STORE"}
                   onChange={(e) => setSettings({ ...settings, aboutTitle: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">الوصف الفرعي للصفحة</label>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">الوصف الفرعي للصفحة</label>
                 <textarea
                   rows={3}
                   value={settings.aboutSubtitle || ""}
                   onChange={(e) => setSettings({ ...settings, aboutSubtitle: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 resize-none"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] resize-none font-bold"
                 />
               </div>
             </div>
@@ -858,55 +809,54 @@ export default function AdminSettingsPage() {
 
         {/* TAB 7: LEGAL & PRIVACY POLICY */}
         {activeTab === "legal" && (
-          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center gap-2 border-b border-zinc-800 pb-4">
-              <Shield size={18} className="text-amber-400" />
-              <h2 className="font-black text-sm text-amber-400 uppercase tracking-wider">
+          <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6">
+            <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/[0.06] pb-4">
+              <Shield size={18} className="text-[#FF274B]" />
+              <h2 className="font-black text-sm text-[#FF274B] uppercase tracking-wider">
                 نصوص الشروط والأحكام وسياسة الخصوصية باللغة العربية
               </h2>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1.5">سياسة الخصوصية (Privacy Policy)</label>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">سياسة الخصوصية (Privacy Policy)</label>
               <textarea
                 rows={6}
                 value={settings.privacyPolicyText || ""}
                 onChange={(e) => setSettings({ ...settings, privacyPolicyText: e.target.value })}
-                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1.5">الشروط والأحكام (Terms of Service)</label>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">الشروط والأحكام (Terms of Service)</label>
               <textarea
                 rows={6}
                 value={settings.termsOfServiceText || ""}
                 onChange={(e) => setSettings({ ...settings, termsOfServiceText: e.target.value })}
-                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
               />
             </div>
           </div>
         )}
 
-
-        {/* TAB: ANNOUNCEMENT BAR */}
+        {/* TAB 8: ANNOUNCEMENT BAR */}
         {activeTab === "announcement" && (
-          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+          <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-4">
               <div className="flex items-center gap-2">
-                <Megaphone size={20} className="text-amber-400" />
-                <h2 className="font-black text-base text-amber-400">شريط الإعلانات المتحرك</h2>
+                <Megaphone size={20} className="text-[#FF274B]" />
+                <h2 className="font-black text-base text-zinc-900 dark:text-white">شريط الإعلانات المتحرك</h2>
               </div>
-              <span className="text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full">
+              <span className="text-xs font-bold bg-[#FF274B]/10 text-[#FF274B] border border-[#FF274B]/20 px-3 py-1 rounded-full">
                 يظهر فوق الهيدر
               </span>
             </div>
 
             {/* Enable toggle */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06]">
               <div>
-                <p className="text-sm font-bold text-white">تفعيل شريط الإعلانات</p>
-                <p className="text-xs text-zinc-400 mt-0.5">يظهر الشريط فوق الهيدر مع نص الإعلان</p>
+                <p className="text-xs font-bold text-zinc-900 dark:text-white">تفعيل شريط الإعلانات</p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium">يظهر الشريط فوق الهيدر مع نص الإعلان</p>
               </div>
               <ToggleSwitch
                 checked={settings.announcementEnabled ?? false}
@@ -916,27 +866,27 @@ export default function AdminSettingsPage() {
 
             {/* Announcement text */}
             <div className="space-y-2">
-              <label className="block text-[11px] font-bold text-zinc-300">نص الإعلان</label>
+              <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300">نص الإعلان</label>
               <input
                 type="text"
                 placeholder="مثال: 🔥 شحن مجاني على جميع الطلبات فوق 500 جنيه!"
                 value={settings.announcementText || ""}
                 onChange={(e) => setSettings({ ...settings, announcementText: e.target.value })}
-                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
               />
             </div>
 
             {/* Background color */}
             <div className="space-y-2">
-              <label className="block text-[11px] font-bold text-zinc-300">لون خلفية الشريط</label>
+              <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300">لون خلفية الشريط</label>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
                   value={settings.announcementColor || "#F59E0B"}
                   onChange={(e) => setSettings({ ...settings, announcementColor: e.target.value })}
-                  className="w-12 h-10 rounded-lg border border-zinc-700 bg-transparent cursor-pointer"
+                  className="w-12 h-10 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-transparent cursor-pointer"
                 />
-                <span className="text-xs text-zinc-400 font-mono">{settings.announcementColor || "#F59E0B"}</span>
+                <span className="text-xs text-zinc-500 font-mono font-bold">{settings.announcementColor || "#F59E0B"}</span>
                 {/* Quick presets */}
                 <div className="flex gap-2">
                   {["#F59E0B", "#EF4444", "#10B981", "#3B82F6", "#8B5CF6"].map((c) => (
@@ -944,7 +894,7 @@ export default function AdminSettingsPage() {
                       key={c}
                       type="button"
                       onClick={() => setSettings({ ...settings, announcementColor: c })}
-                      className="w-6 h-6 rounded-full border-2 border-zinc-700 hover:scale-110 transition-transform"
+                      className="w-6 h-6 rounded-full border-2 border-zinc-200 dark:border-zinc-700 hover:scale-110 transition-transform cursor-pointer"
                       style={{ backgroundColor: c }}
                     />
                   ))}
@@ -954,33 +904,33 @@ export default function AdminSettingsPage() {
 
             {/* Optional link */}
             <div className="space-y-2">
-              <label className="block text-[11px] font-bold text-zinc-300">رابط اختياري (اضغط على الإعلان)</label>
+              <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300">رابط اختياري (اضغط على الإعلان)</label>
               <input
                 type="text"
                 placeholder="مثال: /#products أو رابط خارجي"
                 value={settings.announcementLink || ""}
                 onChange={(e) => setSettings({ ...settings, announcementLink: e.target.value })}
-                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
               />
             </div>
 
             {/* WhatsApp number */}
             <div className="space-y-2">
-              <label className="block text-[11px] font-bold text-zinc-300">رقم واتساب الطلبات (بدون + مثال: 201012345678)</label>
+              <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300">رقم واتساب الطلبات (بدون + مثال: 201012345678)</label>
               <input
                 type="text"
                 placeholder="201012345678"
                 value={settings.whatsappNumber || ""}
                 onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
-                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-mono font-bold"
               />
-              <p className="text-[10px] text-zinc-500">سيُستخدم في زر &quot;اطلب عبر واتساب&quot; في صفحة كل منتج</p>
+              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">سيُستخدم في زر &quot;اطلب عبر واتساب&quot; في صفحة كل منتج</p>
             </div>
 
             {/* Live preview */}
             {settings.announcementText && (
               <div className="space-y-2">
-                <label className="block text-[11px] font-bold text-zinc-300">معاينة حية للشريط:</label>
+                <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300">معاينة حية للشريط:</label>
                 <div
                   className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black text-black"
                   style={{ backgroundColor: settings.announcementColor || "#F59E0B" }}
@@ -995,34 +945,34 @@ export default function AdminSettingsPage() {
 
         {/* TAB 9: CHATBOT ANALYTICS */}
         {activeTab === "chatAnalytics" && (
-          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl space-y-6 text-white text-right">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+          <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6 text-zinc-900 dark:text-white text-right">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-4">
               <div className="flex items-center gap-2">
-                <Bot size={20} className="text-amber-400" />
-                <h2 className="font-black text-base text-amber-400">
+                <Bot size={20} className="text-[#FF274B]" />
+                <h2 className="font-black text-base text-zinc-900 dark:text-white">
                   تحليلات وسجلات مساعد الموضة الذكي (ChatBot)
                 </h2>
               </div>
-              <span className="text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full">
+              <span className="text-xs font-bold bg-[#FF274B]/10 text-[#FF274B] border border-[#FF274B]/20 px-3 py-1 rounded-full">
                 تحليل مباشر لتفاعل العملاء
               </span>
             </div>
 
             {/* Quick Analytics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-850">
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">إجمالي جلسات الشات</p>
-                <p className="text-2xl font-black text-amber-400 mt-1">{chatLogs.length}</p>
+              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06]">
+                <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">إجمالي جلسات الشات</p>
+                <p className="text-2xl font-black text-[#FF274B] mt-1">{chatLogs.length}</p>
               </div>
-              <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-850">
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">إجمالي الرسائل المرسلة</p>
-                <p className="text-2xl font-black text-amber-400 mt-1">
+              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06]">
+                <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">إجمالي الرسائل المرسلة</p>
+                <p className="text-2xl font-black text-[#FF274B] mt-1">
                   {chatLogs.reduce((acc, curr) => acc + (curr.messages?.length || 0), 0)}
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-850">
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">متوسط طول المحادثة</p>
-                <p className="text-2xl font-black text-amber-400 mt-1">
+              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06]">
+                <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">متوسط طول المحادثة</p>
+                <p className="text-2xl font-black text-[#FF274B] mt-1">
                   {chatLogs.length > 0
                     ? (chatLogs.reduce((acc, curr) => acc + (curr.messages?.length || 0), 0) / chatLogs.length).toFixed(1)
                     : 0}{" "}
@@ -1034,13 +984,13 @@ export default function AdminSettingsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-4">
               {/* Left Column: Chat List */}
               <div className="lg:col-span-5 space-y-3">
-                <h3 className="text-xs font-black text-zinc-300 uppercase tracking-wider mb-2">أحدث المحادثات النشطة</h3>
+                <h3 className="text-xs font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-2">أحدث المحادثات النشطة</h3>
                 {loadingChats ? (
                   <div className="flex items-center justify-center py-12">
-                    <Spinner size="md" className="border-amber-400" />
+                    <Spinner size="md" className="border-[#FF274B]" />
                   </div>
                 ) : chatLogs.length === 0 ? (
-                  <div className="text-center py-12 bg-zinc-900/40 rounded-xl border border-zinc-900 text-zinc-500 text-xs">
+                  <div className="text-center py-12 bg-zinc-50 dark:bg-zinc-900/40 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-500 text-xs font-bold">
                     لا توجد سجلات محادثات بعد.
                   </div>
                 ) : (
@@ -1055,27 +1005,27 @@ export default function AdminSettingsPage() {
                         <div
                           key={log.id}
                           onClick={() => setSelectedChat(log)}
-                          className={`p-3 rounded-xl border transition-all cursor-pointer text-right flex flex-col justify-between gap-1.5 ${
+                          className={`p-3.5 rounded-2xl border transition-all cursor-pointer text-right flex flex-col justify-between gap-1.5 ${
                             isSelected
-                              ? "bg-amber-500/10 border-amber-500/50"
-                              : "bg-zinc-900 hover:bg-zinc-850 border-zinc-800/80"
+                              ? "bg-[#FF274B]/10 border-[#FF274B]/50"
+                              : "bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-zinc-200 dark:border-white/[0.06]"
                           }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-mono text-zinc-500">{log.id.slice(-8)}</span>
-                            <span className="text-[10px] font-bold text-amber-500/80 bg-amber-500/5 px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] font-mono font-bold text-zinc-500">{log.id.slice(-8)}</span>
+                            <span className="text-[10px] font-bold text-[#FF274B] bg-[#FF274B]/10 px-2 py-0.5 rounded-full">
                               {msgCount} رسائل
                             </span>
                           </div>
-                          <p className="text-xs text-zinc-200 truncate font-semibold">
+                          <p className="text-xs text-zinc-900 dark:text-zinc-200 truncate font-semibold">
                             {log.firstMessage || log.messages?.[0]?.text || "بدون نص معاينة"}
                           </p>
-                          <div className="flex items-center justify-between text-[9px] text-zinc-400 mt-1 border-t border-zinc-800/60 pt-1.5">
+                          <div className="flex items-center justify-between text-[9px] text-zinc-500 dark:text-zinc-400 mt-1 border-t border-zinc-200 dark:border-white/[0.06] pt-1.5">
                             <span>{dateString}</span>
                             <button
                               type="button"
                               onClick={(e) => handleDeleteChat(log.id, e)}
-                              className="text-red-500 hover:text-red-400 transition-colors p-1"
+                              className="text-red-500 hover:text-red-600 transition-colors p-1 cursor-pointer"
                               title="حذف السجل"
                             >
                               <Trash2 size={12} />
@@ -1091,32 +1041,32 @@ export default function AdminSettingsPage() {
               {/* Right Column: Chat Transcript Details */}
               <div className="lg:col-span-7">
                 {selectedChat ? (
-                  <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-4 flex flex-col h-[420px]">
-                    <div className="flex items-center justify-between border-b border-zinc-800/60 pb-3 mb-3">
+                  <div className="bg-zinc-50 dark:bg-zinc-900/60 rounded-2xl border border-zinc-200 dark:border-white/[0.06] p-4 flex flex-col h-[420px]">
+                    <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-3 mb-3">
                       <div>
-                        <h4 className="text-xs font-black text-amber-400 uppercase">تفاصيل الجلسة: {selectedChat.id.slice(-8)}</h4>
-                        <p className="text-[9px] text-zinc-550 mt-0.5">المتصفح: {selectedChat.deviceInfo?.split(" ")[0] || "غير معروف"}</p>
+                        <h4 className="text-xs font-black text-[#FF274B] uppercase">تفاصيل الجلسة: {selectedChat.id.slice(-8)}</h4>
+                        <p className="text-[9px] text-zinc-500 dark:text-zinc-400 mt-0.5">المتصفح: {selectedChat.deviceInfo?.split(" ")[0] || "غير معروف"}</p>
                       </div>
                       <button
                         type="button"
                         onClick={() => setSelectedChat(null)}
-                        className="text-xs font-bold text-zinc-400 hover:text-white cursor-pointer"
+                        className="text-xs font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
                       >
                         إغلاق العرض
                       </button>
                     </div>
                     {/* Transcript flow */}
-                    <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-right flex flex-col scrollbar-thin scrollbar-thumb-zinc-800">
+                    <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-right flex flex-col">
                       {selectedChat.messages?.map((msg: any, idx: number) => (
                         <div
                           key={idx}
-                          className={`flex flex-col max-w-[85%] rounded-xl p-2.5 text-xs ${
+                          className={`flex flex-col max-w-[85%] rounded-xl p-2.5 text-xs font-bold ${
                             msg.sender === "user"
-                              ? "bg-amber-500/10 border border-amber-500/20 text-amber-300 self-start"
-                              : "bg-zinc-950 text-zinc-300 self-end"
+                              ? "bg-[#FF274B]/10 border border-[#FF274B]/20 text-[#FF274B] self-start"
+                              : "bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-200 border border-zinc-200 dark:border-white/[0.06] self-end"
                           }`}
                         >
-                          <span className="font-black text-[9px] text-zinc-550 mb-1">
+                          <span className="font-black text-[9px] text-zinc-500 mb-1">
                             {msg.sender === "user" ? "العميل" : "مساعد ملابس الديب"}
                           </span>
                           <p className="whitespace-pre-line leading-relaxed">{msg.text}</p>
@@ -1125,10 +1075,10 @@ export default function AdminSettingsPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-zinc-900/30 rounded-2xl border border-dashed border-zinc-800/80 h-[420px] flex flex-col items-center justify-center text-center p-6">
-                    <Bot size={40} className="text-zinc-700 animate-pulse mb-3" />
-                    <p className="text-xs font-bold text-zinc-400">اختر محادثة من القائمة لرؤية سجل الدردشة والتحليل الكامل هنا.</p>
-                    <p className="text-[10px] text-zinc-500 mt-1 max-w-xs leading-relaxed">
+                  <div className="bg-zinc-50 dark:bg-zinc-900/30 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 h-[420px] flex flex-col items-center justify-center text-center p-6">
+                    <Bot size={40} className="text-[#FF274B] animate-pulse mb-3" />
+                    <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">اختر محادثة من القائمة لرؤية سجل الدردشة والتحليل الكامل هنا.</p>
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 max-w-xs leading-relaxed font-medium">
                       سجلات المحادثات توضح لك أسئلة العملاء، المقاسات التي يبحثون عنها، والمنتجات المقترحة لزيادة المبيعات.
                     </p>
                   </div>
@@ -1144,10 +1094,10 @@ export default function AdminSettingsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-3 px-10 py-4 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-black font-black text-sm tracking-wider uppercase shadow-2xl border border-amber-300/60 hover:scale-105 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+              className="flex items-center gap-3 px-10 py-4 rounded-full bg-gradient-to-r from-[#FF274B] to-amber-500 text-white font-black text-sm tracking-wider uppercase shadow-2xl hover:scale-105 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
             >
               <Save size={18} />
-              <span>{saving ? "جاري حفظ الإعدادات..." : "حفظ التغييرات الآن"}</span>
+              <span>{saving ? "جاري حفظ الإعدادات..." : "حفظ التغييرات الآن 🐺"}</span>
             </button>
           </div>
         )}
