@@ -12,15 +12,6 @@ import {
   Download,
   MessageCircle,
   ImageOff,
-  PhoneCall,
-  ExternalLink,
-  ShieldCheck,
-  CheckCircle2,
-  Clock,
-  Truck,
-  PackageCheck,
-  Ban,
-  Eye,
 } from "lucide-react";
 import { getOrders, updateOrderStatus, deleteOrder } from "@/lib/firebase/firestore";
 import { formatPrice, formatDate } from "@/lib/utils";

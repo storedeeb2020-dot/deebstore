@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Truck, Search, Save, RefreshCw, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Truck, Search, Save, RefreshCw } from "lucide-react";
 import { getShippingRates, updateShippingRates } from "@/lib/firebase/firestore";
 import type { GovernorateRate } from "@/constants/governorates";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/Spinner";
-import { motion } from "framer-motion";
 
 export default function AdminShippingPage() {
   const [rates, setRates] = useState<GovernorateRate[]>([]);

@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 import { getDocs, collection, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
-import { Search, UserCheck, Mail, Calendar, ShieldCheck, Sparkles } from "lucide-react";
+import { Search, UserCheck, ShieldCheck } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
 import { formatDate } from "@/lib/utils";
 import type { User } from "@/types/user";
-import { motion } from "framer-motion";
 
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState<User[]>([]);

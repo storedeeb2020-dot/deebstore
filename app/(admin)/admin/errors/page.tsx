@@ -1,20 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useCallback } from "react";
 import {
-  AlertTriangle,
   Search,
   CheckCircle2,
   Trash2,
   Copy,
   Check,
   RefreshCw,
-  XCircle,
   Terminal,
-  ShieldAlert,
-  Bug,
-  Code2,
 } from "lucide-react";
 import {
   getSystemErrorLogs,
@@ -34,7 +28,7 @@ export default function AdminErrorLogsPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedLog, setSelectedLog] = useState<SystemErrorLog | null>(null);
 
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getSystemErrorLogs();
@@ -48,11 +42,11 @@ export default function AdminErrorLogsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedLog]);
 
   useEffect(() => {
     loadLogs();
-  }, []);
+  }, [loadLogs]);
 
   const handleToggleStatus = async (id: string, currentResolved: boolean) => {
     try {

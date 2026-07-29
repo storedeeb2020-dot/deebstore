@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Image as ImageIcon, Upload, Loader2, Sparkles, FolderPlus, ChevronRight, ChevronLeft, FolderTree } from "lucide-react";
+import { Trash2, Upload, FolderPlus, ChevronRight, ChevronLeft, FolderTree } from "lucide-react";
 import Image from "next/image";
 import { getCategories, createCategory, deleteCategory, updateCategoryOrder } from "@/lib/firebase/firestore";
 import { generateSlug } from "@/lib/utils";
@@ -9,7 +9,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import type { Category } from "@/types/category";
 import { Spinner } from "@/components/ui/Spinner";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);

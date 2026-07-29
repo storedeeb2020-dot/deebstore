@@ -1,22 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import {
   MessageSquare,
   Mail,
   Trash2,
-  CheckCircle,
-  Clock,
-  Inbox,
-  User,
   Search,
   RefreshCw,
   MessageCircle,
-  Sparkles,
   CheckCircle2,
-  Circle,
-  Send,
 } from "lucide-react";
 import {
   getContactMessages,
@@ -25,7 +18,6 @@ import {
   type ContactMessage,
 } from "@/lib/firebase/firestore";
 import { Spinner } from "@/components/ui/Spinner";
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminMessagesPage() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
@@ -34,7 +26,7 @@ export default function AdminMessagesPage() {
   const [search, setSearch] = useState("");
   const [selectedMsg, setSelectedMsg] = useState<ContactMessage | null>(null);
 
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
     try {
       const data = await getContactMessages();
       setMessages(data);
@@ -47,11 +39,11 @@ export default function AdminMessagesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedMsg]);
 
   useEffect(() => {
     loadMessages();
-  }, []);
+  }, [loadMessages]);
 
   const handleToggleStatus = async (msg: ContactMessage) => {
     const newStatus = msg.status === "unread" ? "read" : "unread";

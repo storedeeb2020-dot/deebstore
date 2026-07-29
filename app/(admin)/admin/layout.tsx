@@ -14,7 +14,6 @@ import {
   MessageSquareQuote,
   LogOut,
   ChevronLeft,
-  ShieldCheck,
   ShieldAlert,
   Truck,
   Menu,
@@ -26,7 +25,6 @@ import {
   Bell,
   Plus,
   Sparkles,
-  Command,
 } from "lucide-react";
 import { signOut } from "@/lib/firebase/auth";
 import { toast } from "sonner";

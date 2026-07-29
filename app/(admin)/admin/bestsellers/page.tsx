@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Flame, Search, Star, Package, Sparkles, CheckCircle2, ShieldAlert } from "lucide-react";
+import { Flame, Search, Package } from "lucide-react";
 import { getProducts, updateProduct, deleteAllProducts } from "@/lib/firebase/firestore";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types/product";
 import { Spinner } from "@/components/ui/Spinner";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 export default function AdminBestSellersPage() {
   const [products, setProducts] = useState<Product[]>([]);

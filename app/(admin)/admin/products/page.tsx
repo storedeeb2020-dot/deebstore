@@ -11,10 +11,8 @@ import {
   Trash2,
   AlertTriangle,
   Package,
-  Sparkles,
   Flame,
   Star,
-  CheckCircle2,
 } from "lucide-react";
 import { getProducts, deleteProduct } from "@/lib/firebase/firestore";
 import { formatPrice } from "@/lib/utils";
