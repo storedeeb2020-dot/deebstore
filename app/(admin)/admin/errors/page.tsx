@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertTriangle,
   Search,
@@ -11,9 +11,10 @@ import {
   Check,
   RefreshCw,
   XCircle,
-  ExternalLink,
   Terminal,
-  Filter,
+  ShieldAlert,
+  Bug,
+  Code2,
 } from "lucide-react";
 import {
   getSystemErrorLogs,
@@ -38,9 +39,12 @@ export default function AdminErrorLogsPage() {
     try {
       const data = await getSystemErrorLogs();
       setLogs(data);
+      if (data.length > 0 && !selectedLog) {
+        setSelectedLog(data[0]);
+      }
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load system error logs");
+      toast.error("فشل تحميل سجلات الأخطاء");
     } finally {
       setLoading(false);
     }
@@ -56,290 +60,242 @@ export default function AdminErrorLogsPage() {
       setLogs((prev) =>
         prev.map((log) => (log.id === id ? { ...log, resolved: !currentResolved } : log))
       );
-      toast.success(!currentResolved ? "Marked error as resolved" : "Marked error as unresolved");
+      if (selectedLog?.id === id) {
+        setSelectedLog((prev) => (prev ? { ...prev, resolved: !currentResolved } : prev));
+      }
+      toast.success(!currentResolved ? "تمت معالجة الخطأ" : "تم إلغاء علم المعالجة");
     } catch {
-      toast.error("Failed to update error status");
+      toast.error("فشل تحديث حالة الخطأ");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this error log?")) return;
+    if (!confirm("هل أنت تأكد من رغبتك في حذف هذا الخطأ؟")) return;
     try {
       await deleteSystemErrorLog(id);
       setLogs((prev) => prev.filter((log) => log.id !== id));
       if (selectedLog?.id === id) setSelectedLog(null);
-      toast.success("Error log deleted");
+      toast.success("تم مسح السجل بنجاح");
     } catch {
-      toast.error("Failed to delete error log");
+      toast.error("فشل مسح السجل");
     }
   };
 
   const handleClearAll = async () => {
-    if (!confirm("Are you sure you want to delete ALL system error logs?")) return;
+    if (!confirm("هل أنت تأكد من رغبتك في مسح كافة سجلات الأخطاء نهائياً؟")) return;
     try {
       await clearAllSystemErrors();
       setLogs([]);
       setSelectedLog(null);
-      toast.success("All error logs cleared");
+      toast.success("تم مسح جميع السجلات بنجاح 🐺");
     } catch {
-      toast.error("Failed to clear error logs");
+      toast.error("فشل مسح السجلات");
     }
   };
 
   const handleCopyStack = (stack: string, id: string) => {
     navigator.clipboard.writeText(stack);
     setCopiedId(id);
-    toast.success("Stack trace copied to clipboard");
+    toast.success("تم نسخ تفاصيل الخطأ (Stack Trace) بنجاح 📋");
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const filteredLogs = logs
-    .filter((log) => {
-      if (filter === "unresolved") return !log.resolved;
-      if (filter === "resolved") return log.resolved;
-      return true;
-    })
-    .filter((log) => {
-      if (!search.trim()) return true;
-      const q = search.toLowerCase();
-      return (
-        log.message?.toLowerCase().includes(q) ||
-        log.context?.toLowerCase().includes(q) ||
-        log.url?.toLowerCase().includes(q) ||
-        log.stack?.toLowerCase().includes(q)
-      );
-    });
+  const filteredLogs = logs.filter((log) => {
+    if (filter === "unresolved" && log.resolved) return false;
+    if (filter === "resolved" && !log.resolved) return false;
+
+    const query = search.toLowerCase();
+    return (
+      !search ||
+      log.message?.toLowerCase().includes(query) ||
+      log.path?.toLowerCase().includes(query) ||
+      log.stack?.toLowerCase().includes(query)
+    );
+  });
 
   const unresolvedCount = logs.filter((l) => !l.resolved).length;
   const resolvedCount = logs.filter((l) => l.resolved).length;
 
-  const formatDate = (timestamp: unknown) => {
-    if (!timestamp) return "Just now";
-    try {
-      const tsObj = timestamp as { toDate?: () => Date };
-      const date = typeof tsObj.toDate === "function" ? tsObj.toDate() : new Date(timestamp as string | number | Date);
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return "Recently";
-    }
-  };
-
   return (
-    <div className="space-y-8 font-sans">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-sm">
+    <div className="space-y-8 max-w-7xl pb-16 font-sans dir-rtl text-zinc-900 dark:text-white" dir="rtl">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-white/[0.06] pb-6">
         <div>
-          <h1 className="text-xl font-black text-zinc-900 tracking-tight flex items-center gap-2">
-            <AlertTriangle className="text-amber-500" size={22} />
-            System Error & Runtime Logs
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#FF274B] mb-1">
+            <Terminal size={18} />
+            منصة تتبع أخطاء وسجلات النظام (System Console)
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+            سجلات ومراقبة الأخطاء البرمجية ({logs.length})
           </h1>
-          <p className="text-xs text-zinc-500 mt-1">
-            Real-time automated error tracking and diagnostic logs from storefront and admin panel
+          <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
+            تتبع الاستثناءات، قراءة الـ Stack Trace الفني، ومعالجة المشاكل التقنية للمتجر.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={loadLogs}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-zinc-200 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-white/[0.06] text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-            Refresh
+            إعادة تحميل
           </button>
 
           {logs.length > 0 && (
             <button
               onClick={handleClearAll}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-50 text-red-600 border border-red-200 text-xs font-bold hover:bg-red-100 transition-colors"
+              className="inline-flex items-center gap-1.5 bg-[#FF274B]/10 hover:bg-[#FF274B]/20 text-[#FF274B] border border-[#FF274B]/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-all"
             >
               <Trash2 size={14} />
-              Clear All Logs
+              مسح السجلات بالكامل
             </button>
           )}
         </div>
       </div>
 
-      {/* Analytics Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-zinc-200/80 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">Total Recorded Errors</p>
-            <p className="text-2xl font-black text-zinc-900 mt-1">{logs.length}</p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-700 font-bold">
-            <Terminal size={18} />
-          </div>
+      {/* Filter and Search */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white dark:bg-[#0E0E10] p-4 rounded-2xl border border-zinc-200 dark:border-white/[0.06] shadow-sm">
+        <div className="flex gap-2 w-full md:w-auto">
+          <button
+            onClick={() => setFilter("all")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              filter === "all"
+                ? "bg-[#FF274B] text-white shadow-md shadow-[#FF274B]/20"
+                : "bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.06] text-zinc-600 dark:text-zinc-400"
+            }`}
+          >
+            الكل ({logs.length})
+          </button>
+          <button
+            onClick={() => setFilter("unresolved")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              filter === "unresolved"
+                ? "bg-[#FF274B] text-white shadow-md shadow-[#FF274B]/20"
+                : "bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.06] text-zinc-600 dark:text-zinc-400"
+            }`}
+          >
+            جديد/غير محلول ({unresolvedCount})
+          </button>
+          <button
+            onClick={() => setFilter("resolved")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              filter === "resolved"
+                ? "bg-[#FF274B] text-white shadow-md shadow-[#FF274B]/20"
+                : "bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.06] text-zinc-600 dark:text-zinc-400"
+            }`}
+          >
+            تمت معالجته ({resolvedCount})
+          </button>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-zinc-200/80 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-wider text-amber-500">Unresolved Errors</p>
-            <p className="text-2xl font-black text-amber-600 mt-1">{unresolvedCount}</p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-            <XCircle size={18} />
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-zinc-200/80 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-500">Resolved Errors</p>
-            <p className="text-2xl font-black text-emerald-600 mt-1">{resolvedCount}</p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-            <CheckCircle2 size={18} />
-          </div>
-        </div>
-      </div>
-
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-sm">
-        <div className="relative w-full sm:w-80">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+        <div className="relative w-full md:w-80">
+          <Search size={15} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#FF274B]" />
           <input
             type="text"
-            placeholder="Search error message, stack, or URL..."
+            placeholder="ابحث بـ المسار، الـ Stack Trace، أخطاء..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-medium focus:outline-none focus:border-zinc-900 transition-colors"
+            className="w-full pr-11 pl-4 py-2.5 text-xs bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-zinc-900 dark:text-white placeholder-zinc-500 focus:outline-none font-bold"
           />
-        </div>
-
-        <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-          <Filter size={14} className="text-zinc-400 mr-1" />
-          {(["all", "unresolved", "resolved"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${
-                filter === f
-                  ? "bg-zinc-900 text-white shadow-sm"
-                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-              }`}
-            >
-              {f} {f === "unresolved" ? `(${unresolvedCount})` : f === "resolved" ? `(${resolvedCount})` : ""}
-            </button>
-          ))}
         </div>
       </div>
 
-      {/* Main Error Listing */}
+      {/* IDE Terminal Grid */}
       {loading ? (
-        <div className="bg-white rounded-2xl border border-zinc-200/80 p-16 flex items-center justify-center">
-          <div className="text-center space-y-3">
-            <Spinner size="lg" />
-            <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider">Loading System Logs...</p>
-          </div>
+        <div className="flex flex-col items-center justify-center h-64 text-[#FF274B]">
+          <Spinner size="lg" className="border-[#FF274B] border-t-transparent" />
         </div>
       ) : filteredLogs.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-zinc-200/80 p-16 text-center space-y-3">
-          <CheckCircle2 size={40} className="mx-auto text-emerald-500" />
-          <h3 className="text-base font-bold text-zinc-900">No System Errors Recorded</h3>
-          <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-            {search || filter !== "all"
-              ? "No errors match your current search filter."
-              : "Your website is running cleanly with 0 active runtime errors!"}
-          </p>
+        <div className="bg-[#050505] rounded-3xl border border-white/[0.08] p-16 text-center text-zinc-500 text-xs font-mono">
+          <CheckCircle2 size={40} className="mx-auto text-emerald-500 mb-3" />
+          <p className="font-bold text-white text-sm">النظام يعمل بكفاءة 100% ولا توجد أي أخطاء مسجلة</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {filteredLogs.map((log) => (
-            <motion.div
-              key={log.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`bg-white rounded-2xl border p-5 sm:p-6 transition-all shadow-sm ${
-                log.resolved
-                  ? "border-zinc-200/80 opacity-70"
-                  : "border-red-200 bg-red-50/10"
-              }`}
-            >
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="space-y-2 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span
-                      className={`text-[9px] font-extrabold uppercase px-2.5 py-0.5 rounded-md ${
-                        log.resolved
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-red-100 text-red-700"
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Logs List Pane */}
+          <div className="lg:col-span-5 bg-[#0A0A0C] rounded-3xl border border-white/[0.08] p-4 shadow-2xl space-y-2 max-h-[600px] overflow-y-auto">
+            {filteredLogs.map((log) => {
+              const isSelected = selectedLog?.id === log.id;
+              return (
+                <div
+                  key={log.id}
+                  onClick={() => setSelectedLog(log)}
+                  className={`p-4 rounded-2xl border transition-all cursor-pointer font-mono text-xs ${
+                    isSelected
+                      ? "bg-zinc-900 text-white border-[#FF274B] shadow-[0_0_15px_rgba(255,39,75,0.2)]"
+                      : "bg-[#0E0E10] border-white/[0.06] hover:border-zinc-700 text-zinc-300"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${log.resolved ? "bg-emerald-500/20 text-emerald-400" : "bg-[#FF274B]/20 text-[#FF274B]"}`}>
+                      {log.resolved ? "RESOLVED" : "CRITICAL"}
+                    </span>
+                    <span className="text-[10px] text-zinc-500">
+                      {new Date(log.createdAt?.toDate ? log.createdAt.toDate() : log.createdAt).toLocaleTimeString("en-US")}
+                    </span>
+                  </div>
+                  <p className="font-bold text-xs truncate text-white">{log.message}</p>
+                  <p className="text-[10px] text-zinc-500 truncate mt-0.5">{log.path || "/api/unknown"}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Log Detail Pane (IDE Terminal Output) */}
+          <div className="lg:col-span-7 bg-[#050505] rounded-3xl border border-white/[0.1] p-6 shadow-2xl space-y-5 text-white font-mono dir-ltr" dir="ltr">
+            {selectedLog ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-white/[0.08] pb-4" dir="rtl">
+                  <div>
+                    <span className="text-[10px] font-bold text-[#FF274B] uppercase tracking-widest block">System Stack Trace</span>
+                    <h3 className="font-bold text-sm text-white mt-0.5">{selectedLog.path || "API Route"}</h3>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleToggleStatus(selectedLog.id, selectedLog.resolved)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
+                        selectedLog.resolved
+                          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                          : "border-amber-500/30 bg-amber-500/10 text-amber-400"
                       }`}
                     >
-                      {log.resolved ? "Resolved" : "Active Error"}
-                    </span>
-
-                    {log.context && (
-                      <span className="text-[9px] font-extrabold bg-zinc-900 text-white uppercase px-2.5 py-0.5 rounded-md">
-                        {log.context}
-                      </span>
-                    )}
-
-                    <span className="text-[10px] text-zinc-400 font-mono">
-                      {formatDate(log.createdAt)}
-                    </span>
-                  </div>
-
-                  <h3 className="text-sm font-black text-zinc-900 font-mono leading-relaxed">
-                    {log.message}
-                  </h3>
-
-                  {log.url && (
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-mono truncate">
-                      <ExternalLink size={12} className="text-zinc-400 shrink-0" />
-                      <span className="truncate">{log.url}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => handleToggleStatus(log.id, log.resolved)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
-                      log.resolved
-                        ? "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
-                        : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm"
-                    }`}
-                  >
-                    {log.resolved ? "Reopen Error" : "Mark Resolved"}
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(log.id)}
-                    className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                    title="Delete log entry"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Stack Trace Container */}
-              {log.stack && (
-                <div className="mt-4 pt-4 border-t border-zinc-100">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
-                      Stack Trace
-                    </span>
+                      {selectedLog.resolved ? "معالَج ✅" : "تعليم كمحلول"}
+                    </button>
                     <button
-                      onClick={() => handleCopyStack(log.stack!, log.id)}
-                      className="inline-flex items-center gap-1 text-[10px] font-bold text-zinc-500 hover:text-zinc-900 bg-zinc-100 px-2 py-1 rounded-md transition-colors"
+                      onClick={() => handleDelete(selectedLog.id)}
+                      className="p-2 text-zinc-500 hover:text-red-400 hover:bg-zinc-900 rounded-xl"
                     >
-                      {copiedId === log.id ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                      {copiedId === log.id ? "Copied" : "Copy Trace"}
+                      <Trash2 size={16} />
                     </button>
                   </div>
-                  <pre className="p-3 bg-zinc-950 text-zinc-300 rounded-xl text-[11px] font-mono leading-relaxed overflow-x-auto max-h-48 scrollbar-thin">
-                    {log.stack}
-                  </pre>
                 </div>
-              )}
-            </motion.div>
-          ))}
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-zinc-400 font-bold">Error Message:</span>
+                    <button
+                      onClick={() => handleCopyStack(selectedLog.stack || selectedLog.message, selectedLog.id)}
+                      className="flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-bold"
+                    >
+                      {copiedId === selectedLog.id ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedId === selectedLog.id ? "Copied" : "Copy Stack"}</span>
+                    </button>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#0B0B0D] border border-white/[0.08] text-xs leading-relaxed text-red-400 font-mono overflow-x-auto max-h-96">
+                    <p className="font-bold text-white mb-2">&gt; {selectedLog.message}</p>
+                    <pre className="text-[11px] text-zinc-400 whitespace-pre-wrap">{selectedLog.stack || "No additional stack trace details recorded."}</pre>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="py-20 text-center text-zinc-600 text-xs">
+                Select an error log entry from the sidebar terminal to inspect stack trace.
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Flame, Search, Star, Package } from "lucide-react";
+import Image from "next/image";
+import { Flame, Search, Star, Package, Sparkles, CheckCircle2, ShieldAlert } from "lucide-react";
 import { getProducts, updateProduct, deleteAllProducts } from "@/lib/firebase/firestore";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types/product";
 import { Spinner } from "@/components/ui/Spinner";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminBestSellersPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -29,7 +31,6 @@ export default function AdminBestSellersPage() {
     setUpdatingId(productId);
     const newStatus = !currentStatus;
 
-    // Optimistic local state update
     setProducts((prev) =>
       prev.map((p) => (p.id === productId ? { ...p, bestSeller: newStatus } : p))
     );
@@ -44,7 +45,6 @@ export default function AdminBestSellersPage() {
     } catch (err) {
       console.error(err);
       toast.error("فشل تحديث حالة المنتج");
-      // Revert optimistic update
       setProducts((prev) =>
         prev.map((p) => (p.id === productId ? { ...p, bestSeller: currentStatus } : p))
       );
@@ -68,19 +68,19 @@ export default function AdminBestSellersPage() {
   });
 
   return (
-    <div className="space-y-8 max-w-6xl pb-16 font-sans dir-rtl text-white" dir="rtl">
+    <div className="space-y-8 max-w-7xl pb-16 font-sans dir-rtl text-zinc-900 dark:text-white" dir="rtl">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-white/[0.06] pb-6">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400 mb-1">
-            <Flame size={16} />
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#FF274B] mb-1">
+            <Flame size={18} className="text-[#FF274B] animate-pulse" />
             إدارة منتجات الأكثر مبيعاً (Best Sellers)
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            تحديد المنتجات المعروضة في قسم الأكثر مبيعاً
+          <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+            تخصيص العرض في شريط &quot;الأكثر مبيعاً 🔥&quot;
           </h1>
-          <p className="text-zinc-400 text-xs mt-1">
-            اختر المنتجات التي ترغب بظهورها في شريط وقسم &quot;أفضل المبيعات 🔥&quot; في الصفحة الرئيسية والمنيو.
+          <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
+            اختر المنتجات وتفعيل شارة Best Seller لتبدو بارزة للعملاء في الصفحة الرئيسية.
           </p>
         </div>
 
@@ -88,7 +88,7 @@ export default function AdminBestSellersPage() {
           <button
             type="button"
             onClick={async () => {
-              if (confirm("هل تريد إزالة كروت المنتجات القديمة والتجريبية من المتجر بالكامل؟")) {
+              if (confirm("هل تريد مسح المنتجات القديمة من قاعدة البيانات؟")) {
                 setLoading(true);
                 await deleteAllProducts();
                 setProducts([]);
@@ -96,136 +96,108 @@ export default function AdminBestSellersPage() {
                 toast.success("تم مسح المنتجات القديمة بنجاح 🐺");
               }
             }}
-            className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-[#FF274B]/10 hover:bg-[#FF274B]/20 text-[#FF274B] border border-[#FF274B]/30 rounded-2xl text-xs font-bold transition-all cursor-pointer"
           >
-            مسح المنتجات القديمة 🗑️
+            مسح المنتجات القديمة
           </button>
         </div>
       </div>
 
-        {/* Counter Badge */}
-        <div className="bg-zinc-950 border border-amber-500/30 px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-xl">
-          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <Star size={16} className="fill-amber-400" />
-          </div>
-          <div>
-            <span className="text-[10px] text-zinc-400 block font-bold">المحددة حالياً</span>
-            <span className="text-sm font-black text-amber-400">{bestSellersCount} منتج</span>
-          </div>
-        </div>
-
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
+      {/* Control Filters */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-[#0E0E10] p-4 rounded-2xl border border-zinc-200 dark:border-white/[0.06] shadow-sm">
         <div className="relative flex-1 w-full">
-          <Search size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+          <Search size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#FF274B]" />
           <input
             type="text"
-            placeholder="ابحث باسم المنتج أو الفئة..."
+            placeholder="البحث باسم المنتج أو القسم..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pr-10 pl-4 py-3 border border-zinc-800 rounded-xl text-xs bg-zinc-900 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-all"
+            className="w-full pr-11 pl-4 py-3 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs bg-zinc-50 dark:bg-zinc-900/60 text-zinc-900 dark:text-white placeholder-zinc-500 focus:outline-none focus:border-[#FF274B] transition-all font-bold"
           />
         </div>
 
         <button
           onClick={() => setOnlyBestSellers((prev) => !prev)}
-          className={`px-4 py-3 rounded-xl text-xs font-bold transition-all border flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center ${
+          className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold transition-all w-full sm:w-auto justify-center ${
             onlyBestSellers
-              ? "bg-amber-500 text-black border-amber-400 shadow-lg shadow-amber-500/20 font-black"
-              : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white"
+              ? "bg-[#FF274B] text-white shadow-md shadow-[#FF274B]/20"
+              : "bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.06] text-zinc-600 dark:text-zinc-300"
           }`}
         >
-          <Flame size={14} className={onlyBestSellers ? "fill-black" : ""} />
-          <span>عرض الأكثر مبيعاً فقط ({bestSellersCount})</span>
+          <Flame size={16} />
+          <span>الأكثر مبيعاً فقط ({bestSellersCount})</span>
         </button>
       </div>
 
-      {/* Products Grid / List */}
+      {/* Products Cards Grid */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center h-64 space-y-4 text-amber-400">
-          <Spinner size="lg" />
-          <p className="text-xs text-amber-400 font-bold uppercase tracking-widest">جاري تحميل كتالوج المنتجات...</p>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4 text-[#FF274B]">
+          <Spinner size="lg" className="border-[#FF274B] border-t-transparent" />
+          <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest">جاري تحميل المنتجات...</p>
         </div>
       ) : filteredProducts.length === 0 ? (
-        <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-12 text-center text-zinc-500 space-y-3">
-          <Package size={40} className="mx-auto text-zinc-700" />
-          <h3 className="text-base font-bold text-white">لم يتم العثور على أي منتجات مطابقة</h3>
-          <p className="text-xs text-zinc-400">جرب تصفية البحث أو قم بإلغاء التصفية.</p>
+        <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-16 text-center text-zinc-400 space-y-3 shadow-sm">
+          <Package size={44} className="mx-auto text-zinc-600" />
+          <p className="text-xs font-bold">لا توجد منتجات تفي بمعايير البحث الحالية</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {filteredProducts.map((prod) => {
-            const isBestSeller = !!prod.bestSeller;
-            const isUpdating = updatingId === prod.id;
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredProducts.map((product) => {
+            const isBest = !!product.bestSeller;
             return (
-              <div
-                key={prod.id}
-                className={`relative rounded-2xl border transition-all p-4 bg-zinc-950 flex flex-col justify-between space-y-4 shadow-xl ${
-                  isBestSeller
-                    ? "border-amber-500/60 shadow-amber-500/5 bg-gradient-to-b from-amber-500/5 to-zinc-950"
-                    : "border-zinc-800 hover:border-zinc-700"
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className={`relative bg-white dark:bg-[#0E0E10] rounded-3xl p-5 border transition-all duration-300 shadow-sm ${
+                  isBest
+                    ? "border-[#FF274B]/60 shadow-[0_0_20px_rgba(255,39,75,0.15)]"
+                    : "border-zinc-200 dark:border-white/[0.06] hover:border-zinc-300 dark:hover:border-white/[0.12]"
                 }`}
               >
-                {/* Top Badge if Best Seller */}
-                {isBestSeller && (
-                  <div className="absolute top-3 left-3 bg-amber-500 text-black text-[10px] font-black px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-md z-10">
-                    <Flame size={12} className="fill-black" />
-                    الأكثر مبيعاً 🔥
-                  </div>
-                )}
-
-                {/* Product Info Card Header */}
-                <div className="flex items-center gap-3.5">
-                  <div className="relative w-16 h-16 rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
-                    {prod.mainImage ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={prod.mainImage} alt={prod.name} className="w-full h-full object-contain" />
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.06] shrink-0 flex items-center justify-center p-1">
+                    {product.mainImage ? (
+                      <Image
+                        src={product.mainImage}
+                        alt={product.name}
+                        width={60}
+                        height={60}
+                        className="object-contain w-full h-full"
+                      />
                     ) : (
-                      <Package size={24} className="text-zinc-700" />
+                      <div className="text-xs font-black text-amber-500">DEEP</div>
                     )}
                   </div>
 
-                  <div className="overflow-hidden space-y-1">
-                    <h3 className="font-bold text-xs text-white truncate">{prod.name}</h3>
-                    <p className="text-[10px] text-zinc-400 font-medium truncate">{prod.category || "عام"}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-xs text-amber-400">
-                        {formatPrice(prod.salePrice ?? prod.price)}
-                      </span>
-                      {prod.salePrice && (
-                        <span className="text-[10px] text-zinc-500 line-through">
-                          {formatPrice(prod.price)}
-                        </span>
-                      )}
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-xs text-zinc-900 dark:text-white truncate">{product.name}</p>
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase mt-0.5">{product.category || "عام"}</p>
+                    <p className="text-xs font-black text-[#FF274B] font-mono mt-1">
+                      {formatPrice(product.salePrice ?? product.price)}
+                    </p>
                   </div>
                 </div>
 
-                {/* Bottom Action Toggle */}
-                <div className="pt-3 border-t border-zinc-800/80 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-zinc-300">عرض في أفضل المبيعات</span>
-                  </div>
+                <div className="flex items-center justify-between mt-5 pt-4 border-t border-zinc-100 dark:border-white/[0.06]">
+                  <span className={`text-[11px] font-bold flex items-center gap-1 ${isBest ? "text-[#FF274B]" : "text-zinc-500"}`}>
+                    <Flame size={14} className={isBest ? "animate-pulse text-[#FF274B]" : "text-zinc-500"} />
+                    {isBest ? "مدرج بالأكثر مبيعاً" : "منتج عالي الجودة"}
+                  </span>
 
                   <button
-                    onClick={() => handleToggleBestSeller(prod.id, isBestSeller)}
-                    disabled={isUpdating}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 ${
-                      isBestSeller
-                        ? "bg-amber-500 hover:bg-amber-400 text-black shadow-md font-black"
-                        : "bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800"
+                    onClick={() => handleToggleBestSeller(product.id, isBest)}
+                    disabled={updatingId === product.id}
+                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                      isBest
+                        ? "bg-[#FF274B] text-white shadow-md shadow-[#FF274B]/20 hover:bg-[#FF274B]/90"
+                        : "bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300 hover:border-[#FF274B]"
                     }`}
                   >
-                    {isUpdating ? (
-                      <Spinner size="sm" className="border-black border-t-transparent" />
-                    ) : (
-                      <Star size={14} className={isBestSeller ? "fill-black" : ""} />
-                    )}
-                    <span>{isBestSeller ? "مُفعل ✓" : "تفعيل 🔥"}</span>
+                    {isBest ? "إلغاء 🔥" : "إضافة 🔥"}
                   </button>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>

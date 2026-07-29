@@ -241,23 +241,23 @@ export default function AdminSettingsPage() {
   ];
 
   return (
-    <div className="space-y-8 max-w-5xl pb-16 font-sans dir-rtl text-white" dir="rtl">
+    <div className="space-y-8 max-w-6xl pb-16 font-sans dir-rtl text-zinc-900 dark:text-white" dir="rtl">
       {/* Page Header */}
       <div>
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400 mb-1">
-          <Sliders size={14} />
-          مركز التحكم وإعدادات المتجر المقسمة (CMS)
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#FF274B] mb-1">
+          <Sliders size={16} />
+          مركز الإعدادات والتحكم الشامل (CMS)
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-white">
-          إعدادات المتجر، اللوجو، وجداول المقاسات
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
+          إعدادات المتجر الهيكلية، الدفع، وجداول المقاسات
         </h1>
-        <p className="text-zinc-400 text-xs mt-1">
-          قم برفع وجدولة جداول المقاسات العامة، تغيير لوجو المتجر الرسمي، وتفعيل خيارات الدفع والبانرات.
+        <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
+          تخصيص الهوية، الفيديوهات، جداول المقاسات العالمية، شريط التنبيهات، وتحليلات الشات بوت.
         </p>
       </div>
 
       {/* Separated Navigation Tabs Bar */}
-      <div className="flex overflow-x-auto gap-2 bg-zinc-950 p-2 rounded-2xl border border-zinc-800 scrollbar-none">
+      <div className="flex overflow-x-auto gap-2 bg-white dark:bg-[#0E0E10] p-2 rounded-2xl border border-zinc-200 dark:border-white/[0.06] shadow-sm scrollbar-none">
         {tabs.map((t) => {
           const Icon = t.icon;
           const isActive = activeTab === t.id;
@@ -266,14 +266,21 @@ export default function AdminSettingsPage() {
               key={t.id}
               type="button"
               onClick={() => setActiveTab(t.id as SettingsTab)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`relative flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 isActive
-                  ? "bg-gradient-to-r from-amber-500 to-amber-400 text-black font-black shadow-lg shadow-amber-500/20"
-                  : "bg-zinc-900/60 text-zinc-400 hover:bg-zinc-900 hover:text-white border border-zinc-800/80"
+                  ? "text-white font-black"
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
-              <Icon size={16} className={isActive ? "text-black" : "text-amber-400"} />
-              <span>{t.label}</span>
+              {isActive && (
+                <motion.div
+                  layoutId="activeSettingsTabPill"
+                  className="absolute inset-0 bg-gradient-to-r from-[#FF274B] to-amber-500 rounded-xl shadow-[0_0_15px_rgba(255,39,75,0.3)]"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
+              <Icon size={16} className={`relative z-10 ${isActive ? "text-white" : "text-[#FF274B]"}`} />
+              <span className="relative z-10">{t.label}</span>
             </button>
           );
         })}

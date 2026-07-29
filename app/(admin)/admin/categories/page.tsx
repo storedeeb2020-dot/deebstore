@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Image as ImageIcon, Upload, Loader2, Sparkles, FolderPlus, ChevronRight, ChevronLeft } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, Upload, Loader2, Sparkles, FolderPlus, ChevronRight, ChevronLeft, FolderTree } from "lucide-react";
 import Image from "next/image";
 import { getCategories, createCategory, deleteCategory, updateCategoryOrder } from "@/lib/firebase/firestore";
 import { generateSlug } from "@/lib/utils";
@@ -9,6 +9,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import type { Category } from "@/types/category";
 import { Spinner } from "@/components/ui/Spinner";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -40,7 +41,7 @@ export default function AdminCategoriesPage() {
     try {
       const url = await uploadToCloudinary(file);
       setImageUrl(url);
-      toast.success("تم رفع الصورة بنجاح 🐺", { id: loadingToast });
+      toast.success("تم رفع صورة الفئة بنجاح 🐺", { id: loadingToast });
     } catch (err) {
       console.error(err);
       toast.error("فشل رفع الصورة، يرجى المحاولة مرة أخرى", { id: loadingToast });
@@ -68,26 +69,26 @@ export default function AdminCategoriesPage() {
       setNewNameAr("");
       setNewSubtitle("");
       setImageUrl("");
-      toast.success("تم إضافة الفئة الجديدة بنجاح 🐺");
+      toast.success("تم إضافة القسم الجديد بنجاح 🐺");
       loadCategories();
     } catch (err) {
       console.error(err);
-      toast.error("فشل إضافة الفئة");
+      toast.error("فشل إضافة القسم");
     } finally {
       setAdding(false);
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
-    const isConfirmed = window.confirm(`هل أنت تأكد من حذف فئة "${name}"؟`);
+    const isConfirmed = window.confirm(`هل أنت تأكد من حذف قسم "${name}"؟`);
     if (!isConfirmed) return;
     
     try {
       await deleteCategory(id);
-      toast.success("تم حذف الفئة بنجاح");
+      toast.success("تم حذف القسم بنجاح");
       loadCategories();
     } catch {
-      toast.error("فشل حذف الفئة");
+      toast.error("فشل حذف القسم");
     }
   };
 
@@ -100,264 +101,180 @@ export default function AdminCategoriesPage() {
     newCategories[index] = newCategories[targetIndex];
     newCategories[targetIndex] = temp;
 
-    const updatedOrders = newCategories.map((cat, i) => ({
-      ...cat,
-      order: i,
-    }));
-
-    setCategories(updatedOrders);
+    setCategories(newCategories);
 
     try {
       await updateCategoryOrder(
-        updatedOrders.map((cat) => ({ id: cat.id, order: cat.order }))
+        newCategories.map((c, i) => ({ id: c.id, order: i }))
       );
-      toast.success("تم الترتيب وتغيير أولوية الظهور 🐺");
     } catch (err) {
       console.error(err);
-      toast.error("فشل حفظ الترتيب الجديد");
+      toast.error("فشل إعادة الترتيب");
       loadCategories();
     }
   };
 
   return (
-    <div className="space-y-8 max-w-6xl pb-16 font-sans dir-rtl text-white" dir="rtl">
+    <div className="space-y-8 max-w-7xl pb-16 font-sans dir-rtl text-zinc-900 dark:text-white" dir="rtl">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400 mb-1">
-          <FolderPlus size={14} />
-          إدارة الأقسام والفئات الرئيسية
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-white/[0.06] pb-6">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#FF274B] mb-1">
+            <FolderTree size={16} />
+            الأقسام والفئات الفاخرة
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+            هيكلية أقسام المتجر الرئيسية
+          </h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
+            إضافة قسم جديد، رفع الصور، والتحكم في ترتيب الظهور بالصفحة الرئيسية والمنيو.
+          </p>
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-white">الأقسام وترتيب الظهور</h1>
-        <p className="text-zinc-400 text-xs mt-1">
-          إضافة الأقسام بالإنجليزية (للرابط) وبالعربية (للعرض على الكروت في المتجر).
-        </p>
       </div>
 
-      {/* Add New Category Box */}
-      <div className="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 shadow-2xl space-y-6">
-        <h2 className="text-sm font-extrabold text-amber-400 flex items-center gap-2">
-          <Sparkles size={16} />
-          إضافة فئة جديدة للكتالوج
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Image Uploader */}
-          <div className="md:col-span-1 space-y-2">
-            <label className="block text-xs font-bold text-zinc-300">صورة الفئة (بجودة عالية)</label>
-            <div className="relative aspect-[3/4] rounded-2xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center p-3 overflow-hidden group hover:border-amber-500/50 transition-colors">
-              {imageUrl ? (
-                <>
-                  <Image
-                    src={imageUrl}
-                    alt="Category image preview"
-                    fill
-                    unoptimized
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="text-xs font-bold bg-black/80 text-white px-3 py-1.5 rounded-full border border-white/20">
-                      تغيير الصورة
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center p-4">
-                  {uploadingImage ? (
-                    <Loader2 size={24} className="animate-spin text-amber-400 mx-auto mb-2" />
-                  ) : (
-                    <Upload size={24} className="mx-auto text-zinc-600 mb-2 group-hover:text-amber-400 transition-colors" />
-                  )}
-                  <p className="text-[11px] text-zinc-400 font-bold">
-                    {uploadingImage ? "جاري الرفع..." : "اضغط لرفع صورة الفئة"}
-                  </p>
-                  <p className="text-[10px] text-zinc-500 mt-1">تنسيق عمودي HD مفضّل</p>
-                </div>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                disabled={uploadingImage}
-                className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-              />
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Create Category Form */}
+        <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 shadow-sm dark:shadow-2xl space-y-5 h-fit">
+          <div className="flex items-center gap-2 text-xs font-black uppercase text-[#FF274B]">
+            <FolderPlus size={16} />
+            <span>إضافة قسم جديد</span>
           </div>
 
-          {/* Text Inputs */}
-          <div className="md:col-span-2 space-y-4 flex flex-col justify-between">
-            <div className="space-y-4">
-              {/* Field 1: English Name for URL slug */}
-              <div>
-                <label className="block text-xs font-bold text-amber-400 mb-1.5">
-                  1. اسم الفئة بالإنجليزية (للرابط - English Name & Slug) *
-                </label>
-                <input
-                  type="text"
-                  placeholder="مثال: Casual Shirt ، Suits ، Hoodies..."
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 font-mono"
-                />
-                <p className="text-[10px] text-zinc-500 mt-1">يُستخدم لبناء رابط الفئة بالإنجليزية.</p>
-              </div>
+          <div className="space-y-4 text-xs">
+            <div>
+              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">الاسم بالعربية *</label>
+              <input
+                type="text"
+                placeholder="مثال: تشكيلة الصيف، بنطلونات..."
+                value={newNameAr}
+                onChange={(e) => setNewNameAr(e.target.value)}
+                className="w-full px-4 py-3 border border-zinc-200 dark:border-white/[0.08] rounded-xl bg-zinc-50 dark:bg-zinc-900/60 text-zinc-900 dark:text-white outline-none focus:border-[#FF274B] font-bold"
+              />
+            </div>
 
-              {/* Field 2: Arabic Display Name */}
-              <div>
-                <label className="block text-xs font-bold text-white mb-1.5">
-                  2. اسم الفئة بالعربي (الذي يظهر للعميل على الكارت والمنتجات) *
-                </label>
-                <input
-                  type="text"
-                  placeholder="مثال: قمصان كاجوال ، بدل ، هوديز عصرية..."
-                  value={newNameAr}
-                  onChange={(e) => setNewNameAr(e.target.value)}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 font-sans"
-                />
-                <p className="text-[10px] text-zinc-500 mt-1">هذا هو الاسم الذي يظهر بخط عربي فاخر على بطاقات المتجر والمنتجات.</p>
-              </div>
+            <div>
+              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">الاسم بالإنجليزية (للرابط) *</label>
+              <input
+                type="text"
+                placeholder="مثال: Summer, Pants..."
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="w-full px-4 py-3 border border-zinc-200 dark:border-white/[0.08] rounded-xl bg-zinc-50 dark:bg-zinc-900/60 text-zinc-900 dark:text-white outline-none focus:border-[#FF274B] font-mono font-bold"
+              />
+            </div>
 
-              {/* Field 3: Subtitle */}
-              <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                  3. العنوان الفرعي (Subtitle - اختياري)
-                </label>
-                <input
-                  type="text"
-                  placeholder="مثال: Shirt ، Modern Fit ، تشكيلة الصيف..."
-                  value={newSubtitle}
-                  onChange={(e) => setNewSubtitle(e.target.value)}
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
-                />
-              </div>
+            <div>
+              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">الوصف الفرعي (Subtitle)</label>
+              <input
+                type="text"
+                placeholder="مثال: أحدث الموديلات العصرية..."
+                value={newSubtitle}
+                onChange={(e) => setNewSubtitle(e.target.value)}
+                className="w-full px-4 py-3 border border-zinc-200 dark:border-white/[0.08] rounded-xl bg-zinc-50 dark:bg-zinc-900/60 text-zinc-900 dark:text-white outline-none focus:border-[#FF274B] font-bold"
+              />
+            </div>
 
-              {newName.trim() && (
-                <div className="p-3 bg-zinc-900/60 rounded-xl border border-zinc-800 text-[11px] text-zinc-400 font-mono">
-                  رابط الصفحة التلقائي (Slug): <span className="text-amber-400 font-bold">/{generateSlug(newName.trim())}</span>
+            {/* Image upload */}
+            <div>
+              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">صورة غلاف القسم</label>
+              {imageUrl ? (
+                <div className="relative w-full h-40 rounded-2xl overflow-hidden border border-zinc-200 dark:border-white/[0.06] bg-zinc-900">
+                  <Image src={imageUrl} alt="Category" fill className="object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setImageUrl("")}
+                    className="absolute top-2 right-2 p-1.5 rounded-xl bg-black/70 text-white hover:bg-black"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-zinc-200 dark:border-white/[0.1] rounded-2xl cursor-pointer hover:border-[#FF274B] transition-colors bg-zinc-50 dark:bg-zinc-900/30">
+                  <Upload size={24} className="text-[#FF274B] mb-2" />
+                  <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400">
+                    {uploadingImage ? "جاري الرفع..." : "اختر صورة الغلاف"}
+                  </span>
+                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                </label>
               )}
             </div>
 
             <button
               onClick={handleAdd}
-              disabled={adding || !newName.trim()}
-              className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 text-black px-6 py-3.5 rounded-xl font-black text-xs hover:scale-[1.01] transition-all duration-300 shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
+              disabled={adding || uploadingImage}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FF274B] to-amber-500 text-white font-black text-xs shadow-md shadow-[#FF274B]/20 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
             >
-              {adding ? (
-                <Spinner size="sm" className="border-black border-t-transparent" />
-              ) : (
-                <Plus size={16} />
-              )}
-              حفظ وإضافة الفئة
+              {adding ? "جاري الإضافة..." : "حفظ إضافة القسم 🔥"}
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Categories Grid List */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-extrabold text-zinc-300">
-            الأقسام المتاحة بالكتالوج ({categories.length})
-          </h2>
-          <p className="text-[11px] text-amber-400">استخدم أسهم الترتيب للتقديم أو التأخير ⚡</p>
+        {/* Categories List Display */}
+        <div className="lg:col-span-2 space-y-4">
+          <h3 className="text-sm font-black uppercase text-zinc-400 tracking-wider">الأقسام الحالية ({categories.length})</h3>
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-64 text-[#FF274B]">
+              <Spinner size="lg" className="border-[#FF274B] border-t-transparent" />
+            </div>
+          ) : categories.length === 0 ? (
+            <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-12 text-center text-zinc-500 text-xs font-bold">
+              لا توجد أقسام مضافة بعد.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {categories.map((cat, i) => (
+                <motion.div
+                  key={cat.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-4 flex items-center gap-4 shadow-sm hover:border-[#FF274B]/50 transition-all group"
+                >
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.06] shrink-0 relative">
+                    {cat.image ? (
+                      <Image src={cat.image} alt={cat.name} fill className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-amber-500 font-black text-xs">
+                        DEEP
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="font-black text-sm text-zinc-900 dark:text-white truncate">{cat.nameAr || cat.name}</p>
+                    <p className="text-[10px] text-zinc-500 font-mono">{cat.slug}</p>
+                    {cat.subtitle && (
+                      <p className="text-[10px] text-amber-500 truncate mt-0.5">{cat.subtitle}</p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-1 shrink-0">
+                    <button
+                      onClick={() => handleMove(i, "up")}
+                      disabled={i === 0}
+                      className="p-1 text-zinc-400 hover:text-white disabled:opacity-20"
+                    >
+                      <ChevronRight size={16} className="rotate-90" />
+                    </button>
+                    <button
+                      onClick={() => handleMove(i, "down")}
+                      disabled={i === categories.length - 1}
+                      className="p-1 text-zinc-400 hover:text-white disabled:opacity-20"
+                    >
+                      <ChevronLeft size={16} className="rotate-90" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(cat.id, cat.nameAr || cat.name)}
+                      className="p-1 text-zinc-400 hover:text-[#FF274B]"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
-
-        {loading ? (
-          <div className="flex flex-col items-center justify-center h-48 space-y-4 text-amber-400">
-            <Spinner size="lg" />
-            <p className="text-xs text-amber-400 font-medium uppercase tracking-widest">جاري تحميل الفئات...</p>
-          </div>
-        ) : categories.length === 0 ? (
-          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-12 text-center text-zinc-500">
-            لا توجد أقسام مضافة بعد. استخدم النموذج أعلاه لإضافة أول قسم.
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {categories.map((cat, idx) => (
-              <div
-                key={cat.id}
-                className="group relative rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden shadow-xl flex flex-col justify-between"
-              >
-                {/* Category Portrait Image Card */}
-                <div className="relative aspect-[3/4] w-full bg-zinc-900 overflow-hidden">
-                  {cat.image ? (
-                    <Image
-                      src={cat.image}
-                      alt={cat.nameAr || cat.name}
-                      fill
-                      unoptimized
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900 text-zinc-700">
-                      <ImageIcon size={40} className="mb-2" />
-                      <span className="text-[10px] text-zinc-500">بدون صورة</span>
-                    </div>
-                  )}
-
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-
-                  {/* Order Badge Header */}
-                  <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-amber-400 font-black text-xs px-2.5 py-1 rounded-lg border border-amber-500/30">
-                    الترتيب #{idx + 1}
-                  </div>
-
-                  {/* Styled Category Title Overlay (Displaying Arabic Name with elegant font) */}
-                  <div className="absolute bottom-4 left-0 right-0 px-3 text-center">
-                    <h3 className="text-white font-extrabold text-base sm:text-xl drop-shadow-md tracking-tight leading-snug">
-                      {cat.nameAr || cat.name}
-                      {cat.subtitle && (
-                        <span className="block text-xs font-normal text-amber-300/90 mt-0.5 opacity-90">
-                          {cat.subtitle}
-                        </span>
-                      )}
-                    </h3>
-                  </div>
-
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => handleDelete(cat.id, cat.name)}
-                    className="absolute top-3 left-3 w-8 h-8 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center text-zinc-300 hover:text-red-400 hover:bg-black/90 transition-all cursor-pointer"
-                    title="حذف هذا القسم"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-
-                {/* Footer details & Reordering Controls */}
-                <div className="p-3 bg-zinc-900 border-t border-zinc-800 space-y-2">
-                  <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono">
-                    <span className="truncate">/{cat.slug}</span>
-                    <span className="text-zinc-500 font-sans font-bold">{cat.name}</span>
-                  </div>
-
-                  {/* Up / Down Order Buttons */}
-                  <div className="flex items-center gap-1 pt-1">
-                    <button
-                      onClick={() => handleMove(idx, "up")}
-                      disabled={idx === 0}
-                      className="flex-1 inline-flex items-center justify-center gap-1 bg-zinc-950 hover:bg-amber-500 hover:text-black border border-zinc-800 text-amber-400 rounded-lg py-1.5 text-[11px] font-bold transition-all disabled:opacity-30 disabled:hover:bg-zinc-950 disabled:hover:text-amber-400 cursor-pointer disabled:cursor-not-allowed"
-                      title="تقديم للأول"
-                    >
-                      <ChevronRight size={14} />
-                      تقديم
-                    </button>
-                    <button
-                      onClick={() => handleMove(idx, "down")}
-                      disabled={idx === categories.length - 1}
-                      className="flex-1 inline-flex items-center justify-center gap-1 bg-zinc-950 hover:bg-amber-500 hover:text-black border border-zinc-800 text-amber-400 rounded-lg py-1.5 text-[11px] font-bold transition-all disabled:opacity-30 disabled:hover:bg-zinc-950 disabled:hover:text-amber-400 cursor-pointer disabled:cursor-not-allowed"
-                      title="تأخير للأخير"
-                    >
-                      تأخير
-                      <ChevronLeft size={14} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
