@@ -102,7 +102,7 @@ export default function AdminErrorLogsPage() {
     return (
       !search ||
       log.message?.toLowerCase().includes(query) ||
-      log.path?.toLowerCase().includes(query) ||
+      (log.path || log.url || "").toLowerCase().includes(query) ||
       log.stack?.toLowerCase().includes(query)
     );
   });
@@ -230,7 +230,7 @@ export default function AdminErrorLogsPage() {
                     </span>
                   </div>
                   <p className="font-bold text-xs truncate text-white">{log.message}</p>
-                  <p className="text-[10px] text-zinc-500 truncate mt-0.5">{log.path || "/api/unknown"}</p>
+                  <p className="text-[10px] text-zinc-500 truncate mt-0.5">{log.path || log.url || "/api/unknown"}</p>
                 </div>
               );
             })}
@@ -243,7 +243,7 @@ export default function AdminErrorLogsPage() {
                 <div className="flex items-center justify-between border-b border-white/[0.08] pb-4" dir="rtl">
                   <div>
                     <span className="text-[10px] font-bold text-[#FF274B] uppercase tracking-widest block">System Stack Trace</span>
-                    <h3 className="font-bold text-sm text-white mt-0.5">{selectedLog.path || "API Route"}</h3>
+                    <h3 className="font-bold text-sm text-[#FF274B] mt-0.5">{selectedLog.path || selectedLog.url || "API Route"}</h3>
                   </div>
 
                   <div className="flex items-center gap-2">

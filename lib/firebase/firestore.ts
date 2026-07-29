@@ -469,6 +469,7 @@ export interface SystemErrorLog {
   message: string;
   stack?: string;
   url?: string;
+  path?: string;
   userAgent?: string;
   context?: string;
   resolved: boolean;
