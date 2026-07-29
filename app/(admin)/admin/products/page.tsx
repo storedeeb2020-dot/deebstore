@@ -14,7 +14,7 @@ import {
   Flame,
   Star,
 } from "lucide-react";
-import { getProducts, deleteProduct } from "@/lib/firebase/firestore";
+import { getProducts, deleteProduct, subscribeToLiveProducts } from "@/lib/firebase/firestore";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types/product";
 import { Spinner } from "@/components/ui/Spinner";
@@ -28,18 +28,14 @@ export default function AdminProductsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const loadProducts = () => {
-    setLoading(true);
-    getProducts()
-      .then((data) => {
-        setProducts(data);
-        setFiltered(data);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(loadProducts, []);
+  useEffect(() => {
+    const unsubscribe = subscribeToLiveProducts((liveProds) => {
+      setProducts(liveProds);
+      setFiltered(liveProds);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const q = search.toLowerCase();

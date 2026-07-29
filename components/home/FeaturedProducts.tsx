@@ -4,23 +4,25 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ProductGrid } from "@/components/products/ProductGrid";
 import type { Product } from "@/types/product";
-import { getProducts, getSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
+import { getSiteSettings, subscribeToLiveProducts, type SiteSettings } from "@/lib/firebase/firestore";
 
 export function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
 
   useEffect(() => {
-    // Only fetch products explicitly marked as featured by admin
-    getProducts({ featured: true })
-      .then(setProducts)
-      .catch(console.error);
+    // Real-time live subscription for featured products
+    const unsubscribe = subscribeToLiveProducts((liveProds) => {
+      setProducts(liveProds);
+    }, { featured: true });
 
     getSiteSettings()
       .then((data) => {
         if (data) setSettings(data);
       })
       .catch(console.error);
+
+    return () => unsubscribe();
   }, []);
 
   // If no products are marked as featured by admin, render nothing

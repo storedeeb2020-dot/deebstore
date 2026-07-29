@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Flame, ArrowLeft } from "lucide-react";
-import { getProducts } from "@/lib/firebase/firestore";
+import { subscribeToLiveProducts } from "@/lib/firebase/firestore";
 import { ProductGrid } from "@/components/products/ProductGrid";
 import type { Product } from "@/types/product";
 
@@ -13,12 +13,13 @@ export function BestSellersSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getProducts({ bestSeller: true, limitCount: 8 })
-      .then(setProducts)
-      .catch((err) => {
-        console.error("Failed to load best seller products:", err);
-      })
-      .finally(() => setLoading(false));
+    // Real-time live subscription for best seller products
+    const unsubscribe = subscribeToLiveProducts((liveProds) => {
+      setProducts(liveProds);
+      setLoading(false);
+    }, { bestSeller: true, limitCount: 8 });
+
+    return () => unsubscribe();
   }, []);
 
   if (loading || products.length === 0) {

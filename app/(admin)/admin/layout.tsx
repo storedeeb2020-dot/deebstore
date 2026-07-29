@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   LayoutGrid,
   Boxes,
@@ -25,8 +25,13 @@ import {
   Bell,
   Plus,
   Sparkles,
+  CheckCheck,
+  Zap,
 } from "lucide-react";
 import { signOut } from "@/lib/firebase/auth";
+import { subscribeToLiveOrders } from "@/lib/firebase/firestore";
+import { formatPrice } from "@/lib/utils";
+import type { Order } from "@/types/order";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useTheme } from "@/features/theme/ThemeProvider";
@@ -45,6 +50,39 @@ const navItems = [
   { href: "/admin/settings", label: "إعدادات المتجر والهوية", icon: SlidersHorizontal },
 ];
 
+export interface LiveNotification {
+  id: string;
+  title: string;
+  desc: string;
+  orderId: string;
+  total: number;
+  customerName: string;
+  createdAt: Date;
+  read: boolean;
+  hasScreenshot?: boolean;
+}
+
+function playNotificationChime() {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.4);
+  } catch (e) {
+    console.error("Audio chime error:", e);
+  }
+}
+
 export default function AdminLayout({
   children,
 }: {
@@ -60,8 +98,14 @@ export default function AdminLayout({
   const [searchQuery, setSearchQuery] = useState("");
   const [formattedDate, setFormattedDate] = useState("");
 
+  // Live Notifications states
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<LiveNotification[]>([]);
+  const isInitialLoad = useRef(true);
+
   useEffect(() => {
     setMobileSidebarOpen(false);
+    setNotificationsOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -86,6 +130,66 @@ export default function AdminLayout({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Real-time Live Orders Listener
+  useEffect(() => {
+    if (!user) return;
+
+    const unsubscribe = subscribeToLiveOrders((orders, changes) => {
+      if (isInitialLoad.current) {
+        isInitialLoad.current = false;
+        // Populate notifications from recent pending/new orders
+        const initNotifs: LiveNotification[] = orders.slice(0, 15).map((ord) => ({
+          id: `notif-${ord.id}`,
+          title: `طلب جديد #${ord.id.slice(0, 8).toUpperCase()}`,
+          desc: `المبلغ: ${formatPrice(ord.total)} • العميل: ${ord.customerName} (${ord.governorate || "المحافظة"})`,
+          orderId: ord.id,
+          total: ord.total,
+          customerName: ord.customerName,
+          createdAt: ord.createdAt?.toDate ? ord.createdAt.toDate() : new Date(),
+          read: ord.status !== "pending",
+          hasScreenshot: !!ord.transferScreenshot,
+        }));
+        setNotifications(initNotifs);
+        return;
+      }
+
+      // Handle live incoming order changes
+      changes.forEach((change) => {
+        if (change.type === "added") {
+          const ord = change.order;
+          playNotificationChime();
+
+          toast.success(
+            `🚨 طلب جديد! تم استلام طلب بقيمة ${formatPrice(ord.total)} من ${ord.customerName}`,
+            {
+              duration: 8000,
+              action: {
+                label: "عرض الطلب",
+                onClick: () => router.push("/admin/orders"),
+              },
+            }
+          );
+
+          const newNotif: LiveNotification = {
+            id: `notif-${ord.id}-${Date.now()}`,
+            title: `طلب جديد #${ord.id.slice(0, 8).toUpperCase()}`,
+            desc: `المبلغ: ${formatPrice(ord.total)} • العميل: ${ord.customerName} (${ord.governorate || "المحافظة"})`,
+            orderId: ord.id,
+            total: ord.total,
+            customerName: ord.customerName,
+            createdAt: new Date(),
+            read: false,
+            hasScreenshot: !!ord.transferScreenshot,
+          };
+
+          setNotifications((prev) => [newNotif, ...prev.filter((n) => n.orderId !== ord.id)]);
+        }
+      });
+    });
+
+    return () => unsubscribe();
+  }, [user, router]);
+
   useEffect(() => {
     if (loading) return;
     if (!isLoginPage && !user) {
@@ -102,6 +206,13 @@ export default function AdminLayout({
       toast.error("فشل تسجيل الخروج");
     }
   };
+
+  const markAllNotifsAsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    toast.success("تم تعليم جميع الإشعارات كـ مقروءة");
+  };
+
+  const unreadNotifsCount = notifications.filter((n) => !n.read).length;
 
   if (isLoginPage) {
     return <>{children}</>;
@@ -141,7 +252,7 @@ export default function AdminLayout({
             </div>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-black tracking-wider text-zinc-900 dark:text-white group-hover:text-[#FF274B] transition-colors">DEEP STORE</span>
+            <span className="text-sm font-black tracking-wider text-zinc-900 dark:text-white group-hover:text-[#FF274B] transition-colors">DEEB STORE</span>
             <span className="text-[10px] text-amber-500 font-mono tracking-widest uppercase font-bold">LUXURY ADMIN</span>
           </div>
         </Link>
@@ -165,10 +276,7 @@ export default function AdminLayout({
             <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-zinc-950 rounded-full" title="متصل الآن" />
           </div>
           <div className="overflow-hidden flex-1">
-            <div className="flex items-center gap-1">
-              <p className="text-xs font-black truncate text-zinc-900 dark:text-white">المشرف العام</p>
-              <Sparkles size={12} className="text-amber-400 shrink-0" />
-            </div>
+            <p className="text-xs font-black truncate text-zinc-900 dark:text-white">عم ناصر الديب</p>
             <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate font-mono">{user?.email || "storedeeb2020@gmail.com"}</p>
           </div>
         </div>
@@ -299,7 +407,7 @@ export default function AdminLayout({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 relative">
             {/* Live Date Pill */}
             {formattedDate && (
               <span className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.06] text-[11px] font-bold text-zinc-600 dark:text-zinc-400">
@@ -320,16 +428,119 @@ export default function AdminLayout({
               </kbd>
             </button>
 
-            {/* Notifications Bell */}
-            <Link
-              href="/admin/messages"
-              className="relative p-2 rounded-xl bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-white/[0.06] text-zinc-700 dark:text-zinc-300 hover:text-[#FF274B] transition-colors shadow-sm"
-              title="الرسائل والإشعارات"
-            >
-              <Bell size={17} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#FF274B] animate-ping" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#FF274B]" />
-            </Link>
+            {/* Real-time Notifications Bell & Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setNotificationsOpen((prev) => !prev)}
+                className="relative p-2 rounded-xl bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-white/[0.06] text-zinc-700 dark:text-zinc-300 hover:text-[#FF274B] transition-colors shadow-sm cursor-pointer"
+                title="إشعارات الموقع والطلبات المباشرة"
+              >
+                <Bell size={18} />
+                {unreadNotifsCount > 0 && (
+                  <>
+                    <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#FF274B] animate-ping" />
+                    <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#FF274B] flex items-center justify-center text-[8px] font-mono font-black text-white">
+                      {unreadNotifsCount > 9 ? "9+" : unreadNotifsCount}
+                    </span>
+                  </>
+                )}
+              </button>
+
+              {/* Luxury Notifications Popover Panel */}
+              <AnimatePresence>
+                {notificationsOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-30"
+                      onClick={() => setNotificationsOpen(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                      className="absolute left-0 sm:left-auto right-auto sm:-right-36 top-12 w-80 sm:w-96 bg-white dark:bg-[#0E0E10] border border-zinc-200 dark:border-white/[0.1] rounded-3xl shadow-2xl overflow-hidden z-40 text-zinc-900 dark:text-white"
+                    >
+                      {/* Notifications Header */}
+                      <div className="px-5 py-4 border-b border-zinc-200 dark:border-white/[0.06] flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
+                        <div className="flex items-center gap-2">
+                          <Zap size={16} className="text-[#FF274B]" />
+                          <h4 className="font-black text-xs">إشعارات الطلبات والموقع الحية</h4>
+                        </div>
+                        {unreadNotifsCount > 0 && (
+                          <button
+                            onClick={markAllNotifsAsRead}
+                            className="text-[10px] font-bold text-[#FF274B] hover:underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <CheckCheck size={13} />
+                            تحديد الكل كـ مقروء
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Live Indicator Pill */}
+                      <div className="px-5 py-2 bg-emerald-500/10 border-b border-emerald-500/20 flex items-center gap-2 text-[10px] font-bold text-emerald-500">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                        <span>نظام التنبيهات لحظي ومباشر (بدون الحاجة لعمل Refresh)</span>
+                      </div>
+
+                      {/* Notifications List */}
+                      <div className="max-h-80 overflow-y-auto divide-y divide-zinc-100 dark:divide-white/[0.04]">
+                        {notifications.length === 0 ? (
+                          <div className="p-8 text-center text-zinc-500 text-xs font-bold">
+                            لا توجد إشعارات حالية
+                          </div>
+                        ) : (
+                          notifications.map((notif) => (
+                            <div
+                              key={notif.id}
+                              onClick={() => {
+                                setNotificationsOpen(false);
+                                router.push("/admin/orders");
+                              }}
+                              className={`p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/60 transition-colors cursor-pointer flex items-start gap-3 ${
+                                !notif.read ? "bg-[#FF274B]/[0.03]" : ""
+                              }`}
+                            >
+                              <div className="w-8 h-8 rounded-xl bg-[#FF274B]/10 border border-[#FF274B]/20 flex items-center justify-center text-[#FF274B] shrink-0 mt-0.5">
+                                <ShoppingBag size={15} />
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <p className="font-black text-xs text-zinc-900 dark:text-white truncate">
+                                    {notif.title}
+                                  </p>
+                                  {!notif.read && (
+                                    <span className="w-2 h-2 rounded-full bg-[#FF274B] shrink-0" />
+                                  )}
+                                </div>
+                                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-bold mt-1 line-clamp-2">
+                                  {notif.desc}
+                                </p>
+                                {notif.hasScreenshot && (
+                                  <span className="inline-block text-[9px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full mt-1.5">
+                                    مرفق إيصال تحويل 📱
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Footer */}
+                      <Link
+                        href="/admin/orders"
+                        onClick={() => setNotificationsOpen(false)}
+                        className="block py-3 text-center text-xs font-black text-[#FF274B] hover:bg-[#FF274B]/10 border-t border-zinc-200 dark:border-white/[0.06] transition-colors"
+                      >
+                        عرض كافة الطلبات والتحليلات المباشرة ←
+                      </Link>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Quick Add Product Button */}
             <Link
@@ -383,7 +594,7 @@ export default function AdminLayout({
                       key={item.href}
                       href={item.href}
                       onClick={() => setSearchOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-zinc-300 hover:bg-[#FF274B]/10 hover:text-white transition-colors"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-zinc-300 hover:bg-[#FF274B]/10 hover:text-[#FF274B] transition-colors"
                     >
                       <item.icon size={16} className="text-[#FF274B]" />
                       <span>{item.label}</span>
@@ -413,4 +624,5 @@ export default function AdminLayout({
     </div>
   );
 }
+
 
