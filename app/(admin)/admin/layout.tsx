@@ -24,14 +24,12 @@ import {
   Search,
   Bell,
   Plus,
-  Sparkles,
   CheckCheck,
   Zap,
 } from "lucide-react";
 import { signOut } from "@/lib/firebase/auth";
 import { subscribeToLiveOrders } from "@/lib/firebase/firestore";
 import { formatPrice } from "@/lib/utils";
-import type { Order } from "@/types/order";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useTheme } from "@/features/theme/ThemeProvider";
@@ -145,7 +143,7 @@ export default function AdminLayout({
           orderId: ord.id,
           total: ord.total,
           customerName: ord.customerName,
-          createdAt: ord.createdAt?.toDate ? ord.createdAt.toDate() : new Date(),
+          createdAt: typeof (ord.createdAt as any)?.toDate === "function" ? (ord.createdAt as any).toDate() : new Date(),
           read: ord.status !== "pending",
           hasScreenshot: !!ord.transferScreenshot,
         }));

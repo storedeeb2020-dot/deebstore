@@ -10,7 +10,7 @@ import { createProduct, updateProduct, getSiteSettings, getCategories, type Glob
 import { generateSlug, generateSKU } from "@/lib/utils";
 import { productSchema, type ProductFormData } from "@/lib/validations/product.schema";
 import { uploadToCloudinary } from "@/lib/cloudinary";
-import type { Product, SizeStock } from "@/types/product";
+import type { Product } from "@/types/product";
 import type { Category } from "@/types/category";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 

@@ -14,7 +14,7 @@ import {
   Flame,
   Star,
 } from "lucide-react";
-import { getProducts, deleteProduct, subscribeToLiveProducts } from "@/lib/firebase/firestore";
+import { deleteProduct, subscribeToLiveProducts } from "@/lib/firebase/firestore";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types/product";
 import { Spinner } from "@/components/ui/Spinner";
