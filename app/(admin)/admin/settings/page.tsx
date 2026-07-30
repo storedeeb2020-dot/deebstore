@@ -522,7 +522,8 @@ export default function AdminSettingsPage() {
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">اسم المتجر الرسمي</label>
                 <input
                   type="text"
-                  value={settings.storeName || "DEEB STORE"}
+                  value={settings.storeName ?? ""}
+                  placeholder="DEEB STORE"
                   onChange={(e) => setSettings({ ...settings, storeName: e.target.value })}
                   className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
@@ -531,7 +532,8 @@ export default function AdminSettingsPage() {
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">الشعار الرئيسي (Hero Tagline)</label>
                 <input
                   type="text"
-                  value={settings.heroTagline || ""}
+                  value={settings.heroTagline ?? ""}
+                  placeholder="ديب ستور — عالم الموضة والستريت وير الفاخر 🐺"
                   onChange={(e) => setSettings({ ...settings, heroTagline: e.target.value })}
                   className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
@@ -603,7 +605,8 @@ export default function AdminSettingsPage() {
                   <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 mb-1">رقم محفظة فودافون كاش</label>
                   <input
                     type="text"
-                    value={settings.vodafoneCash || "01012345678"}
+                    value={settings.vodafoneCash ?? ""}
+                    placeholder="01012345678"
                     onChange={(e) => setSettings({ ...settings, vodafoneCash: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:border-[#FF274B] focus:outline-none font-bold"
                   />
@@ -624,7 +627,8 @@ export default function AdminSettingsPage() {
                   <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 mb-1">معرف انستاباي IPA</label>
                   <input
                     type="text"
-                    value={settings.instapayUsername || "@deepstore"}
+                    value={settings.instapayUsername ?? ""}
+                    placeholder="@deepstore"
                     onChange={(e) => setSettings({ ...settings, instapayUsername: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:border-[#FF274B] focus:outline-none font-bold"
                   />
@@ -1070,7 +1074,8 @@ export default function AdminSettingsPage() {
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">البريد الإلكتروني للشكاوى والدعم</label>
                 <input
                   type="email"
-                  value={settings.storeEmail || "storedeeb2020@gmail.com"}
+                  value={settings.storeEmail ?? ""}
+                  placeholder="storedeeb2020@gmail.com"
                   onChange={(e) => setSettings({ ...settings, storeEmail: e.target.value })}
                   className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
@@ -1079,7 +1084,8 @@ export default function AdminSettingsPage() {
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">رقم تليفون المبيعات والدعم</label>
                 <input
                   type="text"
-                  value={settings.storePhone || "+20 101 234 5678"}
+                  value={settings.storePhone ?? ""}
+                  placeholder="+20 101 234 5678"
                   onChange={(e) => setSettings({ ...settings, storePhone: e.target.value })}
                   className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
@@ -1088,7 +1094,7 @@ export default function AdminSettingsPage() {
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">رابط حساب انستجرام Instagram</label>
                 <input
                   type="url"
-                  value={settings.instagramUrl || ""}
+                  value={settings.instagramUrl ?? ""}
                   onChange={(e) => setSettings({ ...settings, instagramUrl: e.target.value })}
                   className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
@@ -1097,7 +1103,7 @@ export default function AdminSettingsPage() {
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">رابط فيسبوك Facebook</label>
                 <input
                   type="url"
-                  value={settings.facebookUrl || ""}
+                  value={settings.facebookUrl ?? ""}
                   onChange={(e) => setSettings({ ...settings, facebookUrl: e.target.value })}
                   className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
@@ -1106,7 +1112,7 @@ export default function AdminSettingsPage() {
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">رابط تيك توك TikTok</label>
                 <input
                   type="url"
-                  value={settings.tiktokUrl || ""}
+                  value={settings.tiktokUrl ?? ""}
                   onChange={(e) => setSettings({ ...settings, tiktokUrl: e.target.value })}
                   className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />
@@ -1130,7 +1136,8 @@ export default function AdminSettingsPage() {
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">العنوان الرئيسي للصفحة</label>
                 <input
                   type="text"
-                  value={settings.aboutTitle || "عن ديب ستور — About DEEB STORE"}
+                  value={settings.aboutTitle ?? ""}
+                  placeholder="عن ديب ستور — About DEEB STORE"
                   onChange={(e) => setSettings({ ...settings, aboutTitle: e.target.value })}
                   className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B] font-bold"
                 />

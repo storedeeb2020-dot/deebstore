@@ -1,111 +1,101 @@
 import React from "react";
 
-// 1. Vodafone Cash Official Branding Icon
+// 1. Official Vodafone Cash Logo Icon (Vodafone speech mark on official red background)
 export function VodafoneCashIcon({ className = "w-8 h-8", size = 32 }: { className?: string; size?: number }) {
   return (
     <div
-      className={`relative inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-[#E60000] to-[#B30000] p-1.5 shadow-md shadow-red-600/30 overflow-hidden shrink-0 ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-xl bg-[#E60000] p-1.5 shadow-md shadow-red-600/40 shrink-0 ${className}`}
       style={{ width: size, height: size }}
     >
-      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        {/* Vodafone Speech Mark Logo */}
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        {/* Vodafone Red Circle with iconic White Quote */}
+        <circle cx="50" cy="50" r="45" fill="#E60000" />
         <path
-          d="M20 5C11.716 5 5 11.716 5 20C5 24.58 7.06 28.68 10.3 31.4L8 35L13.1 33.1C15.2 34.3 17.5 35 20 35C28.284 35 35 28.284 35 20C35 11.716 28.284 5 20 5Z"
-          fill="white"
-          fillOpacity="0.15"
-        />
-        {/* Speech droplet shape */}
-        <path
-          d="M20 11C15.03 11 11 15.03 11 20C11 24.97 15.03 29 20 29C24.97 29 29 24.97 29 20C29 15.03 24.97 11 20 11ZM20 26.5C16.41 26.5 13.5 23.59 13.5 20C13.5 16.41 16.41 13.5 20 13.5C23.59 13.5 26.5 16.41 26.5 20C26.5 23.59 23.59 26.5 20 26.5Z"
+          d="M50 15C30.67 15 15 30.67 15 50C15 69.33 30.67 85 50 85C69.33 85 85 69.33 85 50C85 30.67 69.33 15 50 15ZM50 73C37.3 73 27 62.7 27 50C27 37.3 37.3 27 50 27C62.7 27 73 37.3 73 50C73 62.7 62.7 73 50 73Z"
           fill="white"
         />
+        {/* Inner Speech Mark Teardrop Quote */}
         <path
-          d="M22 15C20.34 15 19 16.34 19 18C19 18.83 19.34 19.58 19.89 20.12L16.03 23.98C15.42 23.37 15.05 22.53 15.05 21.6C15.05 19.74 16.56 18.23 18.42 18.23C18.86 18.23 19.28 18.32 19.67 18.47L21.1 17.04C20.27 16.59 19.37 16.36 18.42 16.36C15.53 16.36 13.18 18.71 13.18 21.6C13.18 24.49 15.53 26.84 18.42 26.84C21.31 26.84 23.66 24.49 23.66 21.6C23.66 20.7 23.43 19.83 23.01 19.04L24.44 17.61C25.07 18.83 25.53 20.18 25.53 21.6C25.53 25.53 22.35 28.71 18.42 28.71C14.49 28.71 11.31 25.53 11.31 21.6C11.31 17.67 14.49 14.49 18.42 14.49C19.63 14.49 20.84 14.79 22 15.39V15Z"
+          d="M57 32C47.06 32 39 40.06 39 50C39 59.94 47.06 68 57 68C66.94 68 75 59.94 75 50C75 40.06 66.94 32 57 32ZM57 60C51.48 60 47 55.52 47 50C47 44.48 51.48 40 57 40C62.52 40 67 44.48 67 50C67 55.52 62.52 60 57 60Z"
           fill="white"
         />
-        {/* "CASH" text banner */}
-        <rect x="11" y="24" width="18" height="7" rx="2" fill="#E60000" stroke="white" strokeWidth="0.8" />
-        <text x="20" y="29.2" textAnchor="middle" fill="white" fontSize="5.5" fontWeight="900" fontFamily="sans-serif">
-          CASH
-        </text>
+        <path
+          d="M57 40C51.48 40 47 44.48 47 50H39C39 40.06 47.06 32 57 32V40Z"
+          fill="white"
+        />
       </svg>
     </div>
   );
 }
 
-// 2. InstaPay Official Branding Icon (Egypt EBC InstaPay)
+// 2. Official InstaPay Egypt Logo Icon (Official EBC InstaPay cyan/white dual arrow on purple)
 export function InstaPayIcon({ className = "w-8 h-8", size = 32 }: { className?: string; size?: number }) {
   return (
     <div
-      className={`relative inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-[#3B0764] via-[#581C87] to-[#7E22CE] p-1.5 shadow-md shadow-purple-900/40 overflow-hidden shrink-0 ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-[#4A154B] via-[#3F0E40] to-[#2E0735] p-1.5 shadow-md shadow-purple-950/60 shrink-0 ${className}`}
       style={{ width: size, height: size }}
     >
-      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        {/* InstaPay Dual Arrow Logo */}
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        {/* InstaPay Dual Arrow Logo Mark */}
         <path
-          d="M9 22.5L19 12.5L29 22.5"
-          stroke="#06B6D4"
-          strokeWidth="4"
+          d="M20 58L50 28L80 58"
+          stroke="#00D2FF"
+          strokeWidth="11"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
-          d="M11 17.5L21 27.5L31 17.5"
+          d="M20 42L50 72L80 42"
           stroke="white"
-          strokeWidth="4"
+          strokeWidth="11"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        {/* InstaPay glowing cyan center node */}
-        <circle cx="20" cy="20" r="3.5" fill="#22D3EE" />
+        <circle cx="50" cy="50" r="8" fill="#00D2FF" />
       </svg>
     </div>
   );
 }
 
-// 3. Cash on Delivery (الدفع عند الاستلام) Official Visual Icon
+// 3. Official Cash on Delivery Icon (Banknote & EGP currency symbol)
 export function CashOnDeliveryIcon({ className = "w-8 h-8", size = 32 }: { className?: string; size?: number }) {
   return (
     <div
-      className={`relative inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-[#065F46] via-[#047857] to-[#10B981] p-1.5 shadow-md shadow-emerald-700/30 overflow-hidden shrink-0 ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-[#059669] to-[#10B981] p-1.5 shadow-md shadow-emerald-700/40 shrink-0 ${className}`}
       style={{ width: size, height: size }}
     >
-      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        {/* Banknote */}
-        <rect x="5" y="10" width="30" height="20" rx="4" fill="white" fillOpacity="0.25" stroke="white" strokeWidth="1.8" />
-        <rect x="8" y="13" width="24" height="14" rx="2" stroke="white" strokeWidth="1" strokeDasharray="2 1.5" />
-        {/* Currency emblem */}
-        <circle cx="20" cy="20" r="4.5" fill="white" />
-        <text x="20" y="22.2" textAnchor="middle" fill="#047857" fontSize="6.5" fontWeight="900" fontFamily="sans-serif">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <rect x="12" y="25" width="76" height="50" rx="10" fill="white" fillOpacity="0.25" stroke="white" strokeWidth="5" />
+        <rect x="20" y="32" width="60" height="36" rx="6" stroke="white" strokeWidth="3" strokeDasharray="5 3" />
+        <circle cx="50" cy="50" r="12" fill="white" />
+        <text x="50" y="56" textAnchor="middle" fill="#059669" fontSize="16" fontWeight="900" fontFamily="sans-serif">
           EGP
         </text>
-        {/* Hand cash wave accents */}
-        <path d="M10 26L13 23M30 26L27 23" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     </div>
   );
 }
 
-// 4. Online Payment Transfer (دفع أونلاين - تحويل) Official Visual Icon
+// 4. Official Online Payment Transfer Icon (Mobile to card instant transfer)
 export function OnlineTransferIcon({ className = "w-8 h-8", size = 32 }: { className?: string; size?: number }) {
   return (
     <div
-      className={`relative inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-[#FF274B] via-[#E11D48] to-[#F59E0B] p-1.5 shadow-md shadow-red-500/30 overflow-hidden shrink-0 ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-[#FF274B] to-[#D97706] p-1.5 shadow-md shadow-red-600/40 shrink-0 ${className}`}
       style={{ width: size, height: size }}
     >
-      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        {/* Phone mockup */}
-        <rect x="6" y="10" width="13" height="22" rx="3" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="1.5" />
-        <circle cx="12.5" cy="28.5" r="1" fill="white" />
-        {/* Credit Card mockup */}
-        <rect x="18" y="8" width="16" height="11" rx="2.5" fill="white" />
-        <rect x="18" y="11" width="16" height="3" fill="#E11D48" />
-        <rect x="20" y="15" width="4" height="2" rx="0.5" fill="#F59E0B" />
-        {/* Instant Transfer glowing Arrow */}
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        {/* Smartphone */}
+        <rect x="15" y="25" width="32" height="55" rx="7" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="4" />
+        <circle cx="31" cy="73" r="2.5" fill="white" />
+        {/* Card */}
+        <rect x="45" y="20" width="40" height="28" rx="5" fill="white" />
+        <rect x="45" y="27" width="40" height="7" fill="#E11D48" />
+        <rect x="50" y="37" width="10" height="5" rx="1" fill="#F59E0B" />
+        {/* Transfer Arrow */}
         <path
-          d="M13 18C13 18 17 23 23 22M23 22L20 20M23 22L20 24"
+          d="M32 45C32 45 42 56 58 53M58 53L50 48M58 53L50 58"
           stroke="white"
-          strokeWidth="2"
+          strokeWidth="5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -114,27 +104,27 @@ export function OnlineTransferIcon({ className = "w-8 h-8", size = 32 }: { class
   );
 }
 
-// 5. Payment Section Header Icon (طريقة الدفع)
+// 5. Official Payment Header Shield Icon (Verified Payment Security Shield)
 export function PaymentHeaderIcon({ className = "w-10 h-10", size = 40 }: { className?: string; size?: number }) {
   return (
     <div
-      className={`relative inline-flex items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF274B]/20 via-[#FF274B]/10 to-amber-500/10 border border-[#FF274B]/30 p-2 shadow-md shadow-[#FF274B]/10 overflow-hidden shrink-0 ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-2xl bg-[#FF274B]/15 border border-[#FF274B]/40 p-2 shadow-md shadow-[#FF274B]/20 shrink-0 ${className}`}
       style={{ width: size, height: size }}
     >
-      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         {/* Security Shield */}
         <path
-          d="M20 5L32 9.5V19C32 26.8 26.9 33.8 20 35.5C13.1 33.8 8 26.8 8 19V9.5L20 5Z"
+          d="M50 12L82 23V46C82 65.5 69.2 83 50 88C30.8 83 18 65.5 18 46V23L50 12Z"
           fill="#FF274B"
-          fillOpacity="0.15"
+          fillOpacity="0.25"
           stroke="#FF274B"
-          strokeWidth="2"
+          strokeWidth="5"
           strokeLinejoin="round"
         />
         {/* Verified Credit Card */}
-        <rect x="13" y="15" width="14" height="10" rx="2" fill="#FF274B" />
-        <rect x="13" y="17.5" width="14" height="2.5" fill="white" fillOpacity="0.7" />
-        <circle cx="23" cy="22" r="1.5" fill="#F59E0B" />
+        <rect x="33" y="38" width="34" height="24" rx="4" fill="#FF274B" stroke="white" strokeWidth="2" />
+        <rect x="33" y="44" width="34" height="6" fill="white" />
+        <circle cx="58" cy="55" r="3.5" fill="#F59E0B" />
       </svg>
     </div>
   );
