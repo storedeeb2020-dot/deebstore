@@ -17,6 +17,8 @@ import {
   X,
   CheckCircle2,
   ChevronRight,
+  ShieldCheck,
+  ShoppingBag,
 } from "lucide-react";
 import { useCart } from "@/features/cart/CartProvider";
 import { createOrder, getShippingRates, getSiteSettings } from "@/lib/firebase/firestore";
@@ -175,7 +177,7 @@ export default function CheckoutPage() {
 
   if (!mounted || items.length === 0 || isRedirecting) {
     return (
-      <div className="pt-20 min-h-screen flex items-center justify-center">
+      <div className="pt-20 min-h-screen flex items-center justify-center bg-zinc-50/70 dark:bg-[#050505]">
         <Spinner size="lg" />
       </div>
     );
@@ -251,32 +253,51 @@ export default function CheckoutPage() {
     onlineMethod === "vodafone_cash" ? vodafoneNumber : instapayUsername;
 
   return (
-    <div className="pt-20 min-h-screen font-sans" dir="rtl">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <motion.h1
-          className="text-3xl font-black tracking-tight mb-8"
-          initial={{ opacity: 0, y: 20 }}
+    <div className="pt-24 min-h-screen bg-zinc-50/70 dark:bg-[#050505] text-zinc-900 dark:text-white font-['Tajawal',sans-serif] transition-colors duration-200" dir="rtl">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+
+        {/* ── Page Header ── */}
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          إتمام الطلب
-        </motion.h1>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF274B]/10 border border-[#FF274B]/20 text-[#FF274B] text-xs font-black mb-3">
+            <ShieldCheck size={14} />
+            <span>دفع آمن 100% وشحن سريع</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
+            إتمام الطلب والتوصيل
+          </h1>
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
+            يرجى إدخال بيانات التوصيل واختيار طريقة الدفع المناسبة لإكمال طلبك.
+          </p>
+        </motion.div>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10">
+
             {/* ── LEFT: Form ── */}
             <div className="lg:col-span-3 space-y-6">
 
               {/* ── Section 1: Customer Info ── */}
               <motion.section
-                className="bg-zinc-900/90 rounded-2xl p-6 sm:p-8 space-y-5 border border-amber-500/20 shadow-xl shadow-black/40 text-zinc-100"
+                className="bg-white dark:bg-[#0E0E10] rounded-3xl p-6 sm:p-8 space-y-6 border border-zinc-200/80 dark:border-white/[0.08] shadow-xl shadow-zinc-200/40 dark:shadow-black/60 transition-all text-zinc-900 dark:text-white"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
               >
-                <h2 className="font-bold text-lg flex items-center gap-2 text-amber-400">
-                  <MapPin size={20} className="text-amber-400" />
-                  بيانات الشحن
-                </h2>
+                <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-800/80 pb-4">
+                  <div className="w-10 h-10 rounded-2xl bg-[#FF274B]/10 border border-[#FF274B]/20 flex items-center justify-center text-[#FF274B] shrink-0">
+                    <MapPin size={20} />
+                  </div>
+                  <div>
+                    <h2 className="font-black text-base sm:text-lg text-zinc-900 dark:text-white">
+                      بيانات الشحن والعنوان
+                    </h2>
+                    <p className="text-xs text-zinc-400 font-semibold">تأكد من كتابة العنوان ورقم الهاتف بدقة</p>
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
@@ -306,21 +327,21 @@ export default function CheckoutPage() {
 
                   {/* Governorate */}
                   <div>
-                    <label className="block text-xs font-bold text-amber-300 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-extrabold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider mb-1.5">
                       المحافظة *
                     </label>
                     <select
                       {...register("governorate")}
-                      className="w-full px-4 py-3 border border-amber-500/30 bg-zinc-800 text-amber-100 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer shadow-sm"
+                      className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 text-zinc-900 dark:text-white rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#FF274B]/20 focus:border-[#FF274B] cursor-pointer shadow-sm transition-all"
                     >
                       {shippingRates.map((rate) => (
-                        <option key={rate.id} value={rate.nameAr} className="bg-zinc-900 text-amber-100">
+                        <option key={rate.id} value={rate.nameAr} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">
                           {rate.nameAr} — شحن {rate.price} ج.م
                         </option>
                       ))}
                     </select>
                     {errors.governorate && (
-                      <p className="text-red-400 text-xs font-bold mt-1.5">{errors.governorate.message}</p>
+                      <p className="text-red-500 dark:text-red-400 text-xs font-bold mt-1.5">{errors.governorate.message}</p>
                     )}
                   </div>
                 </div>
@@ -334,28 +355,28 @@ export default function CheckoutPage() {
                 />
 
                 <div>
-                  <label className="block text-xs font-bold text-amber-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-extrabold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider mb-1.5">
                     العنوان بالتفصيل *
                   </label>
                   <textarea
-                    className="w-full px-4 py-3 border border-amber-500/30 bg-zinc-800 text-amber-100 placeholder:text-zinc-500 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none shadow-sm"
+                    className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#FF274B]/20 focus:border-[#FF274B] resize-none shadow-sm transition-all"
                     rows={3}
                     placeholder="الشارع، رقم العمارة، الدور، رقم الشقة..."
                     {...register("address")}
                   />
                   {errors.address && (
-                    <p className="text-red-400 text-xs font-bold mt-1.5">{errors.address.message}</p>
+                    <p className="text-red-500 dark:text-red-400 text-xs font-bold mt-1.5">{errors.address.message}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-amber-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-extrabold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider mb-1.5">
                     ملاحظات (اختياري)
                   </label>
                   <textarea
-                    className="w-full px-4 py-3 border border-amber-500/30 bg-zinc-800 text-amber-100 placeholder:text-zinc-500 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none shadow-sm"
+                    className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#FF274B]/20 focus:border-[#FF274B] resize-none shadow-sm transition-all"
                     rows={2}
-                    placeholder="أي تعليمات للمندوب..."
+                    placeholder="أي تعليمات خاصة للمندوب..."
                     {...register("notes")}
                   />
                 </div>
@@ -363,27 +384,35 @@ export default function CheckoutPage() {
 
               {/* ── Section 2: Payment Method ── */}
               <motion.section
-                className="bg-zinc-900/90 rounded-2xl p-6 sm:p-8 border border-amber-500/20 shadow-xl shadow-black/40 space-y-5 text-zinc-100"
+                className="bg-white dark:bg-[#0E0E10] rounded-3xl p-6 sm:p-8 border border-zinc-200/80 dark:border-white/[0.08] shadow-xl shadow-zinc-200/40 dark:shadow-black/60 space-y-6 text-zinc-900 dark:text-white transition-all"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.12 }}
               >
-                <h2 className="font-bold text-lg flex items-center gap-2 text-amber-400">
-                  💳 طريقة الدفع
-                </h2>
+                <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-800/80 pb-4">
+                  <div className="w-10 h-10 rounded-2xl bg-[#FF274B]/10 border border-[#FF274B]/20 flex items-center justify-center text-[#FF274B] shrink-0">
+                    <CreditCard size={20} />
+                  </div>
+                  <div>
+                    <h2 className="font-black text-base sm:text-lg text-zinc-900 dark:text-white">
+                      طريقة الدفع
+                    </h2>
+                    <p className="text-xs text-zinc-400 font-semibold">اختر وسيلة الدفع التي تناسبك</p>
+                  </div>
+                </div>
 
                 {/* Category: Cash or Online */}
-                <div className={`grid ${onlinePaymentEnabled ? "grid-cols-2" : "grid-cols-1"} gap-3`}>
+                <div className={`grid ${onlinePaymentEnabled ? "grid-cols-2" : "grid-cols-1"} gap-3.5`}>
                   <button
                     type="button"
                     onClick={() => setPaymentCategory("cash")}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                    className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                       paymentCategory === "cash"
-                        ? "border-amber-400 bg-amber-500/10 text-amber-300 shadow-lg shadow-amber-500/10"
-                        : "border-zinc-800 hover:border-zinc-700 bg-zinc-800/80 text-zinc-400"
+                        ? "border-[#FF274B] bg-[#FF274B]/[0.05] dark:bg-[#FF274B]/10 text-[#FF274B] shadow-md shadow-[#FF274B]/10 ring-1 ring-[#FF274B]"
+                        : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900"
                     }`}
                   >
-                    <Banknote size={22} className={paymentCategory === "cash" ? "text-amber-400" : ""} />
+                    <Banknote size={24} className={paymentCategory === "cash" ? "text-[#FF274B]" : "text-zinc-400"} />
                     <span className="text-xs font-black">الدفع عند الاستلام</span>
                   </button>
 
@@ -391,14 +420,14 @@ export default function CheckoutPage() {
                     <button
                       type="button"
                       onClick={() => setPaymentCategory("online")}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                      className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                         paymentCategory === "online"
-                          ? "border-amber-400 bg-amber-500/10 text-amber-300 shadow-lg shadow-amber-500/10"
-                          : "border-zinc-800 hover:border-zinc-700 bg-zinc-800/80 text-zinc-400"
+                          ? "border-[#FF274B] bg-[#FF274B]/[0.05] dark:bg-[#FF274B]/10 text-[#FF274B] shadow-md shadow-[#FF274B]/10 ring-1 ring-[#FF274B]"
+                          : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900"
                       }`}
                     >
-                      <CreditCard size={22} className={paymentCategory === "online" ? "text-amber-400" : ""} />
-                      <span className="text-xs font-black">دفع أونلاين</span>
+                      <CreditCard size={24} className={paymentCategory === "online" ? "text-[#FF274B]" : "text-zinc-400"} />
+                      <span className="text-xs font-black">دفع أونلاين (تحويل)</span>
                     </button>
                   )}
                 </div>
@@ -413,10 +442,10 @@ export default function CheckoutPage() {
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="flex items-center gap-3 bg-amber-950/30 border border-amber-500/30 rounded-xl p-4">
-                        <CheckCircle2 size={20} className="text-amber-400 flex-shrink-0" />
-                        <p className="text-xs font-semibold text-amber-300">
-                          سيتم الدفع نقداً عند استلام الطلب. المندوب سيتواصل معك قبل التوصيل.
+                      <div className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl p-4 text-emerald-800 dark:text-emerald-300">
+                        <CheckCircle2 size={20} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                        <p className="text-xs font-semibold">
+                          سيتم الدفع نقداً عند استلام الطلب. المندوب سيتواصل معك قبل التوصيل مباشرة.
                         </p>
                       </div>
                     </motion.div>
@@ -436,46 +465,46 @@ export default function CheckoutPage() {
                         <button
                           type="button"
                           onClick={() => setOnlineMethod("vodafone_cash")}
-                          className={`flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all ${
+                          className={`flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${
                             onlineMethod === "vodafone_cash"
-                              ? "border-red-500 bg-red-50 dark:bg-red-950/30"
-                              : "border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                              ? "border-red-500 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 shadow-sm"
+                              : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300"
                           }`}
                         >
-                          <Smartphone size={18} className={onlineMethod === "vodafone_cash" ? "text-red-500" : ""} />
+                          <Smartphone size={18} className={onlineMethod === "vodafone_cash" ? "text-red-500" : "text-zinc-400"} />
                           <div className="text-right">
                             <p className="text-xs font-black">فودافون كاش</p>
-                            <p className="text-[10px] text-gray-500 font-mono">{vodafoneNumber}</p>
+                            <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">{vodafoneNumber}</p>
                           </div>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => setOnlineMethod("instapay")}
-                          className={`flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all ${
+                          className={`flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${
                             onlineMethod === "instapay"
-                              ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30"
-                              : "border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                              ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 shadow-sm"
+                              : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300"
                           }`}
                         >
-                          <CreditCard size={18} className={onlineMethod === "instapay" ? "text-purple-500" : ""} />
+                          <CreditCard size={18} className={onlineMethod === "instapay" ? "text-purple-500" : "text-zinc-400"} />
                           <div className="text-right">
                             <p className="text-xs font-black">انستاباي</p>
-                            <p className="text-[10px] text-gray-500 font-mono">{instapayUsername}</p>
+                            <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">{instapayUsername}</p>
                           </div>
                         </button>
                       </div>
 
                       {/* Transfer instructions */}
-                      <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 space-y-1.5">
-                        <p className="text-xs font-black text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
-                          <ChevronRight size={14} />
-                          خطوات الدفع:
+                      <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-2xl p-4 space-y-1.5 text-amber-900 dark:text-amber-300">
+                        <p className="text-xs font-black flex items-center gap-1.5">
+                          <ChevronRight size={14} className="text-amber-600 dark:text-amber-400" />
+                          خطوات التحويل:
                         </p>
-                        <ol className="text-xs text-amber-800 dark:text-amber-400 space-y-1 list-decimal list-inside font-medium">
+                        <ol className="text-xs space-y-1 list-decimal list-inside font-medium text-amber-800 dark:text-amber-300">
                           <li>حوّل المبلغ ({formatPrice(finalOrderTotal)}) على: <span className="font-black font-mono">{onlineNumberDisplay}</span></li>
-                          <li>اكتب رقم هاتفك اللي حوّلت منه</li>
-                          <li>ارفع صورة إيصال التحويل</li>
+                          <li>اكتب رقم هاتفك الذي قمت بالتحويل منه</li>
+                          <li>ارفع صورة إيصال التحويل للتأكيد</li>
                         </ol>
                       </div>
 
@@ -490,38 +519,39 @@ export default function CheckoutPage() {
 
                       {/* Screenshot upload */}
                       <div>
-                        <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-extrabold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider mb-2">
                           صورة إيصال التحويل *
                         </label>
                         {!screenshotPreview ? (
                           <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="w-full border-2 border-dashed border-gray-300 dark:border-zinc-600 rounded-xl p-6 flex flex-col items-center gap-3 hover:border-gray-400 transition-colors cursor-pointer"
+                            className="w-full border-2 border-dashed border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl p-6 flex flex-col items-center gap-3 hover:border-[#FF274B] dark:hover:border-[#FF274B] transition-colors cursor-pointer text-zinc-600 dark:text-zinc-400"
                           >
-                            <Upload size={24} className="text-gray-400" />
-                            <span className="text-xs font-semibold text-gray-500">
-                              اضغط لرفع صورة الإيصال
+                            <Upload size={24} className="text-[#FF274B]" />
+                            <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-200">
+                              اضغط هنا لرفع صورة الإيصال
                             </span>
-                            <span className="text-[10px] text-gray-400">PNG, JPG, WEBP</span>
+                            <span className="text-[10px] text-zinc-400">PNG, JPG, WEBP</span>
                           </button>
                         ) : (
                           <div className="relative">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={screenshotPreview}
                               alt="إيصال التحويل"
-                              className="w-full max-h-52 object-contain rounded-xl border border-gray-200 dark:border-zinc-700"
+                              className="w-full max-h-52 object-contain rounded-2xl border border-zinc-200 dark:border-zinc-700"
                             />
                             <button
                               type="button"
                               onClick={removeScreenshot}
-                              className="absolute top-2 left-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:scale-110 transition-transform"
+                              className="absolute top-2 left-2 bg-red-500 text-white rounded-full p-1.5 shadow-lg hover:scale-110 transition-transform cursor-pointer"
                             >
                               <X size={14} />
                             </button>
-                            <div className="mt-2 flex items-center gap-1.5 text-green-600 dark:text-green-400">
-                              <CheckCircle2 size={14} />
-                              <span className="text-xs font-semibold">تم اختيار الصورة</span>
+                            <div className="mt-2 flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                              <CheckCircle2 size={15} />
+                              <span className="text-xs font-extrabold">تم اختيار وتأكيد صورة الإيصال</span>
                             </div>
                           </div>
                         )}
@@ -541,11 +571,19 @@ export default function CheckoutPage() {
 
             {/* ── RIGHT: Order Summary ── */}
             <div className="lg:col-span-2">
-              <div className="bg-zinc-900/90 rounded-2xl p-6 sm:p-8 sticky top-24 border border-amber-500/20 shadow-2xl shadow-black/60 space-y-6 text-zinc-100">
-                <h2 className="font-bold text-lg text-amber-400 border-b border-zinc-800 pb-3">ملخص الطلب</h2>
+              <div className="bg-white dark:bg-[#0E0E10] rounded-3xl p-6 sm:p-8 sticky top-24 border border-zinc-200/80 dark:border-white/[0.08] shadow-2xl shadow-zinc-200/40 dark:shadow-black/60 space-y-6 text-zinc-900 dark:text-white transition-all">
+                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800/80 pb-4">
+                  <div className="flex items-center gap-2">
+                    <ShoppingBag size={20} className="text-[#FF274B]" />
+                    <h2 className="font-black text-lg text-zinc-900 dark:text-white">ملخص الطلب</h2>
+                  </div>
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 font-bold">
+                    {items.length} {items.length === 1 ? "منتج" : "منتجات"}
+                  </span>
+                </div>
 
                 {/* Items */}
-                <div className="space-y-3 max-h-72 overflow-y-auto pl-1">
+                <div className="space-y-3 max-h-72 overflow-y-auto pl-1 scrollbar-none">
                   {items.map((item, idx) => {
                     const pId = item.product?.id || `item-${idx}`;
                     const pSize = item.selectedSize || "قياسي";
@@ -558,50 +596,50 @@ export default function CheckoutPage() {
                     const key = `${pId}-${pSize}-${pColorHex}`;
 
                     return (
-                      <div key={key} className="flex items-center gap-3 p-2.5 bg-zinc-800/80 rounded-xl border border-zinc-700/60">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-zinc-900 flex-shrink-0 border border-zinc-700">
+                      <div key={key} className="flex items-center gap-3.5 p-3 bg-zinc-50 dark:bg-zinc-900/70 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all">
+                        <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 border border-zinc-200 dark:border-zinc-700/80">
                           <Image
                             src={pImage}
                             alt={pName}
-                            width={48}
-                            height={48}
+                            width={56}
+                            height={56}
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-zinc-200 truncate">{pName}</p>
-                          <p className="text-[10px] text-amber-400/80 font-medium">
+                          <p className="text-xs font-black text-zinc-900 dark:text-zinc-100 truncate">{pName}</p>
+                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
                             {pColorName} / {pSize} × {qty}
                           </p>
                         </div>
-                        <span className="text-xs font-black text-amber-300">{formatPrice(price * qty)}</span>
+                        <span className="text-xs font-black text-[#FF274B]">{formatPrice(price * qty)}</span>
                       </div>
                     );
                   })}
                 </div>
 
                 {/* Totals */}
-                <div className="border-t border-zinc-800 pt-4 space-y-2.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-zinc-400">المجموع الفرعي</span>
-                    <span className="font-bold text-zinc-200">{formatPrice(totalPrice)}</span>
+                <div className="border-t border-zinc-100 dark:border-zinc-800/80 pt-4 space-y-3 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-zinc-500 dark:text-zinc-400 font-semibold">المجموع الفرعي</span>
+                    <span className="font-bold text-zinc-900 dark:text-zinc-100">{formatPrice(totalPrice)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-400 flex items-center gap-1">
-                      <Truck size={13} className="text-amber-400" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-zinc-500 dark:text-zinc-400 font-semibold flex items-center gap-1.5">
+                      <Truck size={14} className="text-[#FF274B]" />
                       الشحن ({selectedGovernorate || "—"})
                     </span>
-                    <span className="font-bold text-amber-400">{formatPrice(currentShippingCost)}</span>
+                    <span className="font-bold text-[#FF274B]">{formatPrice(currentShippingCost)}</span>
                   </div>
                 </div>
 
-                <div className="border-t border-zinc-800 pt-4 flex justify-between font-black text-lg text-amber-300">
-                  <span>الإجمالي</span>
-                  <span className="text-amber-400 font-mono">{formatPrice(finalOrderTotal)}</span>
+                <div className="border-t border-zinc-100 dark:border-zinc-800/80 pt-4 flex justify-between items-center">
+                  <span className="text-base font-black text-zinc-900 dark:text-white">الإجمالي النهائي</span>
+                  <span className="text-xl font-black text-[#FF274B] font-mono tracking-tight">{formatPrice(finalOrderTotal)}</span>
                 </div>
 
                 {/* Submit Button */}
-                <div className="pt-1">
+                <div className="pt-2">
                   <TruckSubmitButton
                     isSubmitting={submitting || uploadingScreenshot}
                     isSuccess={orderSuccess}

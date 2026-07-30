@@ -26,15 +26,15 @@ export function TruckSubmitButton({
         isSuccess
           ? "bg-emerald-600 text-white shadow-emerald-600/30"
           : isExecuting
-          ? "bg-zinc-950 text-amber-400 shadow-zinc-950/30 cursor-wait"
+          ? "bg-zinc-900 dark:bg-zinc-950 text-amber-400 shadow-zinc-900/30 cursor-wait"
           : disabled
-          ? "bg-zinc-300 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-500 cursor-not-allowed shadow-none opacity-60"
-          : "bg-zinc-950 dark:bg-white hover:bg-black dark:hover:bg-zinc-100 text-white dark:text-black hover:shadow-2xl shadow-zinc-950/20 cursor-pointer"
+          ? "bg-zinc-200 dark:bg-zinc-800/80 text-zinc-400 dark:text-zinc-500 cursor-not-allowed shadow-none opacity-70"
+          : "bg-gradient-to-r from-[#FF274B] via-red-600 to-amber-500 hover:brightness-110 text-white shadow-lg shadow-[#FF274B]/25 hover:shadow-xl hover:shadow-[#FF274B]/35 cursor-pointer"
       }`}
     >
       {/* Background Animated Road Line Track */}
       {isExecuting && (
-        <div className="absolute inset-x-0 bottom-1 h-0.5 border-t border-dashed border-zinc-700/60 animate-pulse" />
+        <div className="absolute inset-x-0 bottom-1 h-0.5 border-t border-dashed border-zinc-600/60 animate-pulse" />
       )}
 
       {/* Delivery Truck driving from left to right when submitting */}
@@ -56,7 +56,7 @@ export function TruckSubmitButton({
               animate={{ opacity: [0.2, 0.8, 0], scale: [0.5, 1.2, 0.5], x: [-10, -20] }}
               transition={{ duration: 0.4, repeat: Infinity }}
               aria-hidden="true"
-              className="w-2 h-2 rounded-full bg-zinc-600/60 blur-[1px]"
+              className="w-2 h-2 rounded-full bg-zinc-500/60 blur-[1px]"
             />
             {/* Delivery Truck Icon */}
             <div className="p-1.5 rounded-xl bg-amber-500 text-zinc-950 shadow-[0_0_15px_rgba(245,158,11,0.8)] flex items-center justify-center">
@@ -72,7 +72,7 @@ export function TruckSubmitButton({
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="flex items-center gap-2 text-emerald-300 font-extrabold"
+            className="flex items-center gap-2 text-white font-extrabold"
           >
             <Check size={20} className="stroke-[3]" />
             <span>تم تأكيد الطلب بنجاح! 🎉</span>
@@ -88,13 +88,19 @@ export function TruckSubmitButton({
           </motion.div>
         ) : (
           <div className="flex items-center justify-between w-full">
-            <span className="flex items-center gap-2 font-black tracking-wider text-amber-300">
-              <Truck size={18} className={disabled ? "text-zinc-500" : "text-amber-400"} />
+            <span className="flex items-center gap-2 font-black tracking-wider text-white">
+              <Truck size={18} className={disabled ? "text-zinc-400 dark:text-zinc-500" : "text-white"} />
               تأكيد وإتمام الطلب الآن
             </span>
 
             {totalText && (
-              <span className={`text-xs px-3 py-1 rounded-full font-mono font-bold ${disabled ? "bg-zinc-800 text-zinc-500" : "bg-amber-500/20 text-amber-300 border border-amber-500/30"}`}>
+              <span
+                className={`text-xs px-3 py-1 rounded-full font-mono font-bold ${
+                  disabled
+                    ? "bg-zinc-300 dark:bg-zinc-700/50 text-zinc-500 dark:text-zinc-400"
+                    : "bg-white/20 text-white backdrop-blur-md border border-white/25 shadow-sm"
+                }`}
+              >
                 {totalText}
               </span>
             )}
