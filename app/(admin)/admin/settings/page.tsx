@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -22,8 +23,11 @@ import {
   Sun,
   Moon,
   Send,
+  Lock,
+  KeyRound,
 } from "lucide-react";
 import { getSiteSettings, updateSiteSettings, type SiteSettings, type GlobalSizeChart } from "@/lib/firebase/firestore";
+import { changeAdminPassword, signOut } from "@/lib/firebase/auth";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import { uploadVideoToCloudinary } from "@/lib/cloudinary";
 import { Spinner } from "@/components/ui/Spinner";
@@ -31,9 +35,10 @@ import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 import { db } from "@/lib/firebase/config";
 import { collection, query, orderBy, getDocs, limit, deleteDoc, doc } from "firebase/firestore";
 
-type SettingsTab = "hero" | "brand" | "payments" | "sizeCharts" | "contact" | "about" | "legal" | "announcement" | "chatAnalytics" | "telegram";
+type SettingsTab = "hero" | "brand" | "payments" | "sizeCharts" | "contact" | "about" | "legal" | "announcement" | "chatAnalytics" | "telegram" | "security";
 
 export default function AdminSettingsPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>("payments");
@@ -78,6 +83,49 @@ export default function AdminSettingsPage() {
       toast.error("فشل الاتصال بخدمة الاختبار", { id: toastId });
     } finally {
       setTestingTelegram(false);
+    }
+  };
+
+  // Change Password state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword) {
+      toast.error("يرجى إدخال كلمة المرور الحالية أولاً");
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      toast.error("كلمة المرور الجديدة يجب أن تتكون من 6 أحرف على الأقل");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("كلمة المرور الجديدة وتأكيدها غير متطابقين");
+      return;
+    }
+
+    setChangingPassword(true);
+    const toastId = toast.loading("جاري التحقق من كلمة المرور الحالية وتحديثها...");
+    try {
+      await changeAdminPassword(currentPassword, newPassword);
+      toast.success("تم تغيير كلمة مرور الأدمن بنجاح! سيتم تسجيل الخروج فوراً للتحقق الأمني 🔐", { id: toastId });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+
+      // Force sign out and redirect to login page
+      setTimeout(async () => {
+        await signOut();
+        router.push("/admin/login");
+      }, 1500);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message || "فشل تغيير كلمة المرور — تأكد من كلمة المرور الحالية", { id: toastId });
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -268,6 +316,7 @@ export default function AdminSettingsPage() {
   const tabs = [
     { id: "payments", label: "وسائل الدفع والتفعيل", icon: CreditCard },
     { id: "telegram", label: "إشعارات تليجرام 📲", icon: Send },
+    { id: "security", label: "تغيير كلمة المرور 🔐", icon: Lock },
     { id: "sizeCharts", label: "جدول المقاسات العامة", icon: Ruler },
     { id: "announcement", label: "شريط الإعلانات", icon: Megaphone },
     { id: "brand", label: "لوجو الهوية والنصوص", icon: Type },
@@ -304,21 +353,14 @@ export default function AdminSettingsPage() {
               key={t.id}
               type="button"
               onClick={() => setActiveTab(t.id as SettingsTab)}
-              className={`relative flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all duration-150 cursor-pointer ${
                 isActive
-                  ? "text-white font-black"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                  ? "bg-gradient-to-r from-[#FF274B] to-amber-500 text-white shadow-md shadow-[#FF274B]/20 scale-[1.02]"
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900/60"
               }`}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="activeSettingsTabPill"
-                  className="absolute inset-0 bg-gradient-to-r from-[#FF274B] to-amber-500 rounded-xl shadow-[0_0_15px_rgba(255,39,75,0.3)]"
-                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                />
-              )}
-              <Icon size={16} className={`relative z-10 ${isActive ? "text-white" : "text-[#FF274B]"}`} />
-              <span className="relative z-10">{t.label}</span>
+              <Icon size={16} className={isActive ? "text-white" : "text-[#FF274B]"} />
+              <span>{t.label}</span>
             </button>
           );
         })}
@@ -629,6 +671,80 @@ export default function AdminSettingsPage() {
                 <span>{testingTelegram ? "جاري الاختبار..." : "إرسال إشعار تجريبي الآن 📲"}</span>
               </button>
             </div>
+          </div>
+        )}
+
+        {/* TAB: SECURITY & CHANGE PASSWORD */}
+        {activeTab === "security" && (
+          <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-4">
+              <div className="flex items-center gap-2">
+                <Lock size={20} className="text-[#FF274B]" />
+                <h2 className="font-black text-base text-zinc-900 dark:text-white">
+                  تغيير كلمة مرور الأدمن وإعدادات الأمان 🔐
+                </h2>
+              </div>
+              <span className="text-xs font-bold bg-[#FF274B]/10 text-[#FF274B] border border-[#FF274B]/20 px-3 py-1 rounded-full">
+                حماية الحساب
+              </span>
+            </div>
+
+            <form onSubmit={handleChangePassword} className="space-y-6 max-w-xl">
+              <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+                    <KeyRound size={15} className="text-[#FF274B]" />
+                    كلمة المرور الحالية *
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="أدخل كلمة المرور الحالية للتأكيد الأمني"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+                    <KeyRound size={15} className="text-[#FF274B]" />
+                    كلمة المرور الجديدة *
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
+                  />
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">يجب أن تتكون من 6 أحرف/أرقام على الأقل.</p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+                    <KeyRound size={15} className="text-[#FF274B]" />
+                    تأكيد كلمة المرور الجديدة *
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleChangePassword}
+                  disabled={changingPassword}
+                  className="w-full py-3.5 bg-gradient-to-r from-[#FF274B] to-amber-500 text-white font-black text-xs rounded-xl hover:scale-[1.01] active:scale-[0.99] transition-all shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  <Lock size={15} />
+                  <span>{changingPassword ? "جاري التحديث..." : "حفظ وتحديث كلمة المرور الآن 🔐"}</span>
+                </button>
+              </div>
+            </form>
           </div>
         )}
 

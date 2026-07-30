@@ -1,6 +1,9 @@
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   type User,
@@ -72,6 +75,30 @@ export async function signOut(): Promise<void> {
     localStorage.removeItem("nxt_admin_session");
   }
   await firebaseSignOut(auth);
+}
+
+export async function changeAdminPassword(currentPassword: string, newPassword: string): Promise<void> {
+  const user = auth.currentUser;
+  if (!user || !user.email) {
+    throw new Error("يجب تسجيل الدخول أولاً لتغيير كلمة المرور.");
+  }
+  if (!currentPassword) {
+    throw new Error("يرجى كتابة كلمة المرور الحالية.");
+  }
+  if (!newPassword || newPassword.length < 6) {
+    throw new Error("كلمة المرور الجديدة يجب أن لا تقل عن 6 أحرف.");
+  }
+
+  // Re-authenticate user with current password
+  try {
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+  } catch {
+    throw new Error("كلمة المرور الحالية غير صحيحة.");
+  }
+
+  // Update password
+  await updatePassword(user, newPassword);
 }
 
 export async function isAdmin(uid: string): Promise<boolean> {
