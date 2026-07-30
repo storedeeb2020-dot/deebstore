@@ -45,3 +45,11 @@ if (fs.existsSync(codSrc)) {
   fs.copyFileSync(codSrc, codDest);
   console.log('Successfully copied cod-official.jpg');
 }
+
+const onlineSrc = path.join(publicDir, 'دفع اون لاين. Mobile banking sign business concept_');
+const onlineDest = path.join(publicDir, 'online-payment-official.jpg');
+
+if (fs.existsSync(onlineSrc)) {
+  fs.copyFileSync(onlineSrc, onlineDest);
+  console.log('Successfully copied online-payment-official.jpg');
+}

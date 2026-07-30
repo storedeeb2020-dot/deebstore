@@ -67,31 +67,23 @@ export function CashOnDeliveryIcon({ className = "w-8 h-8", size = 32 }: { class
 }
 
 /**
- * 4. Official Online Payment Transfer Icon
+ * 4. Official Online Payment Transfer Icon (User provided image)
  */
 export function OnlineTransferIcon({ className = "w-8 h-8", size = 32 }: { className?: string; size?: number }) {
   return (
     <div
-      className={`relative inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-[#FF274B] to-[#D97706] p-1.5 shadow-md shadow-red-600/40 shrink-0 ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-xl overflow-hidden border border-amber-300 dark:border-amber-800/50 shadow-md shadow-amber-600/30 shrink-0 bg-white ${className}`}
       style={{ width: size, height: size }}
     >
-      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        {/* Smartphone */}
-        <rect x="15" y="25" width="32" height="55" rx="7" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="4" />
-        <circle cx="31" cy="73" r="2.5" fill="white" />
-        {/* Card */}
-        <rect x="45" y="20" width="40" height="28" rx="5" fill="white" />
-        <rect x="45" y="27" width="40" height="7" fill="#E11D48" />
-        <rect x="50" y="37" width="10" height="5" rx="1" fill="#F59E0B" />
-        {/* Transfer Arrow */}
-        <path
-          d="M32 45C32 45 42 56 58 53M58 53L50 48M58 53L50 58"
-          stroke="white"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/online-payment-official.jpg"
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).src = "/دفع اون لاين. Mobile banking sign business concept_";
+        }}
+        alt="دفع أونلاين"
+        className="w-full h-full object-cover"
+      />
     </div>
   );
 }
