@@ -135,7 +135,7 @@ function ShopContent() {
             <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-black to-transparent z-10" />
 
             <div className="flex items-center gap-2 overflow-x-auto flex-nowrap whitespace-nowrap scrollbar-none scroll-smooth py-1 px-1 justify-start sm:justify-end">
-              {/* Ultra-Sleek Masterpiece Back Button */}
+              {/* Ultra-Sleek Masterpiece Home Back Button */}
               <AnimatePresence>
                 {selectedCategory !== "all" && (
                   <motion.button
@@ -145,14 +145,17 @@ function ShopContent() {
                     exit={{ opacity: 0, scale: 0.85, x: 10 }}
                     whileHover={{ scale: 1.05, y: -1 }}
                     whileTap={{ scale: 0.94 }}
-                    onClick={() => handleCategorySelect("all")}
+                    onClick={() => {
+                      router.push("/#categories");
+                    }}
                     className="relative group px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-[#FF274B]/20 via-[#FF274B]/10 to-amber-500/20 hover:from-[#FF274B] hover:to-amber-500 text-[#FF274B] hover:text-white border border-[#FF274B]/40 hover:border-transparent text-xs font-black transition-all cursor-pointer inline-flex items-center gap-1.5 shrink-0 shadow-lg shadow-[#FF274B]/10 hover:shadow-[#FF274B]/30 overflow-hidden"
+                    title="العودة للصفحة الرئيسية واختيار الأقسام"
                   >
                     {/* Light Beam Sweep on Hover */}
                     <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
                     
-                    <RotateCcw size={13} className="group-hover:-rotate-90 transition-transform duration-300 relative z-10" />
-                    <span className="relative z-10">عرض الكل ↩</span>
+                    <LayoutGrid size={13} className="group-hover:rotate-12 transition-transform duration-300 relative z-10" />
+                    <span className="relative z-10">الرئيسية ↩</span>
                   </motion.button>
                 )}
               </AnimatePresence>
