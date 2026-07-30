@@ -89,42 +89,6 @@ function ShopContent() {
         </p>
       </div>
 
-      {/* Active Category Back Banner */}
-      <AnimatePresence>
-        {selectedCategory !== "all" && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.98 }}
-            className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-gradient-to-r from-amber-500/15 via-zinc-900 to-amber-500/10 border border-amber-500/30 rounded-2xl p-4 mb-6 text-amber-400 text-xs font-extrabold shadow-lg shadow-amber-500/5"
-          >
-            <div className="flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 border border-amber-500/30">
-                <Sparkles size={16} />
-              </span>
-              <div>
-                <p className="text-[11px] text-zinc-400">أنت تتصفح حالياً قسم:</p>
-                <p className="text-sm font-black text-white flex items-center gap-1.5 mt-0.5">
-                  <span className="bg-amber-500 text-black px-2.5 py-0.5 rounded-lg text-xs font-black">
-                    {activeCategoryName}
-                  </span>
-                  <span>({filteredProducts.length} منتج)</span>
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => handleCategorySelect("all")}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-black text-xs transition-all cursor-pointer shadow-md active:scale-95 shrink-0"
-            >
-              <RotateCcw size={15} />
-              <span>العودة لجميع الأقسام (عرض الكل)</span>
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Filter & Search Controls */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 pb-6 border-b border-gray-100 dark:border-zinc-900">
         {/* Search */}
@@ -137,7 +101,19 @@ function ShopContent() {
         />
 
         {/* Category Pills */}
-        <div className="flex flex-wrap gap-2 overflow-x-auto justify-center sm:justify-end w-full">
+        <div className="flex flex-wrap items-center gap-2 overflow-x-auto justify-center sm:justify-end w-full">
+          {selectedCategory !== "all" && (
+            <button
+              type="button"
+              onClick={() => handleCategorySelect("all")}
+              className="px-3.5 py-2 rounded-full text-xs font-extrabold bg-red-500/10 hover:bg-red-500/20 text-[#FF274B] border border-[#FF274B]/30 transition-all cursor-pointer inline-flex items-center gap-1.5 active:scale-95 shadow-xs shrink-0"
+              title="إلغاء التحديد والعودة لكافة المنتجات"
+            >
+              <RotateCcw size={13} />
+              <span>العودة للكل</span>
+            </button>
+          )}
+
           <button
             onClick={() => handleCategorySelect("all")}
             className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
