@@ -220,6 +220,8 @@ export default function AdminSettingsPage() {
     announcementText: "🔥 شحن مجاني على جميع الطلبات فوق 500 جنيه!",
     announcementColor: "#F59E0B",
     announcementLink: "",
+    freeShippingEnabled: true,
+    freeShippingThreshold: 500,
     telegramEnabled: false,
     telegramBotToken: "",
     telegramChatId: "",
@@ -265,6 +267,8 @@ export default function AdminSettingsPage() {
             vodafoneCashEnabled: data.vodafoneCashEnabled ?? true,
             instapayEnabled: data.instapayEnabled ?? true,
             codEnabled: data.codEnabled ?? true,
+            freeShippingEnabled: data.freeShippingEnabled ?? true,
+            freeShippingThreshold: data.freeShippingThreshold ?? 500,
             sizeCharts: data.sizeCharts || [],
           }));
         }
@@ -1281,10 +1285,55 @@ export default function AdminSettingsPage() {
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">سيُستخدم في زر &quot;اطلب عبر واتساب&quot; في صفحة كل منتج</p>
             </div>
 
+            {/* Automatic Free Shipping Calculation Controls */}
+            <div className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-black text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                    <Sparkles size={16} />
+                    نظام خصم الشحن المجاني التلقائي (Free Shipping Discount Engine)
+                  </h3>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
+                    عند التفعيل، سيتم تطبيق الشحن المجاني (0 ج.م) تلقائياً في الشيك أوت لكل الطلبات التي تتجاوز القيمة المحددة.
+                  </p>
+                </div>
+                <ToggleSwitch
+                  checked={settings.freeShippingEnabled ?? true}
+                  onChange={(v) => setSettings({ ...settings, freeShippingEnabled: v })}
+                />
+              </div>
+
+              {settings.freeShippingEnabled && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-amber-500/20">
+                  <div>
+                    <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                      الحد الأدنى لمبلغ الطلب للحصول على الشحن المجاني (بالجنيه EGP) *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        placeholder="500"
+                        value={settings.freeShippingThreshold ?? 500}
+                        onChange={(e) =>
+                          setSettings({ ...settings, freeShippingThreshold: parseFloat(e.target.value) || 0 })
+                        }
+                        className="w-full px-4 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#FF274B]"
+                      />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">ج.م</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                    <span>🎉 سيتم خصم مصاريف الشحن بالكامل تلقائياً عندما يتجاوز مجموع منتجات السلة ({settings.freeShippingThreshold ?? 500} ج.م)!</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Live preview */}
             {settings.announcementText && (
               <div className="space-y-2">
-                <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300">معاينة حية للشريط:</label>
+                <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300">معاينة حية لشريط الإعلانات:</label>
                 <div
                   className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black text-black"
                   style={{ backgroundColor: settings.announcementColor || "#F59E0B" }}

@@ -67,6 +67,8 @@ export default function CheckoutPage() {
   const [vodafoneCashEnabled, setVodafoneCashEnabled] = useState<boolean>(true);
   const [instapayEnabled, setInstapayEnabled] = useState<boolean>(true);
   const [codEnabled, setCodEnabled] = useState<boolean>(true);
+  const [freeShippingEnabled, setFreeShippingEnabled] = useState<boolean>(true);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState<number>(500);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -164,6 +166,14 @@ export default function CheckoutPage() {
         if (s.codEnabled !== undefined) {
           setCodEnabled(s.codEnabled);
         }
+
+        if (s.freeShippingEnabled !== undefined) {
+          setFreeShippingEnabled(s.freeShippingEnabled);
+        }
+
+        if (s.freeShippingThreshold !== undefined) {
+          setFreeShippingThreshold(s.freeShippingThreshold);
+        }
       }
     });
 
@@ -207,7 +217,9 @@ export default function CheckoutPage() {
   const activeRateObj = shippingRates.find(
     (r) => r.nameAr === selectedGovernorate || r.nameEn === selectedGovernorate
   );
-  const currentShippingCost = activeRateObj?.price ?? 50;
+  const baseShippingCost = activeRateObj?.price ?? 50;
+  const isFreeShipping = freeShippingEnabled && freeShippingThreshold > 0 && totalPrice >= freeShippingThreshold;
+  const currentShippingCost = isFreeShipping ? 0 : baseShippingCost;
   const finalOrderTotal = totalPrice + currentShippingCost;
 
   // Handle screenshot selection
@@ -768,8 +780,32 @@ export default function CheckoutPage() {
                       <Truck size={14} className="text-[#FF274B]" />
                       الشحن ({selectedGovernorate || "—"})
                     </span>
-                    <span className="font-bold text-[#FF274B]">{formatPrice(currentShippingCost)}</span>
+                    {isFreeShipping ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-zinc-400 line-through font-mono font-normal">{formatPrice(baseShippingCost)}</span>
+                        <span className="font-black text-emerald-500 text-xs">مجاناً 🎉</span>
+                      </div>
+                    ) : (
+                      <span className="font-bold text-[#FF274B]">{formatPrice(currentShippingCost)}</span>
+                    )}
                   </div>
+
+                  {/* Free Shipping Offer Status Badge */}
+                  {freeShippingEnabled && freeShippingThreshold > 0 && (
+                    <div className="pt-1">
+                      {isFreeShipping ? (
+                        <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold flex items-center gap-1.5">
+                          <CheckCircle2 size={15} className="shrink-0" />
+                          <span>🎉 مبروك! طلبك تجاوز {freeShippingThreshold} ج.م واستحق الشحن المجاني!</span>
+                        </div>
+                      ) : (
+                        <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-bold flex items-center gap-1.5">
+                          <Truck size={14} className="shrink-0 text-amber-500" />
+                          <span>💡 متبقي {formatPrice(freeShippingThreshold - totalPrice)} فقط للحصول على شحن مجاني بالكامل!</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="border-t border-zinc-100 dark:border-zinc-800/80 pt-4 flex justify-between items-center">

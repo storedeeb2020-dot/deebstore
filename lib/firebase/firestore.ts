@@ -436,6 +436,10 @@ export interface SiteSettings {
   announcementLink?: string;        // رابط اختياري عند الضغط
   whatsappNumber?: string;          // رقم واتساب الطلبات
 
+  // Free Shipping CMS
+  freeShippingEnabled?: boolean;   // تفعيل ميزة الشحن المجاني عند الوصول للحد
+  freeShippingThreshold?: number;  // الحد الأدنى للمبلغ للحصول على الشحن المجاني (مثلاً 500)
+
   // Telegram Bot Notifications
   telegramEnabled?: boolean;       // تفعيل/إيقاف إشعارات تليجرام
   telegramBotToken?: string;      // توكين البوت من BotFather

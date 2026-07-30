@@ -4,17 +4,29 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { X, ShoppingBag, Minus, Plus, Trash2, ArrowRight } from "lucide-react";
+import { X, ShoppingBag, Minus, Plus, Trash2, ArrowRight, Sparkles, Truck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/features/cart/CartProvider";
 import { formatPrice } from "@/lib/utils";
+import { subscribeToSiteSettings } from "@/lib/firebase/firestore";
 
 export function CartSidebar() {
   const router = useRouter();
   const { isOpen, closeCart, items, removeItem, updateQuantity, totalPrice, totalItems } = useCart();
   const [mounted, setMounted] = useState(false);
+  const [freeShippingEnabled, setFreeShippingEnabled] = useState(true);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(500);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    const unsubscribe = subscribeToSiteSettings((s) => {
+      if (s) {
+        if (s.freeShippingEnabled !== undefined) setFreeShippingEnabled(s.freeShippingEnabled);
+        if (s.freeShippingThreshold !== undefined) setFreeShippingThreshold(s.freeShippingThreshold);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   if (!mounted) return null;
 
@@ -55,6 +67,40 @@ export function CartSidebar() {
                 <X size={18} />
               </button>
             </div>
+
+            {/* Free Shipping Progress Bar Header */}
+            {freeShippingEnabled && freeShippingThreshold > 0 && totalItems > 0 && (
+              <div className="px-5 py-3 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 space-y-1.5 flex-shrink-0">
+                {totalPrice >= freeShippingThreshold ? (
+                  <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-black">
+                    <Sparkles size={14} className="shrink-0" />
+                    <span>🎉 مبروك! متاح لك شحن مجاني بالكامل!</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
+                    <span className="flex items-center gap-1">
+                      <Truck size={13} className="text-[#FF274B]" />
+                      <span>متبقي {formatPrice(freeShippingThreshold - totalPrice)} على الشحن المجاني</span>
+                    </span>
+                    <span className="font-mono text-zinc-400">
+                      {Math.min(100, Math.round((totalPrice / freeShippingThreshold) * 100))}%
+                    </span>
+                  </div>
+                )}
+
+                {/* Progress Bar Track */}
+                <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 rounded-full ${
+                      totalPrice >= freeShippingThreshold
+                        ? "bg-gradient-to-r from-emerald-500 to-teal-400"
+                        : "bg-gradient-to-r from-[#FF274B] to-amber-400"
+                    }`}
+                    style={{ width: `${Math.min(100, (totalPrice / freeShippingThreshold) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Items */}
             <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3">
