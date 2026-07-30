@@ -25,6 +25,9 @@ import {
   Send,
   Lock,
   KeyRound,
+  UserCheck,
+  UserPlus,
+  X,
 } from "lucide-react";
 import { getSiteSettings, updateSiteSettings, type SiteSettings, type GlobalSizeChart } from "@/lib/firebase/firestore";
 import { changeAdminPassword, signOut } from "@/lib/firebase/auth";
@@ -54,8 +57,42 @@ export default function AdminSettingsPage() {
   const [loadingChats, setLoadingChats] = useState(false);
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
 
-  // Telegram test state
+  // Telegram test and multi-user manager state
   const [testingTelegram, setTestingTelegram] = useState(false);
+  const [newAuthorizedId, setNewAuthorizedId] = useState("");
+
+  const addAuthorizedId = () => {
+    const cleanId = newAuthorizedId.trim();
+    if (!cleanId) {
+      toast.error("يرجى كتابة رقم الـ Chat ID أولاً");
+      return;
+    }
+    const currentIds = (settings.telegramChatId || "")
+      .split(/[\s,;]+/)
+      .map((id) => id.trim())
+      .filter(Boolean);
+
+    if (currentIds.includes(cleanId)) {
+      toast.error("هذا الـ Chat ID مضاف بالفعل في القائمة");
+      return;
+    }
+
+    const updatedIds = [...currentIds, cleanId].join(", ");
+    setSettings((prev) => ({ ...prev, telegramChatId: updatedIds }));
+    setNewAuthorizedId("");
+    toast.success(`تمت إضافة الـ ID (${cleanId}) لقائمة الحسابات المصرح لها 📲`);
+  };
+
+  const removeAuthorizedId = (idToRemove: string) => {
+    const currentIds = (settings.telegramChatId || "")
+      .split(/[\s,;]+/)
+      .map((id) => id.trim())
+      .filter(Boolean);
+
+    const updatedIds = currentIds.filter((id) => id !== idToRemove).join(", ");
+    setSettings((prev) => ({ ...prev, telegramChatId: updatedIds }));
+    toast.success(`تم حذف الـ ID (${idToRemove}) من القائمة المصرح لها`);
+  };
 
   const handleTestTelegram = async () => {
     if (!settings.telegramBotToken?.trim() || !settings.telegramChatId?.trim()) {
@@ -627,34 +664,80 @@ export default function AdminSettingsPage() {
               />
             </div>
 
-            {/* Bot Token & Chat ID */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Telegram Bot Token (من @BotFather) *
-                </label>
-                <input
-                  type="text"
-                  placeholder="مثال: 7123456789:AAFxXxXxXxXxXxXxXxXxXxXxXxX"
-                  value={settings.telegramBotToken || ""}
-                  onChange={(e) => setSettings({ ...settings, telegramBotToken: e.target.value })}
-                  className="w-full px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
-                />
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">احصل عليه بإنشاء بوت جديد من خلال التحدث مع @BotFather على تليجرام.</p>
+            {/* Bot Token */}
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                Telegram Bot Token *
+              </label>
+              <input
+                type="text"
+                placeholder="مثال: 7123456789:AAFxXxXxXxXxXxXxXxXxXxXxXxX"
+                value={settings.telegramBotToken || ""}
+                onChange={(e) => setSettings({ ...settings, telegramBotToken: e.target.value })}
+                className="w-full px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
+              />
+            </div>
+
+            {/* Multi-User Authorized Telegram IDs Manager */}
+            <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <UserCheck size={16} className="text-[#FF274B]" />
+                  قائمة الأشخاص المصرح لهم باستلام الإشعارات على تليجرام
+                </h3>
+                <span className="text-[10px] font-bold bg-[#FF274B]/10 text-[#FF274B] border border-[#FF274B]/20 px-2.5 py-0.5 rounded-full font-mono">
+                  {(settings.telegramChatId || "").split(/[\s,;]+/).filter(Boolean).length} حسابات مصرح لها
+                </span>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Telegram Chat ID (يمكنك إضافة أكثر من شخص بفصلة ,) *
-                </label>
+              {/* Add New Authorized ID Input Box */}
+              <div className="flex flex-col sm:flex-row items-center gap-2">
                 <input
                   type="text"
-                  placeholder="مثال: 7854847724, 9876543210"
-                  value={settings.telegramChatId || ""}
-                  onChange={(e) => setSettings({ ...settings, telegramChatId: e.target.value })}
-                  className="w-full px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
+                  placeholder="أدخل رقم الـ Chat ID الجديد (مثال: 7854847724)"
+                  value={newAuthorizedId}
+                  onChange={(e) => setNewAuthorizedId(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
                 />
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">احصل على الـ ID من بوت @userinfobot — لإضافة أكثر من شخص، افصل بينهم بفصلة <code>,</code>.</p>
+                <button
+                  type="button"
+                  onClick={addAuthorizedId}
+                  className="w-full sm:w-auto px-5 py-2.5 bg-[#FF274B] hover:bg-[#FF274B]/90 text-white font-extrabold text-xs rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
+                >
+                  <UserPlus size={15} />
+                  <span>إضافة شخص جديد</span>
+                </button>
+              </div>
+
+              {/* List of Authorized IDs Badges */}
+              <div className="pt-2 border-t border-zinc-200 dark:border-white/[0.06]">
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mb-2.5 font-bold">الحسابات المضافة المصرح لها بحرية الرؤية حالياً:</p>
+                {!(settings.telegramChatId || "").split(/[\s,;]+/).filter(Boolean).length ? (
+                  <p className="text-xs text-zinc-400 italic py-2 font-bold">لم يتم إضافة أي Chat ID بعد.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {(settings.telegramChatId || "")
+                      .split(/[\s,;]+/)
+                      .filter(Boolean)
+                      .map((id) => (
+                        <div
+                          key={id}
+                          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] text-xs font-bold font-mono text-zinc-800 dark:text-zinc-200 shadow-sm hover:border-[#FF274B]/40 transition-colors"
+                        >
+                          <UserCheck size={14} className="text-emerald-500" />
+                          <span>{id}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeAuthorizedId(id)}
+                            className="p-1 text-zinc-400 hover:text-red-500 transition-colors cursor-pointer mr-1"
+                            title="حذف هذا الشخص من الإشعارات"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
             </div>
 
