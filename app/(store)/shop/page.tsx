@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, RotateCcw, Sparkles, LayoutGrid } from "lucide-react";
 import { getCategories, subscribeToLiveProducts } from "@/lib/firebase/firestore";
 import { ProductGrid } from "@/components/products/ProductGrid";
-import { CollectionsGrid } from "@/components/home/CollectionsGrid";
 import { Spinner } from "@/components/ui/Spinner";
 import type { Product } from "@/types/product";
 import type { Category } from "@/types/category";
@@ -30,8 +29,14 @@ function ShopContent() {
 
   const handleCategorySelect = (catSlug: string) => {
     setSelectedCategory(catSlug);
-    const newUrl = catSlug === "all" ? "/shop" : `/shop?category=${catSlug}`;
-    window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, "", newUrl);
+    const params = new URLSearchParams(searchParams.toString());
+    if (catSlug === "all") {
+      params.delete("category");
+    } else {
+      params.set("category", catSlug);
+    }
+    const queryString = params.toString();
+    router.replace(queryString ? `/shop?${queryString}` : "/shop", { scroll: false });
   };
 
   useEffect(() => {
@@ -48,12 +53,25 @@ function ShopContent() {
     return () => unsubscribe();
   }, []);
 
-
-
   const filteredProducts = products.filter((prod) => {
     // Category match
-    if (selectedCategory !== "all" && prod.category !== selectedCategory) {
-      return false;
+    if (selectedCategory !== "all") {
+      const catObj = categories.find(
+        (c) =>
+          c.slug === selectedCategory ||
+          c.name === selectedCategory ||
+          c.id === selectedCategory ||
+          c.nameAr === selectedCategory
+      );
+      const matches =
+        prod.category === selectedCategory ||
+        (catObj &&
+          (prod.category === catObj.id ||
+            prod.category === catObj.name ||
+            prod.category === catObj.slug ||
+            prod.category === catObj.nameAr));
+
+      if (!matches) return false;
     }
     // Featured match
     if (featuredParam && !prod.featured) {
@@ -84,13 +102,6 @@ function ShopContent() {
           تصفح أحدث تصاميم الملابس والأزياء الفاخرة المصممة بعناية لتعكس أسلوبك الخاص.
         </p>
       </div>
-
-      {/* Visual Category Cards Grid (When all categories) */}
-      {selectedCategory === "all" && (
-        <div className="mb-12 border-b border-zinc-200/60 dark:border-zinc-800/60 pb-8">
-          <CollectionsGrid />
-        </div>
-      )}
 
 
 
