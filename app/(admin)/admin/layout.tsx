@@ -658,7 +658,7 @@ export default function AdminLayout({
                     >
                       <div className="flex items-center gap-2 truncate">
                         <Boxes size={15} />
-                        <span className="truncate">بحث عن "{searchQuery}" في المنتجات</span>
+                        <span className="truncate">{`بحث عن "${searchQuery}" في المنتجات`}</span>
                       </div>
                       <ChevronLeft size={14} />
                     </Link>
@@ -673,7 +673,7 @@ export default function AdminLayout({
                     >
                       <div className="flex items-center gap-2 truncate">
                         <ShoppingBag size={15} />
-                        <span className="truncate">بحث عن "{searchQuery}" في الطلبات</span>
+                        <span className="truncate">{`بحث عن "${searchQuery}" في الطلبات`}</span>
                       </div>
                       <ChevronLeft size={14} />
                     </Link>
