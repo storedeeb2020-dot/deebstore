@@ -65,31 +65,154 @@ const statusColors: Record<string, string> = {
   cancelled: "#FF274B",
 };
 
-// ─── Mini Luxury Bar Chart ─────────────────────────────────
-function BarChart({ data }: { data: DayRevenue[] }) {
-  const max = Math.max(...data.map((d) => d.value), 1);
+// ─── Mini Luxury Curved Line Chart (Area Graph) ─────────────
+function RevenueLineChart({ data }: { data: DayRevenue[] }) {
+  const width = 500;
+  const height = 150;
+  const paddingX = 35;
+  const paddingY = 22;
+  const chartW = width - paddingX * 2;
+  const chartH = height - paddingY * 2;
+
+  const maxVal = Math.max(...data.map((d) => d.value), 1);
+
+  // Compute points (x, y)
+  const points = data.map((d, i) => {
+    const x = paddingX + (i / (data.length - 1 || 1)) * chartW;
+    const y = height - paddingY - (d.value / maxVal) * chartH;
+    return { x, y, ...d };
+  });
+
+  // Build Smooth Bezier Curve Path
+  const createSmoothPath = (pts: { x: number; y: number }[]) => {
+    if (pts.length === 0) return "";
+    let path = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const curr = pts[i];
+      const next = pts[i + 1];
+      const cpX = (curr.x + next.x) / 2;
+      path += ` C ${cpX} ${curr.y}, ${cpX} ${next.y}, ${next.x} ${next.y}`;
+    }
+    return path;
+  };
+
+  const lineD = createSmoothPath(points);
+  const areaD = `${lineD} L ${points[points.length - 1].x} ${height - paddingY} L ${points[0].x} ${height - paddingY} Z`;
+
   return (
-    <div className="flex items-end gap-2 h-28 w-full pt-4">
-      {data.map((d, i) => {
-        const pct = (d.value / max) * 100;
-        return (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1.5 group">
-            <div className="w-full relative flex items-end justify-center h-24">
-              {/* Tooltip */}
-              <div className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-all pointer-events-none bg-zinc-900 border border-white/[0.1] text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-xl whitespace-nowrap z-10">
-                {formatPrice(d.value)}
-              </div>
-              <motion.div
-                className="w-full bg-gradient-to-t from-[#FF274B] via-amber-500 to-yellow-400 rounded-t-md group-hover:brightness-125 transition-all shadow-[0_0_15px_rgba(255,39,75,0.3)]"
-                initial={{ height: 0 }}
-                animate={{ height: `${Math.max(pct, 4)}%` }}
-                transition={{ delay: i * 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+    <div className="w-full space-y-3 pt-2">
+      <div className="relative w-full h-48">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
+          <defs>
+            <linearGradient id="revenueAreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#FF274B" stopOpacity="0.4" />
+              <stop offset="50%" stopColor="#F59E0B" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="#FF274B" stopOpacity="0.0" />
+            </linearGradient>
+            <linearGradient id="revenueLineGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#FF274B" />
+              <stop offset="50%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#EAB308" />
+            </linearGradient>
+            <filter id="glowLine" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+
+          {/* Horizontal Grid Lines */}
+          {[0, 0.33, 0.66, 1].map((pct, idx) => {
+            const y = height - paddingY - pct * chartH;
+            const gridVal = Math.round(maxVal * pct);
+            return (
+              <g key={idx}>
+                <line
+                  x1={paddingX}
+                  y1={y}
+                  x2={width - paddingX}
+                  y2={y}
+                  stroke="currentColor"
+                  strokeOpacity="0.08"
+                  strokeDasharray="4 4"
+                  className="text-zinc-400 dark:text-zinc-600"
+                />
+                <text
+                  x={paddingX - 6}
+                  y={y + 3}
+                  textAnchor="end"
+                  fontSize="8"
+                  className="fill-zinc-400 font-mono font-bold"
+                >
+                  {gridVal > 0 ? gridVal : 0}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Glowing Area Fill */}
+          <motion.path
+            d={areaD}
+            fill="url(#revenueAreaGrad)"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          />
+
+          {/* Smooth Line Curve */}
+          <motion.path
+            d={lineD}
+            fill="none"
+            stroke="url(#revenueLineGrad)"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            filter="url(#glowLine)"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+          />
+
+          {/* Glowing Data Points */}
+          {points.map((pt, i) => (
+            <g key={i} className="group cursor-pointer">
+              {/* Outer pulsing ring */}
+              <circle
+                cx={pt.x}
+                cy={pt.y}
+                r="7"
+                className="fill-[#FF274B]/30 opacity-0 group-hover:opacity-100 transition-opacity"
               />
-            </div>
-            <span className="text-[9px] text-zinc-500 font-mono font-bold">{d.label}</span>
+              {/* Core point */}
+              <motion.circle
+                cx={pt.x}
+                cy={pt.y}
+                r="4.5"
+                fill="#FF274B"
+                stroke="#ffffff"
+                strokeWidth="2"
+                className="group-hover:r-6 transition-all shadow-lg"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.8 + i * 0.08 }}
+              />
+            </g>
+          ))}
+        </svg>
+      </div>
+
+      {/* X-Axis Day & Value Badges */}
+      <div className="grid grid-cols-7 gap-1 pt-2 border-t border-zinc-100 dark:border-white/[0.06] text-center">
+        {data.map((d, i) => (
+          <div key={i} className="group relative cursor-pointer flex flex-col items-center">
+            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-extrabold group-hover:text-[#FF274B] transition-colors">
+              {d.label}
+            </span>
+            <span className="text-[10px] font-mono font-black text-[#FF274B] mt-0.5 dir-ltr" dir="ltr">
+              {d.value > 0 ? formatPrice(d.value) : "0"}
+            </span>
           </div>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 }
@@ -365,20 +488,20 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <div className="flex items-center gap-2 text-[#FF274B] mb-1">
-                <BarChart2 size={18} />
-                <span className="text-xs font-black uppercase tracking-wider">تحليل الإيرادات (آخر 7 أيام)</span>
+                <TrendingUp size={18} />
+                <span className="text-xs font-black uppercase tracking-wider">مخطط الإيرادات والمبيعات (آخر 7 أيام)</span>
               </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">حجم المبيعات اليومية المحققة من الطلبات الفعالة</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">منحنى البياني المالي للمبيعات اليومية الفعالة</p>
             </div>
             <div className="text-left">
               <span className="text-xs text-zinc-500 block font-bold">الإجمالي الأسبوعي</span>
-              <span className="text-base font-black text-[#FF274B]">
+              <span className="text-base font-black text-[#FF274B] font-mono dir-ltr" dir="ltr">
                 {formatPrice(weeklyData.reduce((s, d) => s + d.value, 0))}
               </span>
             </div>
           </div>
 
-          <BarChart data={weeklyData} />
+          <RevenueLineChart data={weeklyData} />
         </motion.div>
 
         {/* Status Donut Chart */}

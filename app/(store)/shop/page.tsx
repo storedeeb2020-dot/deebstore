@@ -48,12 +48,7 @@ function ShopContent() {
     return () => unsubscribe();
   }, []);
 
-  const activeCategoryObj = categories.find(
-    (c) => (c.slug || c.name) === selectedCategory
-  );
-  const activeCategoryName = activeCategoryObj
-    ? activeCategoryObj.nameAr || activeCategoryObj.name
-    : selectedCategory;
+
 
   const filteredProducts = products.filter((prod) => {
     // Category match
@@ -97,47 +92,7 @@ function ShopContent() {
         </div>
       )}
 
-      {/* Top Floating Glass Back Bar (When a specific category is active) */}
-      <AnimatePresence mode="wait">
-        {selectedCategory !== "all" && (
-          <motion.div
-            initial={{ opacity: 0, y: -12, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -12, scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className="mb-8 p-4 rounded-3xl bg-gradient-to-r from-amber-500/10 via-zinc-900/90 to-zinc-950 border border-amber-500/30 shadow-xl shadow-amber-500/5 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0 shadow-inner">
-                <Sparkles size={18} className="animate-pulse" />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">القسم المحدد حالياً:</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-base font-black text-white">{activeCategoryName}</span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-mono text-xs font-bold border border-amber-500/30">
-                    {filteredProducts.length} {filteredProducts.length === 1 ? "منتج" : "منتجات"}
-                  </span>
-                </div>
-              </div>
-            </div>
 
-            <motion.button
-              type="button"
-              onClick={() => {
-                handleCategorySelect("all");
-                router.push("/#categories");
-              }}
-              whileHover={{ scale: 1.04, y: -1 }}
-              whileTap={{ scale: 0.96 }}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-black font-black text-xs transition-all cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 border border-amber-300"
-            >
-              <LayoutGrid size={16} />
-              <span>العودة لجميع الأقسام (الكروت المصورة)</span>
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Filter & Search Controls */}
       <div className="space-y-4 mb-10 pb-6 border-b border-gray-100 dark:border-zinc-900">
@@ -169,6 +124,28 @@ function ShopContent() {
             <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-black to-transparent z-10" />
 
             <div className="flex items-center gap-2 overflow-x-auto flex-nowrap whitespace-nowrap scrollbar-none scroll-smooth py-1 px-1 justify-start sm:justify-end">
+              {/* Ultra-Sleek Masterpiece Back Button */}
+              <AnimatePresence>
+                {selectedCategory !== "all" && (
+                  <motion.button
+                    type="button"
+                    initial={{ opacity: 0, scale: 0.85, x: 10 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.85, x: 10 }}
+                    whileHover={{ scale: 1.05, y: -1 }}
+                    whileTap={{ scale: 0.94 }}
+                    onClick={() => handleCategorySelect("all")}
+                    className="relative group px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-[#FF274B]/20 via-[#FF274B]/10 to-amber-500/20 hover:from-[#FF274B] hover:to-amber-500 text-[#FF274B] hover:text-white border border-[#FF274B]/40 hover:border-transparent text-xs font-black transition-all cursor-pointer inline-flex items-center gap-1.5 shrink-0 shadow-lg shadow-[#FF274B]/10 hover:shadow-[#FF274B]/30 overflow-hidden"
+                  >
+                    {/* Light Beam Sweep on Hover */}
+                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
+                    
+                    <RotateCcw size={13} className="group-hover:-rotate-90 transition-transform duration-300 relative z-10" />
+                    <span className="relative z-10">عرض الكل ↩</span>
+                  </motion.button>
+                )}
+              </AnimatePresence>
+
               <button
                 type="button"
                 onClick={() => handleCategorySelect("all")}
