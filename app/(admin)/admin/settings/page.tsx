@@ -386,6 +386,12 @@ export default function AdminSettingsPage() {
     { id: "chatAnalytics", label: "تحليلات الشات بوت", icon: Bot },
   ];
 
+  const handleTabChange = (tabId: SettingsTab) => {
+    setActiveTab(tabId);
+    const newUrl = `/admin/settings?tab=${tabId}`;
+    window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, "", newUrl);
+  };
+
   return (
     <div className="space-y-8 w-full max-w-7xl mx-auto pb-16 font-sans dir-rtl text-zinc-900 dark:text-white" dir="rtl">
       {/* Page Header */}
@@ -411,7 +417,7 @@ export default function AdminSettingsPage() {
             <button
               key={t.id}
               type="button"
-              onClick={() => setActiveTab(t.id as SettingsTab)}
+              onClick={() => handleTabChange(t.id as SettingsTab)}
               className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all duration-150 cursor-pointer ${
                 isActive
                   ? "bg-gradient-to-r from-[#FF274B] to-amber-500 text-white shadow-md shadow-[#FF274B]/20 scale-[1.02]"

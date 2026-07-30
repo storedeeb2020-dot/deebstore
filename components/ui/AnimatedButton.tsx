@@ -144,20 +144,13 @@ export function SocialIconButton({ href, label, children, className }: SocialIco
       rel="noopener noreferrer"
       aria-label={label}
       className={cn(
-        "w-10 h-10 bg-zinc-200/80 dark:bg-white/10 border border-zinc-300/60 dark:border-white/10 rounded-xl flex items-center justify-center text-zinc-800 dark:text-white relative overflow-hidden transition-colors hover:text-amber-600 dark:hover:text-amber-400",
+        "w-11 h-11 bg-zinc-900 text-white border border-zinc-800 dark:bg-[#16161A] dark:text-white dark:border-white/20 rounded-2xl flex items-center justify-center relative overflow-hidden transition-all shadow-md dark:shadow-black/60 cursor-pointer",
         className
       )}
-      whileHover={{ scale: 1.12, backgroundColor: "rgba(251, 191, 36, 0.2)" }}
+      whileHover={{ scale: 1.12, y: -2 }}
       whileTap={{ scale: 0.95 }}
       transition={SPRING}
     >
-      {/* Glow ring */}
-      <motion.span
-        className="pointer-events-none absolute inset-0 rounded-xl"
-        initial={{ boxShadow: "0 0 0px 0px rgba(251,191,36,0)" }}
-        whileHover={{ boxShadow: "0 0 12px 2px rgba(251,191,36,0.35)" }}
-        transition={{ duration: 0.3 }}
-      />
       <span className="relative z-10">{children}</span>
     </motion.a>
   );

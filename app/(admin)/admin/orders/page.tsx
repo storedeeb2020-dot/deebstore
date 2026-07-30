@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -47,6 +48,9 @@ const statusDots: Record<string, string> = {
 };
 
 export default function AdminOrdersPage() {
+  const searchParams = useSearchParams();
+  const statusParam = searchParams.get("status") as OrderStatus | "all" | null;
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
@@ -55,6 +59,18 @@ export default function AdminOrdersPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [deletingScreenshot, setDeletingScreenshot] = useState(false);
   const [previewScreenshotUrl, setPreviewScreenshotUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (statusParam && ["all", "pending", "confirmed", "shipping", "delivered", "cancelled"].includes(statusParam)) {
+      setStatusFilter(statusParam);
+    }
+  }, [statusParam]);
+
+  const handleStatusFilterChange = (val: OrderStatus | "all") => {
+    setStatusFilter(val);
+    const newUrl = val === "all" ? "/admin/orders" : `/admin/orders?status=${val}`;
+    window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, "", newUrl);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -181,7 +197,7 @@ export default function AdminOrdersPage() {
           return (
             <button
               key={tab.value}
-              onClick={() => setStatusFilter(tab.value)}
+              onClick={() => handleStatusFilterChange(tab.value)}
               className={`relative flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-300 ${
                 isActive
                   ? "text-white font-extrabold shadow-lg shadow-[#FF274B]/20"

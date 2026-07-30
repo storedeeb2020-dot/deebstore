@@ -46,16 +46,19 @@ export function Footer() {
       icon: Instagram,
       label: "Instagram",
       href: settings?.instagramUrl || "https://www.instagram.com/eldeeb_st0re?igsh=MTh3dDBheWJ1MjNneg==",
+      btnClass: "bg-[#E1306C]/10 dark:bg-[#E1306C]/20 text-[#E1306C] dark:text-[#E1306C] border-[#E1306C]/30 dark:border-[#E1306C]/50 hover:bg-[#E1306C] dark:hover:bg-[#E1306C] hover:text-white dark:hover:text-white shadow-lg shadow-[#E1306C]/10",
     },
     {
       icon: Facebook,
       label: "Facebook",
       href: settings?.facebookUrl || "https://www.facebook.com/share/1BeVGnopec/",
+      btnClass: "bg-[#1877F2]/10 dark:bg-[#1877F2]/20 text-[#1877F2] dark:text-[#1877F2] border-[#1877F2]/30 dark:border-[#1877F2]/50 hover:bg-[#1877F2] dark:hover:bg-[#1877F2] hover:text-white dark:hover:text-white shadow-lg shadow-[#1877F2]/10",
     },
     {
       icon: TiktokIcon,
       label: "TikTok",
       href: settings?.tiktokUrl || "https://www.tiktok.com/@eldeeb.stoer?_r=1&_t=ZS-98MVHwLnOtM",
+      btnClass: "bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 border-cyan-500/30 dark:border-cyan-500/50 hover:bg-cyan-400 dark:hover:bg-cyan-400 hover:text-black dark:hover:text-black shadow-lg shadow-cyan-500/10",
     },
   ];
 
@@ -76,9 +79,9 @@ export function Footer() {
                 "متجر ديب ستور الفاخر للستريت وير والموضة العصرية. تسوق أحدث التشكيلات بأفضل جودة وخامات ممتازة."}
             </p>
             <div className="flex gap-4 mt-6">
-              {socialLinks.map(({ icon: Icon, label, href }) => (
-                <SocialIconButton key={label} href={href} label={label}>
-                  <Icon size={18} />
+              {socialLinks.map(({ icon: Icon, label, href, btnClass }) => (
+                <SocialIconButton key={label} href={href} label={label} className={btnClass}>
+                  <Icon size={20} />
                 </SocialIconButton>
               ))}
             </div>
