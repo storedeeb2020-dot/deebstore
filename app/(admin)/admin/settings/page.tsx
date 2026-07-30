@@ -645,16 +645,16 @@ export default function AdminSettingsPage() {
 
               <div>
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Telegram Chat ID (رقم الشات أو الجروب) *
+                  Telegram Chat ID (يمكنك إضافة أكثر من شخص بفصلة ,) *
                 </label>
                 <input
                   type="text"
-                  placeholder="مثال: 123456789 أو -1001234567890"
+                  placeholder="مثال: 7854847724, 9876543210"
                   value={settings.telegramChatId || ""}
                   onChange={(e) => setSettings({ ...settings, telegramChatId: e.target.value })}
                   className="w-full px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
                 />
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">احصل عليه من بوت @userinfobot أو @GetChatID_BOT.</p>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">احصل على الـ ID من بوت @userinfobot — لإضافة أكثر من شخص، افصل بينهم بفصلة <code>,</code>.</p>
               </div>
             </div>
 

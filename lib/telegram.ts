@@ -82,27 +82,41 @@ export async function sendTelegramNotification(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const cleanToken = botToken.trim();
-    const cleanChatId = chatId.trim();
-
-    if (!cleanToken || !cleanChatId) {
+    if (!cleanToken || !chatId) {
       return { success: false, error: "Token أو Chat ID غير مكتمل" };
     }
 
+    // Support multiple Chat IDs split by commas, semicolons, or whitespace
+    const targetChatIds = chatId
+      .split(/[\s,;]+/)
+      .map((id) => id.trim())
+      .filter(Boolean);
+
+    if (targetChatIds.length === 0) {
+      return { success: false, error: "لم يتم تحديد أي Chat ID صالحة" };
+    }
+
     const url = `https://api.telegram.org/bot${cleanToken}/sendMessage`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: cleanChatId,
-        text: message,
-        parse_mode: "HTML",
-        disable_web_page_preview: false,
-      }),
+    const sendPromises = targetChatIds.map(async (targetId) => {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: targetId,
+          text: message,
+          parse_mode: "HTML",
+          disable_web_page_preview: false,
+        }),
+      });
+      const data = await response.json();
+      return { ok: response.ok && data.ok, description: data.description };
     });
 
-    const data = await response.json();
-    if (!response.ok || !data.ok) {
-      return { success: false, error: data.description || "فشل الإرسال عبر تليجرام" };
+    const results = await Promise.all(sendPromises);
+    const failed = results.find((r) => !r.ok);
+
+    if (failed) {
+      return { success: false, error: failed.description || "فشل الإرسال لبعض الحسابات المصرح لها" };
     }
 
     return { success: true };
