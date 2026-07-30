@@ -26,6 +26,17 @@ import {
   Plus,
   CheckCheck,
   Zap,
+  CreditCard,
+  Send,
+  Lock,
+  Ruler,
+  Megaphone,
+  Sparkles,
+  Type,
+  Phone,
+  Info,
+  Shield,
+  Bot,
 } from "lucide-react";
 import { signOut } from "@/lib/firebase/auth";
 import { subscribeToLiveOrders } from "@/lib/firebase/firestore";
@@ -234,9 +245,36 @@ export default function AdminLayout({
     return null;
   }
 
-  const filteredSearchItems = navItems.filter((item) =>
-    item.label.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const settingsSearchItems = [
+    { href: "/admin/settings?tab=payments", label: "وسائل الدفع وتفعيل البوابات (فودافون كاش / انستاباي / COD)", icon: CreditCard, group: "إعدادات الدفع" },
+    { href: "/admin/settings?tab=telegram", label: "إشعارات تليجرام المباشرة للطلبات (Telegram Bot Alert)", icon: Send, group: "تليجرام والإشعارات" },
+    { href: "/admin/settings?tab=security", label: "تغيير كلمة مرور الأدمن وإعدادات الأمان 🔐", icon: Lock, group: "الأمان والخصوصية" },
+    { href: "/admin/settings?tab=sizeCharts", label: "جدول المقاسات العامة (Global Size Charts)", icon: Ruler, group: "المقاسات" },
+    { href: "/admin/settings?tab=announcement", label: "شريط الإعلانات العلوية (Announcement Bar)", icon: Megaphone, group: "الإعلانات" },
+    { href: "/admin/settings?tab=hero", label: "وسائط وصور الهيرو والفيديوهات الرئيسية", icon: Sparkles, group: "وسائط الصفحة" },
+    { href: "/admin/settings?tab=brand", label: "لوجو الهوية والنصوص الترحيبية (Branding)", icon: Type, group: "الهوية" },
+    { href: "/admin/settings?tab=contact", label: "رقم واتساب ومعلومات السوشيال ميديا", icon: Phone, group: "التواصل" },
+    { href: "/admin/settings?tab=about", label: "صفحة من نحن (About DEEB STORE)", icon: Info, group: "الصفحات" },
+    { href: "/admin/settings?tab=legal", label: "سياسة الخصوصية والشروط والأحكام", icon: Shield, group: "السياسات" },
+    { href: "/admin/settings?tab=chatAnalytics", label: "تحليلات ورسائل الشات بوت الذكي (AI Chatbot)", icon: Bot, group: "الذكاء الاصطناعي" },
+  ];
+
+  const allSearchTargets = [
+    ...navItems.map((item) => ({ ...item, group: "الصفحات الرئيسية" })),
+    { href: "/admin/products/new", label: "إضافة منتج جديد للمتجر ➕", icon: Plus, group: "إجراء سريع" },
+    ...settingsSearchItems,
+  ];
+
+  const queryClean = searchQuery.trim().toLowerCase();
+
+  const filteredSearchItems = queryClean
+    ? allSearchTargets.filter(
+        (item) =>
+          item.label.toLowerCase().includes(queryClean) ||
+          item.group.toLowerCase().includes(queryClean) ||
+          item.href.toLowerCase().includes(queryClean)
+      )
+    : allSearchTargets;
 
   const SidebarContent = (
     <aside className="w-64 bg-white/95 dark:bg-[#0E0E10]/95 backdrop-blur-2xl border-l border-zinc-200 dark:border-white/[0.06] flex flex-col h-full shadow-2xl text-zinc-900 dark:text-white font-['Tajawal',sans-serif] dir-rtl transition-colors duration-200" dir="rtl">
@@ -554,7 +592,7 @@ export default function AdminLayout({
         {/* Global Search Modal */}
         <AnimatePresence>
           {searchOpen && (
-            <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4">
+            <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -566,40 +604,114 @@ export default function AdminLayout({
                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                className="relative w-full max-w-xl bg-[#0E0E10] border border-white/[0.1] rounded-2xl shadow-2xl p-4 overflow-hidden z-10"
+                className="relative w-full max-w-2xl bg-white dark:bg-[#0E0E10] border border-zinc-200 dark:border-white/[0.1] rounded-3xl shadow-2xl p-4 sm:p-5 overflow-hidden z-10 text-zinc-900 dark:text-white"
               >
-                <div className="flex items-center gap-3 px-3 pb-3 border-b border-white/[0.08]">
-                  <Search size={18} className="text-[#FF274B]" />
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!searchQuery.trim()) return;
+                    if (filteredSearchItems.length > 0) {
+                      router.push(filteredSearchItems[0].href);
+                      setSearchOpen(false);
+                      setSearchQuery("");
+                    } else {
+                      router.push(`/admin/products?search=${encodeURIComponent(searchQuery.trim())}`);
+                      setSearchOpen(false);
+                      setSearchQuery("");
+                    }
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 bg-zinc-100 dark:bg-zinc-950 rounded-2xl border border-zinc-200 dark:border-white/[0.08]"
+                >
+                  <Search size={20} className="text-[#FF274B]" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="ابحث عن كود المنتج (SKU)، اسم المنتج، رقم الطلب، القسم..."
-                    className="w-full bg-transparent text-white text-sm outline-none placeholder:text-zinc-500 font-bold"
+                    placeholder="ابحث عن أي شيء في الأدمن (كود SKU، منتج، طلب، إعدادات، تليجرام...)"
+                    className="w-full bg-transparent text-zinc-900 dark:text-white text-xs sm:text-sm outline-none placeholder:text-zinc-400 font-bold"
                     autoFocus
                   />
-                  <button
-                    onClick={() => setSearchOpen(false)}
-                    className="p-1 text-zinc-400 hover:text-white"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-
-                <div className="mt-3 max-h-72 overflow-y-auto space-y-1">
-                  {filteredSearchItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setSearchOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-zinc-300 hover:bg-[#FF274B]/10 hover:text-[#FF274B] transition-colors"
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-white cursor-pointer"
                     >
-                      <item.icon size={16} className="text-[#FF274B]" />
-                      <span>{item.label}</span>
+                      <X size={15} />
+                    </button>
+                  )}
+                  <kbd className="hidden sm:inline-block px-2 py-1 text-[10px] font-mono font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-lg">
+                    ESC
+                  </kbd>
+                </form>
+
+                {/* Dynamic Direct Jumps if user typed text */}
+                {searchQuery.trim() && (
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 pb-2 border-b border-zinc-200 dark:border-white/[0.06]">
+                    <Link
+                      href={`/admin/products?search=${encodeURIComponent(searchQuery.trim())}`}
+                      onClick={() => {
+                        setSearchOpen(false);
+                        setSearchQuery("");
+                      }}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-[#FF274B]/5 hover:bg-[#FF274B]/10 border border-[#FF274B]/20 text-[#FF274B] text-xs font-bold transition-all"
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <Boxes size={15} />
+                        <span className="truncate">بحث عن "{searchQuery}" في المنتجات</span>
+                      </div>
+                      <ChevronLeft size={14} />
                     </Link>
-                  ))}
+
+                    <Link
+                      href={`/admin/orders?search=${encodeURIComponent(searchQuery.trim())}`}
+                      onClick={() => {
+                        setSearchOpen(false);
+                        setSearchQuery("");
+                      }}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold transition-all"
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <ShoppingBag size={15} />
+                        <span className="truncate">بحث عن "{searchQuery}" في الطلبات</span>
+                      </div>
+                      <ChevronLeft size={14} />
+                    </Link>
+                  </div>
+                )}
+
+                {/* Results List */}
+                <div className="mt-3 max-h-80 overflow-y-auto space-y-1 pr-1 scrollbar-none">
+                  {filteredSearchItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => {
+                          setSearchOpen(false);
+                          setSearchQuery("");
+                        }}
+                        className="flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-[#FF274B]/10 hover:text-[#FF274B] transition-all group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-[#FF274B] group-hover:scale-110 transition-transform">
+                            <Icon size={16} />
+                          </div>
+                          <span>{item.label}</span>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-900 text-zinc-500 font-mono">
+                          {item.group}
+                        </span>
+                      </Link>
+                    );
+                  })}
+
                   {filteredSearchItems.length === 0 && (
-                    <p className="text-center py-6 text-xs text-zinc-500">لا توجد نتائج لمطابقة بحثك</p>
+                    <div className="text-center py-10 space-y-2">
+                      <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400">لا توجد صفحات مطابقة لبحثك</p>
+
+                    </div>
                   )}
                 </div>
               </motion.div>

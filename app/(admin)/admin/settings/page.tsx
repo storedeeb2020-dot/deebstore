@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -42,9 +42,18 @@ type SettingsTab = "hero" | "brand" | "payments" | "sizeCharts" | "contact" | "a
 
 export default function AdminSettingsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab") as SettingsTab | null;
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>("payments");
+
+  useEffect(() => {
+    if (tabParam && ["hero", "brand", "payments", "sizeCharts", "contact", "about", "legal", "announcement", "chatAnalytics", "telegram", "security"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   const [uploadingVideo, setUploadingVideo] = useState(false);
 
