@@ -74,7 +74,8 @@ export default function AdminOrdersPage() {
       search === "" ||
       name.includes(s) ||
       phone.includes(search) ||
-      id.includes(s);
+      id.includes(s) ||
+      o.items?.some((item) => (item.sku || "").toLowerCase().includes(s) || (item.productName || "").toLowerCase().includes(s));
     return matchStatus && matchSearch;
   });
 
@@ -489,7 +490,14 @@ export default function AdminOrdersPage() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-black text-xs text-zinc-900 dark:text-white truncate">{item.productName}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-black text-xs text-zinc-900 dark:text-white truncate">{item.productName}</p>
+                            {item.sku && (
+                              <span className="px-2 py-0.5 rounded-md bg-[#FF274B]/10 text-[#FF274B] font-mono text-[10px] font-bold border border-[#FF274B]/20">
+                                كود: {item.sku}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider mt-0.5">
                             اللون: {item.selectedColor?.name || "افتراضي"} | المقاس: {item.selectedSize || "قياسي"} | الكمية: {item.quantity || 1}
                           </p>

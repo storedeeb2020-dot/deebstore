@@ -21,6 +21,7 @@ import {
   Bot,
   Sun,
   Moon,
+  Send,
 } from "lucide-react";
 import { getSiteSettings, updateSiteSettings, type SiteSettings, type GlobalSizeChart } from "@/lib/firebase/firestore";
 import { ImageUploader } from "@/components/admin/ImageUploader";
@@ -30,7 +31,7 @@ import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 import { db } from "@/lib/firebase/config";
 import { collection, query, orderBy, getDocs, limit, deleteDoc, doc } from "firebase/firestore";
 
-type SettingsTab = "hero" | "brand" | "payments" | "sizeCharts" | "contact" | "about" | "legal" | "announcement" | "chatAnalytics";
+type SettingsTab = "hero" | "brand" | "payments" | "sizeCharts" | "contact" | "about" | "legal" | "announcement" | "chatAnalytics" | "telegram";
 
 export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -47,6 +48,38 @@ export default function AdminSettingsPage() {
   const [chatLogs, setChatLogs] = useState<any[]>([]);
   const [loadingChats, setLoadingChats] = useState(false);
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
+
+  // Telegram test state
+  const [testingTelegram, setTestingTelegram] = useState(false);
+
+  const handleTestTelegram = async () => {
+    if (!settings.telegramBotToken?.trim() || !settings.telegramChatId?.trim()) {
+      toast.error("يرجى كتابة Bot Token و Chat ID أولاً");
+      return;
+    }
+    setTestingTelegram(true);
+    const toastId = toast.loading("جاري إرسال الإشعار الاختباري إلى تليجرام...");
+    try {
+      const res = await fetch("/api/telegram/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          botToken: settings.telegramBotToken,
+          chatId: settings.telegramChatId,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success("تم إرسال إشعار الاختبار بنجاح على تليجرام! 📲", { id: toastId });
+      } else {
+        toast.error(json.error || "فشل إرسال الإشعار الاختباري", { id: toastId });
+      }
+    } catch {
+      toast.error("فشل الاتصال بخدمة الاختبار", { id: toastId });
+    } finally {
+      setTestingTelegram(false);
+    }
+  };
 
   const [settings, setSettings] = useState<SiteSettings>({
     storeName: "DEEB STORE",
@@ -80,6 +113,9 @@ export default function AdminSettingsPage() {
     announcementText: "🔥 شحن مجاني على جميع الطلبات فوق 500 جنيه!",
     announcementColor: "#F59E0B",
     announcementLink: "",
+    telegramEnabled: false,
+    telegramBotToken: "",
+    telegramChatId: "",
     aboutTitle: "عن ديب ستور — About DEEB STORE",
     aboutSubtitle: "نحدد أسلوب الأناقة العصرية من خلال الموضة الفاخرة وخامات الستريت وير الممتازة والتصاميم الاستثنائية.",
     aboutSection1Title: "الرقي والبساطة العصرية",
@@ -231,6 +267,7 @@ export default function AdminSettingsPage() {
 
   const tabs = [
     { id: "payments", label: "وسائل الدفع والتفعيل", icon: CreditCard },
+    { id: "telegram", label: "إشعارات تليجرام 📲", icon: Send },
     { id: "sizeCharts", label: "جدول المقاسات العامة", icon: Ruler },
     { id: "announcement", label: "شريط الإعلانات", icon: Megaphone },
     { id: "brand", label: "لوجو الهوية والنصوص", icon: Type },
@@ -507,6 +544,90 @@ export default function AdminSettingsPage() {
                   تمكين العملاء من دفع قيمة الطلب نقداً للمندوب عند استلام الشحنة.
                 </p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: TELEGRAM BOT NOTIFICATIONS */}
+        {activeTab === "telegram" && (
+          <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-4">
+              <div className="flex items-center gap-2">
+                <Send size={20} className="text-[#FF274B]" />
+                <h2 className="font-black text-base text-zinc-900 dark:text-white">
+                  لوحة التحكم في إشعارات تليجرام المباشرة للطلبات (Telegram Bot)
+                </h2>
+              </div>
+              <span className="text-xs font-bold bg-[#FF274B]/10 text-[#FF274B] border border-[#FF274B]/20 px-3 py-1 rounded-full">
+                إشعارات تليجرام الفورية
+              </span>
+            </div>
+
+            {/* Master Enable Toggle */}
+            <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                  تفعيل إشعارات تليجرام للطلبات الجديدة
+                  {settings.telegramEnabled ? (
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">مُفعل حالياً</span>
+                  ) : (
+                    <span className="text-[10px] bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">معطل حالياً</span>
+                  )}
+                </h3>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
+                  عند التفعيل، سيصلك إشعار فوري كامل بكل الطلبات الجديدة مع كافة التفاصيل وأكواد المنتجات (SKU) مباشرة على تليجرام.
+                </p>
+              </div>
+              <ToggleSwitch
+                checked={!!settings.telegramEnabled}
+                onChange={(val) => setSettings({ ...settings, telegramEnabled: val })}
+                size="md"
+              />
+            </div>
+
+            {/* Bot Token & Chat ID */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Telegram Bot Token (من @BotFather) *
+                </label>
+                <input
+                  type="text"
+                  placeholder="مثال: 7123456789:AAFxXxXxXxXxXxXxXxXxXxXxXxX"
+                  value={settings.telegramBotToken || ""}
+                  onChange={(e) => setSettings({ ...settings, telegramBotToken: e.target.value })}
+                  className="w-full px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
+                />
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">احصل عليه بإنشاء بوت جديد من خلال التحدث مع @BotFather على تليجرام.</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Telegram Chat ID (رقم الشات أو الجروب) *
+                </label>
+                <input
+                  type="text"
+                  placeholder="مثال: 123456789 أو -1001234567890"
+                  value={settings.telegramChatId || ""}
+                  onChange={(e) => setSettings({ ...settings, telegramChatId: e.target.value })}
+                  className="w-full px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
+                />
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">احصل عليه من بوت @userinfobot أو @GetChatID_BOT.</p>
+              </div>
+            </div>
+
+            {/* Test Button */}
+            <div className="pt-2 flex items-center justify-between border-t border-zinc-200 dark:border-white/[0.06]">
+              <p className="text-xs text-zinc-500 font-medium">اضغط للاختبار للتأكد من وصول رسائل تليجرام بنجاح:</p>
+              <button
+                type="button"
+                onClick={handleTestTelegram}
+                disabled={testingTelegram}
+                className="flex items-center gap-2 px-6 py-2.5 bg-[#FF274B] hover:bg-[#FF274B]/90 text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50"
+              >
+                <Send size={15} />
+                <span>{testingTelegram ? "جاري الاختبار..." : "إرسال إشعار تجريبي الآن 📲"}</span>
+              </button>
             </div>
           </div>
         )}

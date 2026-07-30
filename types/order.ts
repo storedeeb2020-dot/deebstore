@@ -12,6 +12,7 @@ export type PaymentMethod = "cash_on_delivery" | "vodafone_cash" | "instapay";
 export interface OrderItem {
   productId: string;
   productName: string;
+  sku?: string;
   productImage: string;
   price: number;
   quantity: number;

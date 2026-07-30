@@ -574,7 +574,7 @@ export default function AdminLayout({
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="ابحث عن قسم، طلبات، منتجات، رسائل..."
+                    placeholder="ابحث عن كود المنتج (SKU)، اسم المنتج، رقم الطلب، القسم..."
                     className="w-full bg-transparent text-white text-sm outline-none placeholder:text-zinc-500 font-bold"
                     autoFocus
                   />

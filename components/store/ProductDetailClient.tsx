@@ -335,7 +335,12 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              {product.sku && (
+                <span className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-mono text-xs font-bold border border-zinc-200 dark:border-zinc-700">
+                  كود المنتج: <span className="text-[#FF274B] font-black">{product.sku}</span>
+                </span>
+              )}
               {product.bestSeller && (
                 <Badge variant="default">الأكثر مبيعاً</Badge>
               )}

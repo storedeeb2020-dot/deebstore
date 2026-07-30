@@ -44,7 +44,8 @@ export default function AdminProductsPage() {
         const name = (p.name || "").toLowerCase();
         const cat = (p.category || "").toLowerCase();
         const brand = (p.brand || "").toLowerCase();
-        return name.includes(q) || cat.includes(q) || brand.includes(q);
+        const sku = (p.sku || "").toLowerCase();
+        return name.includes(q) || cat.includes(q) || brand.includes(q) || sku.includes(q);
       })
     );
   }, [search, products]);
@@ -173,7 +174,14 @@ export default function AdminProductsPage() {
                             </div>
                             <div>
                               <p className="font-bold text-xs text-zinc-900 dark:text-white">{product.name}</p>
-                              <p className="text-[10px] text-[#FF274B] font-mono font-bold uppercase tracking-wide mt-0.5">{product.brand || "DEEP STORE"}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[10px] text-[#FF274B] font-mono font-bold uppercase tracking-wide">{product.brand || "DEEB STORE"}</span>
+                                {product.sku && (
+                                  <span className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 font-mono text-[9px] font-bold">
+                                    كود: {product.sku}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </td>

@@ -20,6 +20,7 @@ import type { Product } from "@/types/product";
 import type { Order, OrderStatus, CreateOrderInput } from "@/types/order";
 import type { Category } from "@/types/category";
 import { deleteFromCloudinary } from "../cloudinary";
+import { sendOrderTelegramAlert } from "../telegram";
 
 // ─── Helpers ──────────────────────────────────────────────
 
@@ -286,7 +287,18 @@ export async function createOrder(data: CreateOrderInput): Promise<string> {
     status: "pending" as OrderStatus,
     createdAt: Timestamp.now(),
   }));
-  return docRef.id;
+
+  const orderId = docRef.id;
+
+  // Trigger Telegram Bot order alert asynchronously
+  sendOrderTelegramAlert({
+    id: orderId,
+    ...data,
+    status: "pending",
+    createdAt: new Date(),
+  }).catch((err) => console.error("Telegram alert error:", err));
+
+  return orderId;
 }
 
 export async function getOrders(statusFilter?: OrderStatus): Promise<Order[]> {
@@ -423,6 +435,11 @@ export interface SiteSettings {
   announcementColor?: string;       // لون الخلفية hex e.g. "#F59E0B"
   announcementLink?: string;        // رابط اختياري عند الضغط
   whatsappNumber?: string;          // رقم واتساب الطلبات
+
+  // Telegram Bot Notifications
+  telegramEnabled?: boolean;       // تفعيل/إيقاف إشعارات تليجرام
+  telegramBotToken?: string;      // توكين البوت من BotFather
+  telegramChatId?: string;        // معرف الشات أو الجروب
 }
 
 export async function getSiteSettings(): Promise<SiteSettings | null> {

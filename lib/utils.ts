@@ -49,12 +49,12 @@ export function formatDate(date: Date | { toDate(): Date }): string {
   }).format(d);
 }
 
-/** Generates a unique product SKU like DEEP-A4K2 */
+/** Generates a unique product SKU like DEEB-A4K2 */
 export function generateSKU(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
   for (let i = 0; i < 4; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];
   }
-  return `DEEP-${code}`;
+  return `DEEB-${code}`;
 }
