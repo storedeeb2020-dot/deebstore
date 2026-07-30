@@ -454,6 +454,25 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
   }
 }
 
+export function subscribeToSiteSettings(
+  callback: (settings: SiteSettings | null) => void
+): () => void {
+  const docRef = doc(db, "site_settings", "general");
+  return onSnapshot(
+    docRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        callback(snapshot.data() as SiteSettings);
+      } else {
+        callback(null);
+      }
+    },
+    (err) => {
+      console.error("Failed to subscribe to site settings:", err);
+    }
+  );
+}
+
 export async function updateSiteSettings(
   data: Partial<SiteSettings>
 ): Promise<void> {
@@ -479,6 +498,30 @@ export async function getShippingRates(): Promise<GovernorateRate[]> {
     console.error("Failed to fetch shipping rates:", err);
     return DEFAULT_EGYPT_GOVERNORATES;
   }
+}
+
+export function subscribeToShippingRates(
+  callback: (rates: GovernorateRate[]) => void
+): () => void {
+  const docRef = doc(db, "site_settings", "shipping");
+  return onSnapshot(
+    docRef,
+    (snapshot) => {
+      if (!snapshot.exists()) {
+        callback(DEFAULT_EGYPT_GOVERNORATES);
+        return;
+      }
+      const data = snapshot.data();
+      if (data?.rates && Array.isArray(data.rates)) {
+        callback(data.rates as GovernorateRate[]);
+      } else {
+        callback(DEFAULT_EGYPT_GOVERNORATES);
+      }
+    },
+    (err) => {
+      console.error("Failed to subscribe to shipping rates:", err);
+    }
+  );
 }
 
 export async function updateShippingRates(rates: GovernorateRate[]): Promise<void> {

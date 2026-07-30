@@ -21,7 +21,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { useCart } from "@/features/cart/CartProvider";
-import { createOrder, getShippingRates, getSiteSettings } from "@/lib/firebase/firestore";
+import { createOrder, getShippingRates, getSiteSettings, subscribeToShippingRates, subscribeToSiteSettings } from "@/lib/firebase/firestore";
 import { formatPrice } from "@/lib/utils";
 import { checkoutSchema, type CheckoutFormData } from "@/lib/validations/checkout.schema";
 import { Input } from "@/components/ui/Input";
@@ -96,30 +96,41 @@ export default function CheckoutPage() {
       setIsRedirecting(true);
       router.replace("/");
     }
-    // Load shipping rates
-    getShippingRates()
-      .then((data) => {
-        setShippingRates(data);
-        if (data.length > 0) {
-          const def = data.find((r) => r.active) || data[0];
+
+    // Subscribe to shipping rates in real-time
+    const unsubscribeShipping = subscribeToShippingRates((data) => {
+      setShippingRates(data);
+      if (data.length > 0) {
+        const def = data.find((r) => r.active) || data[0];
+        const currentGov = watch("governorate");
+        if (!currentGov) {
           setValue("governorate", def.nameAr);
         }
-      })
-      .catch(console.error);
-    // Load site settings for payment numbers
-    getSiteSettings()
-      .then((s) => {
-        if (s?.storePhone) setVodafoneNumber(s.storePhone);
-        if (s?.instapayUsername) setInstapayUsername(s.instapayUsername);
-        if (s?.onlinePaymentEnabled !== undefined) {
+      }
+    });
+
+    // Subscribe to site settings in real-time (Vodafone Cash & InstaPay & payment toggles)
+    const unsubscribeSettings = subscribeToSiteSettings((s) => {
+      if (s) {
+        if (s.vodafoneCash) setVodafoneNumber(s.vodafoneCash);
+        else if (s.storePhone) setVodafoneNumber(s.storePhone);
+
+        if (s.instapayUsername) setInstapayUsername(s.instapayUsername);
+
+        if (s.onlinePaymentEnabled !== undefined) {
           setOnlinePaymentEnabled(s.onlinePaymentEnabled);
           if (!s.onlinePaymentEnabled) {
             setPaymentCategory("cash");
           }
         }
-      })
-      .catch(() => {});
-  }, [items, router, setValue]);
+      }
+    });
+
+    return () => {
+      unsubscribeShipping();
+      unsubscribeSettings();
+    };
+  }, [items, router, setValue, watch]);
 
   // Sync paymentMethod field with category/method state
   useEffect(() => {

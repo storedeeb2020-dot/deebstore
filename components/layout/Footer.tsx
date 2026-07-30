@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Instagram, Facebook, MessageCircle } from "lucide-react";
-import { getSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
+import { getSiteSettings, subscribeToSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
 import { SocialIconButton } from "@/components/ui/AnimatedButton";
 import { motion } from "framer-motion";
 
@@ -30,11 +30,10 @@ export function Footer() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
 
   useEffect(() => {
-    getSiteSettings()
-      .then((data) => {
-        if (data) setSettings(data);
-      })
-      .catch(console.error);
+    const unsubscribe = subscribeToSiteSettings((data) => {
+      if (data) setSettings(data);
+    });
+    return () => unsubscribe();
   }, []);
 
   // Hide footer on dedicated product details page
