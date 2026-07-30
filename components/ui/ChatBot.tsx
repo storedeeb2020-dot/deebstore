@@ -545,7 +545,7 @@ export function ChatBot() {
         drag
         dragMomentum={false}
         whileDrag={{ scale: 1.1 }}
-        className="fixed bottom-6 right-6 z-50 cursor-grab active:cursor-grabbing touch-none select-none"
+        className="fixed bottom-6 right-6 z-[99999] cursor-grab active:cursor-grabbing touch-none select-none"
       >
         <motion.button
           whileHover={{ scale: 1.1 }}
@@ -576,15 +576,28 @@ export function ChatBot() {
         </motion.button>
       </motion.div>
 
+      {/* Backdrop Overlay when Chatbot is open */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[99998]"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Chatbot Drawer Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 30, scale: 0.95 }}
-            transition={{ duration: 0.25 }}
-            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[400px] h-[540px] max-h-[82vh] bg-white dark:bg-zinc-950 border border-amber-500/40 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.25)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-zinc-900 dark:text-white font-sans dir-rtl relative transition-colors"
+            exit={{ opacity: 0, y: 40, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            className="fixed inset-x-3 bottom-3 top-16 sm:top-auto sm:inset-x-auto sm:bottom-24 sm:right-6 sm:left-auto sm:w-[420px] sm:h-[580px] sm:max-h-[82vh] z-[99999] bg-white dark:bg-[#0A0A0C] border border-amber-500/40 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col overflow-hidden text-zinc-900 dark:text-white font-sans dir-rtl transition-colors"
             dir="rtl"
           >
             {/* Header */}
