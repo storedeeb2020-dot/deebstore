@@ -425,10 +425,23 @@ export function ChatBot() {
     }
   }, [isOpen, products.length]);
 
+  // Lock background page scrolling when ChatBot is open
+  useEffect(() => {
+    if (isOpen) {
+      const origBodyOverflow = document.body.style.overflow;
+      const origHtmlOverflow = document.documentElement.style.overflow;
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+
+      return () => {
+        document.body.style.overflow = origBodyOverflow;
+        document.documentElement.style.overflow = origHtmlOverflow;
+      };
+    }
+  }, [isOpen]);
+
   const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    } else if (chatContainerRef.current) {
+    if (chatContainerRef.current) {
       chatContainerRef.current.scrollTo({
         top: chatContainerRef.current.scrollHeight,
         behavior: "smooth",
