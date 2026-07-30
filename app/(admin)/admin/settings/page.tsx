@@ -61,7 +61,7 @@ export default function AdminSettingsPage() {
   const [testingTelegram, setTestingTelegram] = useState(false);
   const [newAuthorizedId, setNewAuthorizedId] = useState("");
 
-  const addAuthorizedId = () => {
+  const addAuthorizedId = async () => {
     const cleanId = newAuthorizedId.trim();
     if (!cleanId) {
       toast.error("يرجى كتابة رقم الـ Chat ID أولاً");
@@ -80,10 +80,17 @@ export default function AdminSettingsPage() {
     const updatedIds = [...currentIds, cleanId].join(", ");
     setSettings((prev) => ({ ...prev, telegramChatId: updatedIds }));
     setNewAuthorizedId("");
-    toast.success(`تمت إضافة الـ ID (${cleanId}) لقائمة الحسابات المصرح لها 📲`);
+
+    try {
+      await updateSiteSettings({ telegramChatId: updatedIds });
+      toast.success(`تمت إضافة الـ ID (${cleanId}) وحفظه بنجاح 📲`);
+    } catch (err) {
+      console.error("Failed to save authorized ID to Firestore:", err);
+      toast.error("فشل حفظ الـ ID الجديد في قاعدة البيانات");
+    }
   };
 
-  const removeAuthorizedId = (idToRemove: string) => {
+  const removeAuthorizedId = async (idToRemove: string) => {
     const currentIds = (settings.telegramChatId || "")
       .split(/[\s,;]+/)
       .map((id) => id.trim())
@@ -91,7 +98,14 @@ export default function AdminSettingsPage() {
 
     const updatedIds = currentIds.filter((id) => id !== idToRemove).join(", ");
     setSettings((prev) => ({ ...prev, telegramChatId: updatedIds }));
-    toast.success(`تم حذف الـ ID (${idToRemove}) من القائمة المصرح لها`);
+
+    try {
+      await updateSiteSettings({ telegramChatId: updatedIds });
+      toast.success(`تم حذف الـ ID (${idToRemove}) وحفظ التعديل 🗑️`);
+    } catch (err) {
+      console.error("Failed to update authorized IDs in Firestore:", err);
+      toast.error("فشل تعديل القائمة في قاعدة البيانات");
+    }
   };
 
   const handleTestTelegram = async () => {
@@ -800,7 +814,6 @@ export default function AdminSettingsPage() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     className="w-full px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono placeholder-zinc-400 focus:outline-none focus:border-[#FF274B] font-bold"
                   />
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">يجب أن تتكون من 6 أحرف/أرقام على الأقل.</p>
                 </div>
 
                 <div>
