@@ -3,9 +3,10 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowLeft, RotateCcw, Sparkles, LayoutGrid } from "lucide-react";
 import { getCategories, subscribeToLiveProducts } from "@/lib/firebase/firestore";
 import { ProductGrid } from "@/components/products/ProductGrid";
+import { CollectionsGrid } from "@/components/home/CollectionsGrid";
 import { Spinner } from "@/components/ui/Spinner";
 import type { Product } from "@/types/product";
 import type { Category } from "@/types/category";
@@ -89,58 +90,88 @@ function ShopContent() {
         </p>
       </div>
 
-      {/* Filter & Search Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 pb-6 border-b border-gray-100 dark:border-zinc-900">
-        {/* Search */}
-        <input
-          type="text"
-          placeholder="ابحث عن منتج..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full sm:w-64 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-zinc-900 border border-transparent focus:border-black dark:focus:border-white text-xs font-semibold focus:outline-none"
-        />
+      {/* Visual Category Cards Grid (When all categories or requested) */}
+      {selectedCategory === "all" && (
+        <div className="mb-12 border-b border-zinc-200/60 dark:border-zinc-800/60 pb-8">
+          <CollectionsGrid />
+        </div>
+      )}
 
-        {/* Category Pills */}
-        <div className="flex flex-wrap items-center gap-2 overflow-x-auto justify-center sm:justify-end w-full">
+      {/* Top Controls: Back button & Search */}
+      <div className="space-y-4 mb-8 pb-6 border-b border-gray-100 dark:border-zinc-900">
+        {/* Back Button Row (Top) */}
+        <AnimatePresence>
           {selectedCategory !== "all" && (
-            <button
-              type="button"
-              onClick={() => handleCategorySelect("all")}
-              className="px-3.5 py-2 rounded-full text-xs font-extrabold bg-red-500/10 hover:bg-red-500/20 text-[#FF274B] border border-[#FF274B]/30 transition-all cursor-pointer inline-flex items-center gap-1.5 active:scale-95 shadow-xs shrink-0"
-              title="إلغاء التحديد والعودة لكافة المنتجات"
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              className="flex items-center justify-between flex-wrap gap-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5"
             >
-              <RotateCcw size={13} />
-              <span>العودة للكل</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => handleCategorySelect("all")}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              selectedCategory === "all"
-                ? "bg-amber-500 text-black font-black shadow-lg shadow-amber-500/20 scale-105"
-                : "bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white"
-            }`}
-          >
-            الكل / All
-          </button>
-          {categories.map((cat) => {
-            const catSlug = cat.slug || cat.name;
-            const isActive = selectedCategory === catSlug;
-            return (
               <button
-                key={cat.id}
-                onClick={() => handleCategorySelect(catSlug)}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                  isActive
+                type="button"
+                onClick={() => {
+                  handleCategorySelect("all");
+                  router.push("/#categories");
+                }}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-yellow-300 text-black font-black text-xs transition-all cursor-pointer inline-flex items-center gap-2 active:scale-95 shadow-md"
+              >
+                <LayoutGrid size={15} />
+                <span>العودة لاختيار الأقسام (الكروت الكبيرة) 🖼️</span>
+              </button>
+              <span className="text-xs text-zinc-400 font-bold">
+                أنت حالياً في قسم: <strong className="text-amber-400 font-black">{activeCategoryName}</strong> ({filteredProducts.length} منتج)
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Search */}
+          <input
+            type="text"
+            placeholder="ابحث عن منتج..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full sm:w-64 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-zinc-900 border border-transparent focus:border-black dark:focus:border-white text-xs font-semibold focus:outline-none shrink-0"
+          />
+
+          {/* Category Pills (Single Line Horizontal Scroll with Fade Hint) */}
+          <div className="relative w-full sm:w-auto flex-1 overflow-hidden">
+            {/* Scroll Hint Fade Masks */}
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white dark:from-black to-transparent z-10" />
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-black to-transparent z-10" />
+
+            <div className="flex items-center gap-2 overflow-x-auto flex-nowrap whitespace-nowrap scrollbar-none scroll-smooth py-1 px-1">
+              <button
+                onClick={() => handleCategorySelect("all")}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                  selectedCategory === "all"
                     ? "bg-amber-500 text-black font-black shadow-lg shadow-amber-500/20 scale-105"
                     : "bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white"
                 }`}
               >
-                {cat.nameAr || cat.name}
+                الكل / All
               </button>
-            );
-          })}
+              {categories.map((cat) => {
+                const catSlug = cat.slug || cat.name;
+                const isActive = selectedCategory === catSlug;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategorySelect(catSlug)}
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                      isActive
+                        ? "bg-amber-500 text-black font-black shadow-lg shadow-amber-500/20 scale-105"
+                        : "bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white"
+                    }`}
+                  >
+                    {cat.nameAr || cat.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
