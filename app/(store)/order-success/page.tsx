@@ -3,60 +3,80 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { CheckCircle, Package, ArrowRight } from "lucide-react";
-import { Suspense } from "react";
+import { CheckCircle, Package, ArrowRight, Copy } from "lucide-react";
+import { toast } from "sonner";
+import { Suspense, useState } from "react";
 
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyOrderId = () => {
+    if (!orderId) return;
+    navigator.clipboard.writeText(orderId);
+    setCopied(true);
+    toast.success(`تم نسخ رقم الطلب (${orderId.slice(0, 8).toUpperCase()}) بنجاح 📋`);
+    setTimeout(() => setCopied(false), 2500);
+  };
 
   return (
-    <div className="pt-20 min-h-screen flex items-center justify-center px-4">
+    <div className="pt-20 min-h-screen flex items-center justify-center px-4 font-['Tajawal',sans-serif]" dir="rtl">
       <motion.div
-        className="text-center max-w-md"
+        className="text-center max-w-md w-full"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
       >
         {/* Success Icon */}
         <motion.div
-          className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
+          className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/20"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 500, damping: 30 }}
         >
-          <CheckCircle className="text-green-600" size={36} />
+          <CheckCircle className="text-emerald-500" size={40} />
         </motion.div>
 
         <motion.h1
-          className="text-3xl font-bold mb-3"
+          className="text-2xl sm:text-3xl font-black mb-3 text-zinc-900 dark:text-white"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          Order Placed! 🎉
+          تم تسجيل طلبك بنجاح! 🎉
         </motion.h1>
 
         <motion.p
-          className="text-gray-500 mb-2"
+          className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mb-2 font-bold"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          Thank you for your order. We&apos;ll start processing it right away.
+          شكراً لثقتك بـ ديب ستور. جاري مراجعة وتجهيز طلبك فوراً 🐺
         </motion.p>
 
         {orderId && (
           <motion.div
-            className="bg-gray-50 rounded-xl px-4 py-3 mb-6 mt-4"
+            className="bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-2xl px-5 py-3.5 mb-6 mt-4 flex items-center justify-between shadow-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <p className="text-xs text-gray-400 mb-1">Order ID</p>
-            <p className="font-mono text-sm font-semibold text-gray-700">
-              #{orderId.slice(0, 12).toUpperCase()}
-            </p>
+            <div className="text-right">
+              <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">كود/رقم الطلب (Order ID)</p>
+              <p className="font-mono text-sm font-black text-[#FF274B] mt-0.5">
+                #{orderId.slice(0, 12).toUpperCase()}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyOrderId}
+              className="px-3 py-1.5 rounded-xl bg-[#FF274B]/10 hover:bg-[#FF274B]/20 text-[#FF274B] border border-[#FF274B]/30 text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-xs"
+            >
+              <Copy size={13} />
+              <span>{copied ? "تم النسخ!" : "نسخ الكود"}</span>
+            </button>
           </motion.div>
         )}
 

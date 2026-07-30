@@ -12,6 +12,7 @@ import {
   Download,
   MessageCircle,
   ImageOff,
+  Copy,
 } from "lucide-react";
 import { getOrders, updateOrderStatus, deleteOrder } from "@/lib/firebase/firestore";
 import { formatPrice, formatDate } from "@/lib/utils";
@@ -383,8 +384,18 @@ export default function AdminOrdersPage() {
                       <p className="font-mono font-bold text-zinc-900 dark:text-white mt-0.5 flex items-center gap-2">
                         {selectedOrder.phone}
                         <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(selectedOrder.phone || "");
+                            toast.success("تم نسخ رقم هاتف العميل 📋");
+                          }}
+                          className="text-zinc-400 hover:text-[#FF274B] transition-colors p-1"
+                          title="نسخ رقم الهاتف"
+                        >
+                          <Copy size={13} />
+                        </button>
+                        <button
                           onClick={() => handleWhatsAppScreenshot(selectedOrder)}
-                          className="text-emerald-500 hover:text-emerald-400 transition-colors"
+                          className="text-emerald-500 hover:text-emerald-400 transition-colors p-1"
                           title="محادثة واتساب"
                         >
                           <MessageCircle size={15} />
@@ -404,7 +415,19 @@ export default function AdminOrdersPage() {
                     {selectedOrder.transferPhone && (
                       <div>
                         <p className="text-zinc-500 font-bold">رقم المحول منه</p>
-                        <p className="font-mono font-black text-[#FF274B] mt-0.5">{selectedOrder.transferPhone}</p>
+                        <p className="font-mono font-black text-[#FF274B] mt-0.5 flex items-center gap-1.5">
+                          <span>{selectedOrder.transferPhone}</span>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(selectedOrder.transferPhone || "");
+                              toast.success("تم نسخ رقم المحول منه 📋");
+                            }}
+                            className="text-zinc-400 hover:text-[#FF274B] transition-colors p-1"
+                            title="نسخ رقم المحول منه"
+                          >
+                            <Copy size={13} />
+                          </button>
+                        </p>
                       </div>
                     )}
                     <div className="col-span-2 border-t border-zinc-200 dark:border-white/[0.06] pt-3">
@@ -493,9 +516,19 @@ export default function AdminOrdersPage() {
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-black text-xs text-zinc-900 dark:text-white truncate">{item.productName}</p>
                             {item.sku && (
-                              <span className="px-2 py-0.5 rounded-md bg-[#FF274B]/10 text-[#FF274B] font-mono text-[10px] font-bold border border-[#FF274B]/20">
-                                كود: {item.sku}
-                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(item.sku || "");
+                                  toast.success(`تم نسخ كود المنتج (${item.sku}) بنجاح 📋`);
+                                }}
+                                className="px-2 py-0.5 rounded-md bg-[#FF274B]/10 hover:bg-[#FF274B]/20 text-[#FF274B] font-mono text-[10px] font-bold border border-[#FF274B]/30 inline-flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-xs"
+                                title="اضغط لنسخ كود المنتج"
+                              >
+                                <Copy size={11} />
+                                <span>كود: {item.sku}</span>
+                              </button>
                             )}
                           </div>
                           <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider mt-0.5">

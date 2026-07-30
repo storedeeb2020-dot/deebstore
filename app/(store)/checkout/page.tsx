@@ -19,6 +19,8 @@ import {
   ChevronRight,
   ShieldCheck,
   ShoppingBag,
+  Copy,
+  Check,
 } from "lucide-react";
 import { useCart } from "@/features/cart/CartProvider";
 import { createOrder, subscribeToShippingRates, subscribeToSiteSettings } from "@/lib/firebase/firestore";
@@ -63,6 +65,15 @@ export default function CheckoutPage() {
   const [instapayUsername, setInstapayUsername] = useState("@deepstore");
   const [onlinePaymentEnabled, setOnlinePaymentEnabled] = useState<boolean>(true);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const handleCopyText = (text: string, label: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedField(label);
+    toast.success(`تم نسخ ${label} (${text}) بنجاح 📋`);
+    setTimeout(() => setCopiedField(null), 2500);
+  };
 
   const {
     register,
@@ -493,7 +504,21 @@ export default function CheckoutPage() {
                           <VodafoneCashIcon size={32} />
                           <div className="text-right flex-1 min-w-0">
                             <p className="text-xs font-black">فودافون كاش</p>
-                            <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 dir-ltr inline-block" dir="ltr">{vodafoneNumber}</p>
+                            <div className="flex items-center justify-between gap-1 mt-1">
+                              <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 dir-ltr inline-block truncate" dir="ltr">{vodafoneNumber}</p>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopyText(vodafoneNumber, "رقم فودافون كاش");
+                                }}
+                                className="px-1.5 py-0.5 rounded-md bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 transition-all inline-flex items-center gap-1 text-[9px] font-bold shrink-0 cursor-pointer"
+                                title="نسخ رقم فودافون كاش"
+                              >
+                                {copiedField === "رقم فودافون كاش" ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                                <span>{copiedField === "رقم فودافون كاش" ? "تم" : "نسخ"}</span>
+                              </button>
+                            </div>
                           </div>
                         </button>
 
@@ -509,7 +534,21 @@ export default function CheckoutPage() {
                           <InstaPayIcon size={32} />
                           <div className="text-right flex-1 min-w-0">
                             <p className="text-xs font-black">انستاباي</p>
-                            <p className="text-[10px] font-mono text-purple-600 dark:text-purple-300 font-bold dir-ltr inline-block truncate" dir="ltr">{instapayUsername}</p>
+                            <div className="flex items-center justify-between gap-1 mt-1">
+                              <p className="text-[10px] font-mono text-purple-600 dark:text-purple-300 font-bold dir-ltr inline-block truncate" dir="ltr">{instapayUsername}</p>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopyText(instapayUsername, "معرف انستاباي");
+                                }}
+                                className="px-1.5 py-0.5 rounded-md bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/20 transition-all inline-flex items-center gap-1 text-[9px] font-bold shrink-0 cursor-pointer"
+                                title="نسخ معرف انستاباي"
+                              >
+                                {copiedField === "معرف انستاباي" ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                                <span>{copiedField === "معرف انستاباي" ? "تم" : "نسخ"}</span>
+                              </button>
+                            </div>
                           </div>
                         </button>
                       </div>
@@ -520,8 +559,19 @@ export default function CheckoutPage() {
                           <ChevronRight size={14} className="text-amber-600 dark:text-amber-400" />
                           خطوات التحويل:
                         </p>
-                        <ol className="text-xs space-y-1 list-decimal list-inside font-medium text-amber-800 dark:text-amber-300">
-                          <li>حوّل المبلغ ({formatPrice(finalOrderTotal)}) على: <span className="font-black font-mono dir-ltr inline-block px-1 text-[#FF274B]" dir="ltr">{onlineNumberDisplay}</span></li>
+                        <ol className="text-xs space-y-2 list-decimal list-inside font-medium text-amber-800 dark:text-amber-300">
+                          <li>
+                            حوّل المبلغ ({formatPrice(finalOrderTotal)}) على:{" "}
+                            <span className="font-black font-mono dir-ltr inline-block px-1 text-[#FF274B]" dir="ltr">{onlineNumberDisplay}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyText(onlineNumberDisplay, "رقم/حساب التحويل")}
+                              className="mr-2 px-2.5 py-0.5 rounded-lg bg-[#FF274B]/10 hover:bg-[#FF274B]/20 text-[#FF274B] border border-[#FF274B]/30 transition-all inline-flex items-center gap-1 text-[11px] font-bold cursor-pointer active:scale-95 shadow-xs"
+                            >
+                              {copiedField === "رقم/حساب التحويل" ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+                              <span>{copiedField === "رقم/حساب التحويل" ? "تم النسخ!" : "نسخ الرقم"}</span>
+                            </button>
+                          </li>
                           <li>اكتب رقم هاتفك الذي قمت بالتحويل منه</li>
                           <li>ارفع صورة إيصال التحويل للتأكيد</li>
                         </ol>
@@ -627,9 +677,25 @@ export default function CheckoutPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-black text-zinc-900 dark:text-zinc-100 truncate">{pName}</p>
-                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
-                            {pColorName} / {pSize} × {qty}
-                          </p>
+                          <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
+                              {pColorName} / {pSize} × {qty}
+                            </p>
+                            {item.product?.sku && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopyText(item.product.sku, "كود المنتج");
+                                }}
+                                className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-[#FF274B]/20 text-[#FF274B] font-mono text-[9px] font-bold border border-zinc-200 dark:border-zinc-700/80 inline-flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                                title="اضغط لنسخ كود المنتج"
+                              >
+                                {copiedField === "كود المنتج" ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
+                                <span>كود: {item.product.sku}</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
                         <span className="text-xs font-black text-[#FF274B]">{formatPrice(price * qty)}</span>
                       </div>
