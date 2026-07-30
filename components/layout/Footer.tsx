@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Instagram, Facebook, MessageCircle } from "lucide-react";
-import { getSiteSettings, subscribeToSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
+import { subscribeToSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
 import { SocialIconButton } from "@/components/ui/AnimatedButton";
 import { motion } from "framer-motion";
 

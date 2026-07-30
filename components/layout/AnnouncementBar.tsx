@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Megaphone } from "lucide-react";
-import { getSiteSettings, subscribeToSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
+import { subscribeToSiteSettings, type SiteSettings } from "@/lib/firebase/firestore";
 
 export function AnnouncementBar() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);

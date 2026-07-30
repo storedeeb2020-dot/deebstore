@@ -195,14 +195,19 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
     setCustomSizeInputs((prev) => ({ ...prev, [variantIndex]: "" }));
   };
 
-  const updateSizeStock = (variantIndex: number, sizeIndex: number, stock: number) => {
+  const updateSizeStock = (variantIndex: number, sizeIndex: number, rawStock: number | string) => {
     const currentVariants = [...(watch("variants") || [])];
     const variant = currentVariants[variantIndex];
     if (!variant) return;
 
     const sizes = [...(variant.sizes || [])];
     if (sizes[sizeIndex]) {
-      sizes[sizeIndex].stock = Math.max(0, stock);
+      if (rawStock === "") {
+        sizes[sizeIndex].stock = "" as any;
+      } else {
+        const parsed = parseInt(String(rawStock), 10);
+        sizes[sizeIndex].stock = isNaN(parsed) ? ("" as any) : Math.max(0, parsed);
+      }
     }
     currentVariants[variantIndex] = { ...variant, sizes };
     setValue("variants", currentVariants, { shouldValidate: true });
@@ -240,8 +245,17 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
       finalSalePrice = data.price; // e.g. 950 (discounted actual selling price)
     }
 
+    const sanitizedVariants = (data.variants || []).map((v) => ({
+      ...v,
+      sizes: (v.sizes || []).map((s) => ({
+        ...s,
+        stock: typeof s.stock === "number" ? s.stock : parseInt(String(s.stock), 10) || 0,
+      })),
+    }));
+
     const payload = {
       ...data,
+      variants: sanitizedVariants,
       price: finalPrice,
       salePrice: finalSalePrice,
     };
@@ -619,9 +633,10 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
                           <span className="text-zinc-500 text-[10px] font-bold">الكمية:</span>
                           <input
                             type="number"
-                            value={sizeItem.stock}
-                            onChange={(e) => updateSizeStock(vIdx, sIdx, parseInt(e.target.value) || 0)}
-                            className="w-12 px-1 py-0.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded text-center text-xs text-zinc-900 dark:text-white font-mono focus:outline-none focus:border-[#FF274B] font-bold"
+                            value={sizeItem.stock === undefined || sizeItem.stock === null ? "" : sizeItem.stock}
+                            onChange={(e) => updateSizeStock(vIdx, sIdx, e.target.value)}
+                            onFocus={(e) => e.target.select()}
+                            className="w-14 px-1.5 py-1 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-lg text-center text-xs text-zinc-900 dark:text-white font-mono focus:outline-none focus:border-[#FF274B] font-bold"
                           />
                           <button
                             type="button"

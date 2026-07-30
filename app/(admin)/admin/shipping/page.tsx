@@ -30,9 +30,14 @@ export default function AdminShippingPage() {
     loadRates();
   }, []);
 
-  const handlePriceChange = (id: string, newPrice: number) => {
+  const handlePriceChange = (id: string, newPrice: number | string) => {
     setRates((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, price: Math.max(0, newPrice) } : r))
+      prev.map((r) => {
+        if (r.id !== id) return r;
+        if (newPrice === "") return { ...r, price: "" as any };
+        const parsed = parseFloat(String(newPrice));
+        return { ...r, price: isNaN(parsed) ? ("" as any) : Math.max(0, parsed) };
+      })
     );
   };
 
@@ -45,7 +50,11 @@ export default function AdminShippingPage() {
   const handleSaveAll = async () => {
     setSaving(true);
     try {
-      await updateShippingRates(rates);
+      const sanitizedRates = rates.map((r) => ({
+        ...r,
+        price: typeof r.price === "number" ? r.price : parseFloat(String(r.price)) || 0,
+      }));
+      await updateShippingRates(sanitizedRates);
       toast.success("تم حفظ أسعار الشحن لجميع المحافظات بنجاح 🐺");
     } catch (err) {
       console.error(err);
@@ -140,8 +149,9 @@ export default function AdminShippingPage() {
                       <div className="flex items-center gap-2">
                         <input
                           type="number"
-                          value={rate.price}
-                          onChange={(e) => handlePriceChange(rate.id, parseFloat(e.target.value) || 0)}
+                          value={rate.price === undefined || rate.price === null ? "" : rate.price}
+                          onChange={(e) => handlePriceChange(rate.id, e.target.value)}
+                          onFocus={(e) => e.target.select()}
                           className="w-28 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-white/[0.08] bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono font-black text-xs outline-none focus:border-[#FF274B]"
                         />
                         <span className="text-[11px] font-bold text-zinc-400">ج.م</span>
