@@ -26,9 +26,15 @@ import { formatPrice } from "@/lib/utils";
 import { checkoutSchema, type CheckoutFormData } from "@/lib/validations/checkout.schema";
 import { Input } from "@/components/ui/Input";
 import { Spinner } from "@/components/ui/Spinner";
-import type { PaymentMethod, OrderItem, CreateOrderInput } from "@/types/order";
 import { TruckSubmitButton } from "@/components/checkout/TruckSubmitButton";
 import type { GovernorateRate } from "@/constants/governorates";
+import {
+  VodafoneCashIcon,
+  InstaPayIcon,
+  CashOnDeliveryIcon,
+  OnlineTransferIcon,
+  PaymentHeaderIcon,
+} from "@/components/checkout/PaymentIcons";
 
 type PaymentCategory = "cash" | "online";
 type OnlineMethod = "vodafone_cash" | "instapay";
@@ -112,10 +118,15 @@ export default function CheckoutPage() {
     // Subscribe to site settings in real-time (Vodafone Cash & InstaPay & payment toggles)
     const unsubscribeSettings = subscribeToSiteSettings((s) => {
       if (s) {
-        if (s.vodafoneCash) setVodafoneNumber(s.vodafoneCash);
-        else if (s.storePhone) setVodafoneNumber(s.storePhone);
+        if (s.vodafoneCash !== undefined) {
+          setVodafoneNumber(s.vodafoneCash || s.storePhone || "");
+        } else if (s.storePhone) {
+          setVodafoneNumber(s.storePhone);
+        }
 
-        if (s.instapayUsername) setInstapayUsername(s.instapayUsername);
+        if (s.instapayUsername !== undefined) {
+          setInstapayUsername(s.instapayUsername || "");
+        }
 
         if (s.onlinePaymentEnabled !== undefined) {
           setOnlinePaymentEnabled(s.onlinePaymentEnabled);
@@ -401,9 +412,7 @@ export default function CheckoutPage() {
                 transition={{ delay: 0.12 }}
               >
                 <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-800/80 pb-4">
-                  <div className="w-10 h-10 rounded-2xl bg-[#FF274B]/10 border border-[#FF274B]/20 flex items-center justify-center text-[#FF274B] shrink-0">
-                    <CreditCard size={20} />
-                  </div>
+                  <PaymentHeaderIcon size={42} />
                   <div>
                     <h2 className="font-black text-base sm:text-lg text-zinc-900 dark:text-white">
                       طريقة الدفع
@@ -416,6 +425,19 @@ export default function CheckoutPage() {
                 <div className={`grid ${onlinePaymentEnabled ? "grid-cols-2" : "grid-cols-1"} gap-3.5`}>
                   <button
                     type="button"
+                    onClick={() => setPaymentCategory("online")}
+                    className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                      paymentCategory === "online"
+                        ? "border-[#FF274B] bg-[#FF274B]/[0.05] dark:bg-[#FF274B]/10 text-[#FF274B] shadow-md shadow-[#FF274B]/10 ring-1 ring-[#FF274B]"
+                        : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                    }`}
+                  >
+                    <OnlineTransferIcon size={32} />
+                    <span className="text-xs font-black">دفع أونلاين (تحويل)</span>
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => setPaymentCategory("cash")}
                     className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                       paymentCategory === "cash"
@@ -423,24 +445,9 @@ export default function CheckoutPage() {
                         : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900"
                     }`}
                   >
-                    <Banknote size={24} className={paymentCategory === "cash" ? "text-[#FF274B]" : "text-zinc-400"} />
+                    <CashOnDeliveryIcon size={32} />
                     <span className="text-xs font-black">الدفع عند الاستلام</span>
                   </button>
-
-                  {onlinePaymentEnabled && (
-                    <button
-                      type="button"
-                      onClick={() => setPaymentCategory("online")}
-                      className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
-                        paymentCategory === "online"
-                          ? "border-[#FF274B] bg-[#FF274B]/[0.05] dark:bg-[#FF274B]/10 text-[#FF274B] shadow-md shadow-[#FF274B]/10 ring-1 ring-[#FF274B]"
-                          : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                      }`}
-                    >
-                      <CreditCard size={24} className={paymentCategory === "online" ? "text-[#FF274B]" : "text-zinc-400"} />
-                      <span className="text-xs font-black">دفع أونلاين (تحويل)</span>
-                    </button>
-                  )}
                 </div>
 
                 {/* Cash confirmation */}
@@ -482,10 +489,10 @@ export default function CheckoutPage() {
                               : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300"
                           }`}
                         >
-                          <Smartphone size={18} className={onlineMethod === "vodafone_cash" ? "text-red-500" : "text-zinc-400"} />
-                          <div className="text-right">
+                          <VodafoneCashIcon size={32} />
+                          <div className="text-right flex-1 min-w-0">
                             <p className="text-xs font-black">فودافون كاش</p>
-                            <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">{vodafoneNumber}</p>
+                            <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 dir-ltr inline-block" dir="ltr">{vodafoneNumber}</p>
                           </div>
                         </button>
 
@@ -498,10 +505,10 @@ export default function CheckoutPage() {
                               : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300"
                           }`}
                         >
-                          <CreditCard size={18} className={onlineMethod === "instapay" ? "text-purple-500" : "text-zinc-400"} />
-                          <div className="text-right">
+                          <InstaPayIcon size={32} />
+                          <div className="text-right flex-1 min-w-0">
                             <p className="text-xs font-black">انستاباي</p>
-                            <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">{instapayUsername}</p>
+                            <p className="text-[10px] font-mono text-purple-600 dark:text-purple-300 font-bold dir-ltr inline-block truncate" dir="ltr">{instapayUsername}</p>
                           </div>
                         </button>
                       </div>
@@ -513,7 +520,7 @@ export default function CheckoutPage() {
                           خطوات التحويل:
                         </p>
                         <ol className="text-xs space-y-1 list-decimal list-inside font-medium text-amber-800 dark:text-amber-300">
-                          <li>حوّل المبلغ ({formatPrice(finalOrderTotal)}) على: <span className="font-black font-mono">{onlineNumberDisplay}</span></li>
+                          <li>حوّل المبلغ ({formatPrice(finalOrderTotal)}) على: <span className="font-black font-mono dir-ltr inline-block px-1 text-[#FF274B]" dir="ltr">{onlineNumberDisplay}</span></li>
                           <li>اكتب رقم هاتفك الذي قمت بالتحويل منه</li>
                           <li>ارفع صورة إيصال التحويل للتأكيد</li>
                         </ol>
