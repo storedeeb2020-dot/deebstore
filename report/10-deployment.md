@@ -57,3 +57,9 @@ npm run start
   ```javascript
   const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
   ```
+
+---
+
+### 💻 التطوير والتصميم
+> **الموقع مصمم بواسطة: يوسف أسامة**  
+> 📞 **رقم الهاتف:** `01020451206`

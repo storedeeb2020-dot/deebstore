@@ -64,3 +64,9 @@ export default nextConfig;
 
 ### Firebase Config (`lib/firebase/config.ts`)
 يتحقق من وجود إعدادات Firebase ويقوم بتهيئة تطبيق Firebase للعميل (Client SDK) وقاعدة البيانات `db` والمصادقة `auth`.
+
+---
+
+### 💻 التطوير والتصميم
+> **الموقع مصمم بواسطة: يوسف أسامة**  
+> 📞 **رقم الهاتف:** `01020451206`

@@ -113,3 +113,9 @@ app/layout.tsx          ← Root (Providers: Cart, Wishlist, Theme, Auth)
   └── (admin)/admin/layout.tsx  ← Admin (Sidebar + AuthGuard)
        └── admin/page.tsx / admin/products/page.tsx / ...
 ```
+
+---
+
+### 💻 التطوير والتصميم
+> **الموقع مصمم بواسطة: يوسف أسامة**  
+> 📞 **رقم الهاتف:** `01020451206`
