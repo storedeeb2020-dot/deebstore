@@ -118,9 +118,8 @@ export default function AdminLayout({
   }, [pathname]);
 
   useEffect(() => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const dateStr = yesterday.toLocaleDateString("ar-EG", {
+    const today = new Date();
+    const dateStr = today.toLocaleDateString("ar-EG", {
       weekday: "long",
       year: "numeric",
       month: "long",

@@ -64,6 +64,9 @@ export default function CheckoutPage() {
   const [vodafoneNumber, setVodafoneNumber] = useState("01000000000");
   const [instapayUsername, setInstapayUsername] = useState("@deepstore");
   const [onlinePaymentEnabled, setOnlinePaymentEnabled] = useState<boolean>(true);
+  const [vodafoneCashEnabled, setVodafoneCashEnabled] = useState<boolean>(true);
+  const [instapayEnabled, setInstapayEnabled] = useState<boolean>(true);
+  const [codEnabled, setCodEnabled] = useState<boolean>(true);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -96,6 +99,11 @@ export default function CheckoutPage() {
   const isEgyptianPhone = (val?: string) =>
     !!val && /^(\+20|0)?1[0-2,5]{1}[0-9]{8}$/.test(val.trim());
 
+  const isVodafoneActive = vodafoneCashEnabled && !!vodafoneNumber;
+  const isInstapayActive = instapayEnabled && !!instapayUsername;
+  const isOnlinePaymentAvailable = onlinePaymentEnabled && (isVodafoneActive || isInstapayActive);
+  const isCodAvailable = codEnabled;
+
   const isFormValid =
     !!watchedName &&
     watchedName.trim().length >= 2 &&
@@ -105,6 +113,7 @@ export default function CheckoutPage() {
     watchedCity.trim().length >= 2 &&
     !!watchedAddress &&
     watchedAddress.trim().length >= 8 &&
+    (isOnlinePaymentAvailable || isCodAvailable) &&
     (paymentCategory === "cash" ||
       (isEgyptianPhone(watchedTransferPhone) && !!screenshotFile));
 
@@ -142,9 +151,18 @@ export default function CheckoutPage() {
 
         if (s.onlinePaymentEnabled !== undefined) {
           setOnlinePaymentEnabled(s.onlinePaymentEnabled);
-          if (!s.onlinePaymentEnabled) {
-            setPaymentCategory("cash");
-          }
+        }
+
+        if (s.vodafoneCashEnabled !== undefined) {
+          setVodafoneCashEnabled(s.vodafoneCashEnabled);
+        }
+
+        if (s.instapayEnabled !== undefined) {
+          setInstapayEnabled(s.instapayEnabled);
+        }
+
+        if (s.codEnabled !== undefined) {
+          setCodEnabled(s.codEnabled);
         }
       }
     });
@@ -154,6 +172,28 @@ export default function CheckoutPage() {
       unsubscribeSettings();
     };
   }, [items, router, setValue, watch]);
+
+  // Auto-switch payment category if currently selected category is disabled
+  useEffect(() => {
+    if (!isOnlinePaymentAvailable && paymentCategory === "online") {
+      if (isCodAvailable) {
+        setPaymentCategory("cash");
+      }
+    } else if (!isCodAvailable && paymentCategory === "cash") {
+      if (isOnlinePaymentAvailable) {
+        setPaymentCategory("online");
+      }
+    }
+  }, [isOnlinePaymentAvailable, isCodAvailable, paymentCategory]);
+
+  // Auto-switch online sub-method if currently selected sub-method is disabled
+  useEffect(() => {
+    if (onlineMethod === "vodafone_cash" && !isVodafoneActive && isInstapayActive) {
+      setOnlineMethod("instapay");
+    } else if (onlineMethod === "instapay" && !isInstapayActive && isVodafoneActive) {
+      setOnlineMethod("vodafone_cash");
+    }
+  }, [onlineMethod, isVodafoneActive, isInstapayActive]);
 
   // Sync paymentMethod field with category/method state
   useEffect(() => {
@@ -434,37 +474,47 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Category: Cash or Online */}
-                <div className={`grid ${onlinePaymentEnabled ? "grid-cols-2" : "grid-cols-1"} gap-3.5`}>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentCategory("online")}
-                    className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
-                      paymentCategory === "online"
-                        ? "border-[#FF274B] bg-[#FF274B]/[0.05] dark:bg-[#FF274B]/10 text-[#FF274B] shadow-md shadow-[#FF274B]/10 ring-1 ring-[#FF274B]"
-                        : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                    }`}
-                  >
-                    <OnlineTransferIcon size={32} />
-                    <span className="text-xs font-black">دفع أونلاين (تحويل)</span>
-                  </button>
+                {!isOnlinePaymentAvailable && !isCodAvailable ? (
+                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold text-center">
+                    ⚠️ جميع وسائل الدفع معطلة حالياً للصيانة والتحديث. يرجى التواصل معنا هاتفياً لإتمام طلبك.
+                  </div>
+                ) : (
+                  <div className={`grid ${isOnlinePaymentAvailable && isCodAvailable ? "grid-cols-2" : "grid-cols-1"} gap-3.5`}>
+                    {isOnlinePaymentAvailable && (
+                      <button
+                        type="button"
+                        onClick={() => setPaymentCategory("online")}
+                        className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                          paymentCategory === "online"
+                            ? "border-[#FF274B] bg-[#FF274B]/[0.05] dark:bg-[#FF274B]/10 text-[#FF274B] shadow-md shadow-[#FF274B]/10 ring-1 ring-[#FF274B]"
+                            : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                        }`}
+                      >
+                        <OnlineTransferIcon size={32} />
+                        <span className="text-xs font-black">دفع أونلاين (تحويل)</span>
+                      </button>
+                    )}
 
-                  <button
-                    type="button"
-                    onClick={() => setPaymentCategory("cash")}
-                    className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
-                      paymentCategory === "cash"
-                        ? "border-[#FF274B] bg-[#FF274B]/[0.05] dark:bg-[#FF274B]/10 text-[#FF274B] shadow-md shadow-[#FF274B]/10 ring-1 ring-[#FF274B]"
-                        : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                    }`}
-                  >
-                    <CashOnDeliveryIcon size={32} />
-                    <span className="text-xs font-black">الدفع عند الاستلام</span>
-                  </button>
-                </div>
+                    {isCodAvailable && (
+                      <button
+                        type="button"
+                        onClick={() => setPaymentCategory("cash")}
+                        className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                          paymentCategory === "cash"
+                            ? "border-[#FF274B] bg-[#FF274B]/[0.05] dark:bg-[#FF274B]/10 text-[#FF274B] shadow-md shadow-[#FF274B]/10 ring-1 ring-[#FF274B]"
+                            : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                        }`}
+                      >
+                        <CashOnDeliveryIcon size={32} />
+                        <span className="text-xs font-black">الدفع عند الاستلام</span>
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {/* Cash confirmation */}
                 <AnimatePresence mode="wait">
-                  {paymentCategory === "cash" && (
+                  {paymentCategory === "cash" && isCodAvailable && (
                     <motion.div
                       key="cash"
                       initial={{ opacity: 0, height: 0 }}
@@ -482,7 +532,7 @@ export default function CheckoutPage() {
                   )}
 
                   {/* Online payment sub-options */}
-                  {paymentCategory === "online" && (
+                  {paymentCategory === "online" && isOnlinePaymentAvailable && (
                     <motion.div
                       key="online"
                       initial={{ opacity: 0, height: 0 }}
@@ -491,66 +541,70 @@ export default function CheckoutPage() {
                       className="overflow-hidden space-y-4"
                     >
                       {/* Vodafone / InstaPay choice */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setOnlineMethod("vodafone_cash")}
-                          className={`flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${
-                            onlineMethod === "vodafone_cash"
-                              ? "border-red-500 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 shadow-sm"
-                              : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300"
-                          }`}
-                        >
-                          <VodafoneCashIcon size={32} />
-                          <div className="text-right flex-1 min-w-0">
-                            <p className="text-xs font-black">فودافون كاش</p>
-                            <div className="flex items-center justify-between gap-1 mt-1">
-                              <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 dir-ltr inline-block truncate" dir="ltr">{vodafoneNumber}</p>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCopyText(vodafoneNumber, "رقم فودافون كاش");
-                                }}
-                                className="px-1.5 py-0.5 rounded-md bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 transition-all inline-flex items-center gap-1 text-[9px] font-bold shrink-0 cursor-pointer"
-                                title="نسخ رقم فودافون كاش"
-                              >
-                                {copiedField === "رقم فودافون كاش" ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
-                                <span>{copiedField === "رقم فودافون كاش" ? "تم" : "نسخ"}</span>
-                              </button>
+                      <div className={`grid ${isVodafoneActive && isInstapayActive ? "grid-cols-2" : "grid-cols-1"} gap-3`}>
+                        {isVodafoneActive && (
+                          <button
+                            type="button"
+                            onClick={() => setOnlineMethod("vodafone_cash")}
+                            className={`flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${
+                              onlineMethod === "vodafone_cash"
+                                ? "border-red-500 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 shadow-sm"
+                                : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300"
+                            }`}
+                          >
+                            <VodafoneCashIcon size={32} />
+                            <div className="text-right flex-1 min-w-0">
+                              <p className="text-xs font-black">فودافون كاش</p>
+                              <div className="flex items-center justify-between gap-1 mt-1">
+                                <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 dir-ltr inline-block truncate" dir="ltr">{vodafoneNumber}</p>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCopyText(vodafoneNumber, "رقم فودافون كاش");
+                                  }}
+                                  className="px-1.5 py-0.5 rounded-md bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 transition-all inline-flex items-center gap-1 text-[9px] font-bold shrink-0 cursor-pointer"
+                                  title="نسخ رقم فودافون كاش"
+                                >
+                                  {copiedField === "رقم فودافون كاش" ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                                  <span>{copiedField === "رقم فودافون كاش" ? "تم" : "نسخ"}</span>
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        </button>
+                          </button>
+                        )}
 
-                        <button
-                          type="button"
-                          onClick={() => setOnlineMethod("instapay")}
-                          className={`flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${
-                            onlineMethod === "instapay"
-                              ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 shadow-sm"
-                              : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300"
-                          }`}
-                        >
-                          <InstaPayIcon size={32} />
-                          <div className="text-right flex-1 min-w-0">
-                            <p className="text-xs font-black">انستاباي</p>
-                            <div className="flex items-center justify-between gap-1 mt-1">
-                              <p className="text-[10px] font-mono text-purple-600 dark:text-purple-300 font-bold dir-ltr inline-block truncate" dir="ltr">{instapayUsername}</p>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCopyText(instapayUsername, "معرف انستاباي");
-                                }}
-                                className="px-1.5 py-0.5 rounded-md bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/20 transition-all inline-flex items-center gap-1 text-[9px] font-bold shrink-0 cursor-pointer"
-                                title="نسخ معرف انستاباي"
-                              >
-                                {copiedField === "معرف انستاباي" ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
-                                <span>{copiedField === "معرف انستاباي" ? "تم" : "نسخ"}</span>
-                              </button>
+                        {isInstapayActive && (
+                          <button
+                            type="button"
+                            onClick={() => setOnlineMethod("instapay")}
+                            className={`flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${
+                              onlineMethod === "instapay"
+                                ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 shadow-sm"
+                                : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300"
+                            }`}
+                          >
+                            <InstaPayIcon size={32} />
+                            <div className="text-right flex-1 min-w-0">
+                              <p className="text-xs font-black">انستاباي</p>
+                              <div className="flex items-center justify-between gap-1 mt-1">
+                                <p className="text-[10px] font-mono text-purple-600 dark:text-purple-300 font-bold dir-ltr inline-block truncate" dir="ltr">{instapayUsername}</p>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCopyText(instapayUsername, "معرف انستاباي");
+                                  }}
+                                  className="px-1.5 py-0.5 rounded-md bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/20 transition-all inline-flex items-center gap-1 text-[9px] font-bold shrink-0 cursor-pointer"
+                                  title="نسخ معرف انستاباي"
+                                >
+                                  {copiedField === "معرف انستاباي" ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                                  <span>{copiedField === "معرف انستاباي" ? "تم" : "نسخ"}</span>
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        </button>
+                          </button>
+                        )}
                       </div>
 
                       {/* Transfer instructions */}
