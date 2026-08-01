@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { ShoppingBag, Menu, X, Heart, Sun, Moon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useScroll } from "@/hooks/useScroll";
 import { useCart } from "@/features/cart/CartProvider";
 import { useWishlist } from "@/features/wishlist/WishlistProvider";
@@ -22,11 +23,16 @@ const navLinks = [
 ];
 
 export function Header() {
+  const pathname = usePathname();
   const { scrolled } = useScroll(40);
   const { totalItems, toggleCart } = useCart();
   const { wishlist, toggleWishlistDrawer } = useWishlist();
   const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   return (
     <>
@@ -156,14 +162,10 @@ export function Header() {
               {/* Mobile Menu Button */}
               <button
                 className={cn(
-                  "p-2 transition-colors rounded-xl hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer",
+                  "p-2 transition-colors rounded-xl hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer relative z-30",
                   "text-zinc-900 dark:text-white hover:text-amber-500"
                 )}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setMobileOpen((prev) => !prev);
-                }}
+                onClick={() => setMobileOpen((prev) => !prev)}
                 aria-label="Toggle menu"
               >
                 {mobileOpen ? <X size={22} className="sm:w-6 sm:h-6" /> : <Menu size={22} className="sm:w-6 sm:h-6" />}

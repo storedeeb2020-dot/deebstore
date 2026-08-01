@@ -331,6 +331,7 @@ export default function AdminLayout({
             <Link
               key={href}
               href={href}
+              onClick={() => setMobileSidebarOpen(false)}
               className={`group flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold transition-all duration-300 relative ${
                 isActive
                   ? "text-white font-extrabold"
