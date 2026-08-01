@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Trash2, Palette, Upload, Ruler, AlertCircle, Plus } from "lucide-react";
+import { Trash2, Palette, Upload, Ruler, AlertCircle, Plus, Minus } from "lucide-react";
 import { toast } from "sonner";
 import { createProduct, updateProduct, getSiteSettings, getCategories, type GlobalSizeChart } from "@/lib/firebase/firestore";
 import { generateSlug, generateSKU } from "@/lib/utils";
@@ -627,27 +627,47 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
                   <div>
                     <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 mb-2">المقاسات الحالية وكميات المخزون المتوفرة لهذا اللون:</label>
                     <div className="flex flex-wrap gap-2">
-                      {variant.sizes?.map((sizeItem, sIdx) => (
-                        <div key={sIdx} className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 border border-[#FF274B]/30 px-3 py-1.5 rounded-xl text-xs shadow-sm">
-                          <span className="font-extrabold text-[#FF274B]">{sizeItem.size}</span>
-                          <span className="text-zinc-500 text-[10px] font-bold">الكمية:</span>
-                          <input
-                            type="number"
-                            value={sizeItem.stock === undefined || sizeItem.stock === null ? "" : sizeItem.stock}
-                            onChange={(e) => updateSizeStock(vIdx, sIdx, e.target.value)}
-                            onFocus={(e) => e.target.select()}
-                            className="w-14 px-1.5 py-1 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-lg text-center text-xs text-zinc-900 dark:text-white font-mono focus:outline-none focus:border-[#FF274B] font-bold"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeSizeFromVariant(vIdx, sIdx)}
-                            className="text-zinc-400 hover:text-red-500 font-bold px-1"
-                            title="حذف هذا المقاس"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
+                      {variant.sizes?.map((sizeItem, sIdx) => {
+                        const currentStockNum = typeof sizeItem.stock === "number" ? sizeItem.stock : parseInt(String(sizeItem.stock), 10) || 0;
+                        return (
+                          <div key={sIdx} className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 border border-[#FF274B]/30 px-2.5 py-1.5 rounded-xl text-xs shadow-sm">
+                            <span className="font-extrabold text-[#FF274B] text-xs min-w-[20px]">{sizeItem.size}</span>
+                            <div className="flex items-center gap-1 bg-zinc-50 dark:bg-zinc-900 rounded-lg p-0.5 border border-zinc-200 dark:border-white/[0.08]">
+                              <button
+                                type="button"
+                                onClick={() => updateSizeStock(vIdx, sIdx, Math.max(0, currentStockNum - 1))}
+                                className="w-6 h-6 rounded-md bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 flex items-center justify-center hover:bg-[#FF274B] hover:text-white transition-colors text-xs font-bold active:scale-95 cursor-pointer shadow-xs"
+                                title="إنقاص القطع"
+                              >
+                                <Minus size={12} />
+                              </button>
+                              <input
+                                type="number"
+                                value={sizeItem.stock === undefined || sizeItem.stock === null ? "" : sizeItem.stock}
+                                onChange={(e) => updateSizeStock(vIdx, sIdx, e.target.value)}
+                                onFocus={(e) => e.target.select()}
+                                className="w-10 px-0.5 py-0.5 bg-transparent text-center text-xs text-zinc-900 dark:text-white font-mono focus:outline-none font-bold"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => updateSizeStock(vIdx, sIdx, currentStockNum + 1)}
+                                className="w-6 h-6 rounded-md bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 flex items-center justify-center hover:bg-[#FF274B] hover:text-white transition-colors text-xs font-bold active:scale-95 cursor-pointer shadow-xs"
+                                title="زيادة القطع"
+                              >
+                                <Plus size={12} />
+                              </button>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeSizeFromVariant(vIdx, sIdx)}
+                              className="text-zinc-400 hover:text-red-500 font-bold px-1 text-sm cursor-pointer"
+                              title="حذف هذا المقاس"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -709,6 +729,25 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Sticky Mobile Save Bar */}
+      <div className="sm:hidden fixed bottom-14 left-0 right-0 z-30 p-3 bg-white/95 dark:bg-[#0E0E10]/95 backdrop-blur-xl border-t border-zinc-200 dark:border-white/[0.08] shadow-[0_-10px_25px_rgba(0,0,0,0.2)] flex items-center justify-between gap-3 font-sans dir-rtl" dir="rtl">
+        <div className="flex flex-col min-w-0 flex-1">
+          <span className="text-[11px] font-black text-zinc-900 dark:text-white truncate">
+            {watch("name") || (productId ? "تعديل بيانات المنتج" : "منتج جديد")}
+          </span>
+          <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold truncate">
+            {saving ? "جاري الحفظ..." : "جاهز للنشر 🐺"}
+          </span>
+        </div>
+        <button
+          type="submit"
+          disabled={saving}
+          className="px-5 py-2.5 bg-gradient-to-r from-[#FF274B] to-amber-500 text-white font-black text-xs rounded-xl shadow-md shadow-[#FF274B]/20 disabled:opacity-50 active:scale-95 transition-all shrink-0 cursor-pointer"
+        >
+          {saving ? "جاري الحفظ..." : productId ? "حفظ التعديلات" : "نشر المنتج 🐺"}
+        </button>
       </div>
     </form>
   );

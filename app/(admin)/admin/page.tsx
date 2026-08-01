@@ -591,46 +591,72 @@ export default function AdminDashboardPage() {
             لا توجد طلبات أخيرًا.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead>
-                <tr className="border-b border-zinc-200 dark:border-white/[0.06] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">
-                  <th className="py-3.5 px-4">رقم الطلب</th>
-                  <th className="py-3.5 px-4">العميل</th>
-                  <th className="py-3.5 px-4">المحافظة</th>
-                  <th className="py-3.5 px-4">الإجمالي</th>
-                  <th className="py-3.5 px-4">الحالة</th>
-                  <th className="py-3.5 px-4">التاريخ</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-white/[0.04]">
-                {recentOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
-                    <td className="py-4 px-4 font-mono font-black text-[#FF274B]">
-                      #{order.id.slice(0, 8)}
-                    </td>
-                    <td className="py-4 px-4 font-bold text-zinc-900 dark:text-white">
-                      {order.customerName}
-                    </td>
-                    <td className="py-4 px-4 text-zinc-600 dark:text-zinc-300">
-                      {order.governorate}
-                    </td>
-                    <td className="py-4 px-4 font-black text-[#FF274B]">
-                      {formatPrice(order.total)}
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.06]">
-                        <span className={`w-2 h-2 rounded-full ${statusDots[order.status] || "bg-zinc-500"}`} />
-                        {statusLabels[order.status] || order.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
-                      {formatDate(order.createdAt)}
-                    </td>
+          <div className="space-y-3">
+            {/* Mobile View Cards */}
+            <div className="space-y-3 sm:hidden">
+              {recentOrders.map((order) => (
+                <div key={order.id} className="bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] rounded-2xl p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-black text-[#FF274B]">#{order.id.slice(0, 8)}</span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.06]">
+                      <span className={`w-2 h-2 rounded-full ${statusDots[order.status] || "bg-zinc-500"}`} />
+                      {statusLabels[order.status] || order.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-zinc-900 dark:text-white">{order.customerName}</span>
+                    <span className="font-black text-[#FF274B] font-mono">{formatPrice(order.total)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-zinc-400 font-medium">
+                    <span>المحافظة: {order.governorate}</span>
+                    <span className="font-mono">{formatDate(order.createdAt)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-right text-xs">
+                <thead>
+                  <tr className="border-b border-zinc-200 dark:border-white/[0.06] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">
+                    <th className="py-3.5 px-4">رقم الطلب</th>
+                    <th className="py-3.5 px-4">العميل</th>
+                    <th className="py-3.5 px-4">المحافظة</th>
+                    <th className="py-3.5 px-4">الإجمالي</th>
+                    <th className="py-3.5 px-4">الحالة</th>
+                    <th className="py-3.5 px-4">التاريخ</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-zinc-200 dark:divide-white/[0.04]">
+                  {recentOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
+                      <td className="py-4 px-4 font-mono font-black text-[#FF274B]">
+                        #{order.id.slice(0, 8)}
+                      </td>
+                      <td className="py-4 px-4 font-bold text-zinc-900 dark:text-white">
+                        {order.customerName}
+                      </td>
+                      <td className="py-4 px-4 text-zinc-600 dark:text-zinc-300">
+                        {order.governorate}
+                      </td>
+                      <td className="py-4 px-4 font-black text-[#FF274B]">
+                        {formatPrice(order.total)}
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.06]">
+                          <span className={`w-2 h-2 rounded-full ${statusDots[order.status] || "bg-zinc-500"}`} />
+                          {statusLabels[order.status] || order.status}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
+                        {formatDate(order.createdAt)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

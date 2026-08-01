@@ -247,92 +247,192 @@ export default function AdminOrdersPage() {
           لا توجد طلبات مطابقة للبحث أو التصفية الحالية
         </div>
       ) : (
-        <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] shadow-sm dark:shadow-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead>
-                <tr className="bg-zinc-50/50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-white/[0.06] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">
-                  <th className="px-6 py-4">كود الطلب</th>
-                  <th className="px-6 py-4">العميل</th>
-                  <th className="px-6 py-4">التاريخ</th>
-                  <th className="px-6 py-4">الإجمالي</th>
-                  <th className="px-6 py-4">طريقة الدفع</th>
-                  <th className="px-6 py-4">الحالة</th>
-                  <th className="px-6 py-4 text-left">إجراءات</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-white/[0.04]">
-                {filtered.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors cursor-pointer"
-                    onClick={() => setSelectedOrder(order)}
-                  >
-                    <td className="px-6 py-4 font-mono text-xs text-[#FF274B] font-black">
+        <div className="space-y-4">
+          {/* Mobile Orders Card View (Shown on screens smaller than lg) */}
+          <div className="grid grid-cols-1 gap-4 lg:hidden">
+            {filtered.map((order) => (
+              <div
+                key={order.id}
+                onClick={() => setSelectedOrder(order)}
+                className="bg-white dark:bg-[#0E0E10] border border-zinc-200 dark:border-white/[0.06] rounded-3xl p-4 shadow-sm space-y-3.5 cursor-pointer hover:border-[#FF274B]/40 transition-all"
+              >
+                {/* Header info */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs text-[#FF274B] font-black">
                       #{order.id.slice(0, 8).toUpperCase()}
-                      {order.transferScreenshot && (
-                        <span className="mr-1.5 inline-block w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]" title="يوجد إيصال تحويل مرفق" />
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-xs font-bold text-zinc-900 dark:text-white">{order.customerName || "—"}</p>
-                      <p className="text-[10px] text-zinc-500 font-mono mt-0.5">{order.phone || order.customerPhone || "—"}</p>
-                    </td>
-                    <td className="px-6 py-4 text-xs text-zinc-500 font-mono font-medium">
-                      {formatDate(
-                        order.createdAt instanceof Date
-                          ? order.createdAt
-                          : (order.createdAt as { toDate(): Date }).toDate()
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-xs font-black text-zinc-900 dark:text-white">
+                    </span>
+                    {order.transferScreenshot && (
+                      <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[9px] font-bold">
+                        مرفق إيصال 📱
+                      </span>
+                    )}
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.06]">
+                    <span className={`w-2 h-2 rounded-full ${statusDots[order.status] || "bg-zinc-500"}`} />
+                    {ORDER_STATUS_LABELS[order.status]}
+                  </div>
+                </div>
+
+                {/* Customer Details */}
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 className="font-black text-xs sm:text-sm text-zinc-900 dark:text-white">{order.customerName || "—"}</h4>
+                    <p className="text-[11px] text-zinc-500 font-mono mt-0.5">{order.phone || order.customerPhone || "—"}</p>
+                    <p className="text-[10px] text-zinc-400 font-bold mt-0.5">المحافظة: {order.governorate || "عام"}</p>
+                  </div>
+                  <div className="text-left">
+                    <span className="text-[10px] text-zinc-400 font-bold block">إجمالي الفاتورة</span>
+                    <span className="font-black text-sm text-[#FF274B] font-mono block mt-0.5">
                       {formatPrice(order.total)}
-                    </td>
-                    <td className="px-6 py-4 text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
-                      {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.06]">
-                        <span className={`w-2 h-2 rounded-full ${statusDots[order.status] || "bg-zinc-500"}`} />
-                        {ORDER_STATUS_LABELS[order.status]}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-left" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-2">
-                        {STATUS_NEXT[order.status].length > 0 ? (
-                          <select
-                            value=""
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                handleStatusChange(order.id, e.target.value as OrderStatus);
-                              }
-                            }}
-                            className="text-[11px] font-bold border border-zinc-200 dark:border-white/[0.08] rounded-xl px-2.5 py-1.5 focus:outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white cursor-pointer hover:border-[#FF274B] transition-all"
-                            disabled={updatingId === order.id}
-                          >
-                            <option value="">تغيير الحالة</option>
-                            {STATUS_NEXT[order.status].map((s) => (
-                              <option key={s} value={s}>
-                                {ORDER_STATUS_LABELS[s]}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <span className="text-[10px] text-zinc-500 font-bold">مكتمل</span>
-                        )}
-                        <button
-                          onClick={() => handleDeleteOrder(order.id)}
-                          className="p-2 text-zinc-400 hover:text-[#FF274B] hover:bg-[#FF274B]/10 rounded-xl transition-colors"
-                          title="حذف الطلب"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Payment Method & Date */}
+                <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-white/[0.04]">
+                  <span>طريقة الدفع: {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}</span>
+                  <span className="font-mono">
+                    {formatDate(
+                      order.createdAt instanceof Date
+                        ? order.createdAt
+                        : (order.createdAt as { toDate(): Date }).toDate()
+                    )}
+                  </span>
+                </div>
+
+                {/* Quick Actions Footer */}
+                <div className="flex items-center gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
+                  {STATUS_NEXT[order.status].length > 0 ? (
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleStatusChange(order.id, e.target.value as OrderStatus);
+                        }
+                      }}
+                      className="flex-1 text-[11px] font-bold border border-zinc-200 dark:border-white/[0.08] rounded-xl px-3 py-2 focus:outline-none bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white cursor-pointer hover:border-[#FF274B] transition-all"
+                      disabled={updatingId === order.id}
+                    >
+                      <option value="">تغيير حالة الطلب...</option>
+                      {STATUS_NEXT[order.status].map((s) => (
+                        <option key={s} value={s}>
+                          تحويل لـ: {ORDER_STATUS_LABELS[s]}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="flex-1 text-[11px] text-zinc-500 font-bold text-center py-1">مكتمل النهائي</span>
+                  )}
+
+                  <button
+                    onClick={() => handleWhatsAppScreenshot(order)}
+                    className="p-2.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20 rounded-xl transition-all"
+                    title="واتساب العميل"
+                  >
+                    <MessageCircle size={15} />
+                  </button>
+
+                  <button
+                    onClick={() => handleDeleteOrder(order.id)}
+                    className="p-2.5 bg-red-500/10 text-[#FF274B] border border-red-500/20 hover:bg-red-500/20 rounded-xl transition-all"
+                    title="حذف الطلب"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Orders Table View (Shown on lg screens and larger) */}
+          <div className="hidden lg:block bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] shadow-sm dark:shadow-2xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-right text-xs">
+                <thead>
+                  <tr className="bg-zinc-50/50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-white/[0.06] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">
+                    <th className="px-6 py-4">كود الطلب</th>
+                    <th className="px-6 py-4">العميل</th>
+                    <th className="px-6 py-4">التاريخ</th>
+                    <th className="px-6 py-4">الإجمالي</th>
+                    <th className="px-6 py-4">طريقة الدفع</th>
+                    <th className="px-6 py-4">الحالة</th>
+                    <th className="px-6 py-4 text-left">إجراءات</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-zinc-200 dark:divide-white/[0.04]">
+                  {filtered.map((order) => (
+                    <tr
+                      key={order.id}
+                      className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/60 transition-colors cursor-pointer"
+                      onClick={() => setSelectedOrder(order)}
+                    >
+                      <td className="px-6 py-4 font-mono text-xs text-[#FF274B] font-black">
+                        #{order.id.slice(0, 8).toUpperCase()}
+                        {order.transferScreenshot && (
+                          <span className="mr-1.5 inline-block w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]" title="يوجد إيصال تحويل مرفق" />
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-xs font-bold text-zinc-900 dark:text-white">{order.customerName || "—"}</p>
+                        <p className="text-[10px] text-zinc-500 font-mono mt-0.5">{order.phone || order.customerPhone || "—"}</p>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-zinc-500 font-mono font-medium">
+                        {formatDate(
+                          order.createdAt instanceof Date
+                            ? order.createdAt
+                            : (order.createdAt as { toDate(): Date }).toDate()
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-xs font-black text-zinc-900 dark:text-white">
+                        {formatPrice(order.total)}
+                      </td>
+                      <td className="px-6 py-4 text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
+                        {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.06]">
+                          <span className={`w-2 h-2 rounded-full ${statusDots[order.status] || "bg-zinc-500"}`} />
+                          {ORDER_STATUS_LABELS[order.status]}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-left" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-2">
+                          {STATUS_NEXT[order.status].length > 0 ? (
+                            <select
+                              value=""
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  handleStatusChange(order.id, e.target.value as OrderStatus);
+                                }
+                              }}
+                              className="text-[11px] font-bold border border-zinc-200 dark:border-white/[0.08] rounded-xl px-2.5 py-1.5 focus:outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white cursor-pointer hover:border-[#FF274B] transition-all"
+                              disabled={updatingId === order.id}
+                            >
+                              <option value="">تغيير الحالة</option>
+                              {STATUS_NEXT[order.status].map((s) => (
+                                <option key={s} value={s}>
+                                  {ORDER_STATUS_LABELS[s]}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span className="text-[10px] text-zinc-500 font-bold">مكتمل</span>
+                          )}
+                          <button
+                            onClick={() => handleDeleteOrder(order.id)}
+                            className="p-2 text-zinc-400 hover:text-[#FF274B] hover:bg-[#FF274B]/10 rounded-xl transition-colors"
+                            title="حذف الطلب"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

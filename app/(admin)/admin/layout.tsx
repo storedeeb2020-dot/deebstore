@@ -721,7 +721,7 @@ export default function AdminLayout({
         </AnimatePresence>
 
         {/* Content Wrapper */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto overflow-x-hidden text-zinc-900 dark:text-white font-['Tajawal',sans-serif]">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 pb-24 lg:pb-8 max-w-7xl w-full mx-auto overflow-x-hidden text-zinc-900 dark:text-white font-['Tajawal',sans-serif]">
           <motion.div
             key={pathname}
             initial={{ opacity: 0, y: 12 }}
@@ -731,6 +731,58 @@ export default function AdminLayout({
             {children}
           </motion.div>
         </main>
+      </div>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0E0E10]/95 backdrop-blur-2xl border-t border-zinc-200 dark:border-white/[0.08] shadow-[0_-10px_25px_rgba(0,0,0,0.15)] flex items-center justify-around py-2 px-1 text-xs font-bold text-zinc-600 dark:text-zinc-400 dir-rtl" dir="rtl">
+        <Link
+          href="/admin"
+          className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all ${
+            pathname === "/admin" ? "text-[#FF274B] font-extrabold scale-105" : "hover:text-zinc-900 dark:hover:text-white"
+          }`}
+        >
+          <LayoutGrid size={18} />
+          <span className="text-[10px]">الرئيسية</span>
+        </Link>
+
+        <Link
+          href="/admin/orders"
+          className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all ${
+            pathname.startsWith("/admin/orders") ? "text-[#FF274B] font-extrabold scale-105" : "hover:text-zinc-900 dark:hover:text-white"
+          }`}
+        >
+          <ShoppingBag size={18} />
+          <span className="text-[10px]">الطلبات</span>
+        </Link>
+
+        {/* Highlighted Mobile Add Button */}
+        <Link
+          href="/admin/products/new"
+          className="flex flex-col items-center justify-center w-12 h-12 -mt-5 rounded-2xl bg-gradient-to-br from-[#FF274B] to-amber-500 text-white shadow-lg shadow-[#FF274B]/40 active:scale-95 transition-all"
+          title="إضافة منتج جديد"
+        >
+          <Plus size={22} />
+        </Link>
+
+        <Link
+          href="/admin/products"
+          className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all ${
+            pathname.startsWith("/admin/products") && pathname !== "/admin/products/new" ? "text-[#FF274B] font-extrabold scale-105" : "hover:text-zinc-900 dark:hover:text-white"
+          }`}
+        >
+          <Boxes size={18} />
+          <span className="text-[10px]">المنتجات</span>
+        </Link>
+
+        <Link
+          href="/admin/settings"
+          className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all ${
+            pathname.startsWith("/admin/settings") ? "text-[#FF274B] font-extrabold scale-105" : "hover:text-zinc-900 dark:hover:text-white"
+          }`}
+        >
+          <SlidersHorizontal size={18} />
+          <span className="text-[10px]">الإعدادات</span>
+        </Link>
       </div>
     </div>
   );
