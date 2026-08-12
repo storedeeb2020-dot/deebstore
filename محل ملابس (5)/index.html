@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Store</title>
+    <meta name="description" content="Discover the latest modern products with the best prices and high quality.">
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Cinematic Intro Screen -->
+    <div id="intro-screen" class="intro-screen">
+        <canvas id="intro-canvas"></canvas>
+        <div class="intro-glow-ring ring-1"></div>
+        <div class="intro-glow-ring ring-2"></div>
+        <div class="intro-glow-ring ring-3"></div>
+        <div class="intro-content">
+            <div class="intro-logo-wrapper">
+                <img src="home/logo.png" alt="Logo" class="intro-logo">
+                <div class="logo-pulse"></div>
+            </div>
+            <div class="intro-tagline">
+                <span class="tagline-letter">E</span><span class="tagline-letter">L</span><span class="tagline-letter">E</span><span class="tagline-letter">G</span><span class="tagline-letter">A</span><span class="tagline-letter">N</span><span class="tagline-letter">C</span><span class="tagline-letter">E</span>
+            </div>
+            <div class="intro-loading-line">
+                <div class="intro-loading-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="main-content hidden">
+        <!-- Navbar -->
+        <header class="navbar">
+            <div class="nav-brand">
+                <div class="logo-3d-container">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                    <img src="home/logo.png" alt="Logo" class="nav-logo layer">
+                </div>
+            </div>
+            
+            <div class="nav-actions">
+                <button class="cart-toggle" id="cart-toggle">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span id="cart-badge" class="cart-badge">0</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-bg">
+                <img src="home/WhatsApp Image 2026-03-31 at 16.44.39(1).jpeg" alt="Hero Background">
+                <div class="hero-overlay"></div>
+            </div>
+            <div class="hero-content">
+                <h1 class="hero-title">ELEVATE YOUR STYLE</h1>
+                <button class="cta-button" onclick="document.getElementById('products-section').scrollIntoView({behavior: 'smooth'})">
+                    SHOP NOW
+                </button>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section id="products-section" class="products-section">
+            <h2 class="section-title">Latest Products</h2>
+            <div class="products-grid" id="products-grid">
+                <!-- Products will be injected here by JS -->
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 All rights reserved to Modern Store.</p>
+        </footer>
+    </div>
+
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Shopping Cart</h3>
+            <button class="close-cart" id="close-cart">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- Cart items will appear here -->
+            <div class="empty-cart-msg">Cart is currently empty</div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total-price">$0.00</span>
+            </div>
+            <button class="checkout-btn">Checkout</button>
+        </div>
+    </div>
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <!-- Product Details Modal -->
+    <div class="product-modal-overlay" id="product-modal">
+        <div class="product-modal-content">
+            <button class="close-modal" id="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-grid">
+                <div class="modal-img-container">
+                    <img src="" alt="Product" id="modal-img">
+                </div>
+                <div class="modal-info">
+                    <h2 id="modal-title" class="modal-title">Product Title</h2>
+                    <div id="modal-price" class="modal-price">$0.00</div>
+                    
+                    <div class="modal-section">
+                        <h4 class="modal-section-title">Select Color</h4>
+                        <div class="color-options">
+                            <div class="color-circle active" style="background-color: #0f172a;"></div>
+                            <div class="color-circle" style="background-color: #94a3b8;"></div>
+                            <div class="color-circle" style="background-color: #e2e8f0;"></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-section">
+                        <h4 class="modal-section-title">Select Size</h4>
+                        <div class="size-options">
+                            <button class="size-btn">S</button>
+                            <button class="size-btn active">M</button>
+                            <button class="size-btn">L</button>
+                            <button class="size-btn">XL</button>
+                        </div>
+                    </div>
+
+                    <button class="add-to-cart-btn modal-add-btn" id="modal-add-to-cart">
+                        <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

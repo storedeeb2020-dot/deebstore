@@ -1,0 +1,8 @@
+User-Agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /checkout/
+Disallow: /order-success/
+
+Sitemap: https://nxt-nxt6.vercel.app/sitemap.xml
