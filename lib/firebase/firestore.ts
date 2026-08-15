@@ -333,14 +333,20 @@ export function subscribeToLiveOrders(
   onNext: (orders: Order[], changes: { type: "added" | "modified" | "removed"; order: Order }[]) => void
 ) {
   const q = query(collection(db, "orders"), orderBy("createdAt", "desc"), limit(25));
-  return onSnapshot(q, (snapshot) => {
-    const orders = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Order);
-    const changes = snapshot.docChanges().map((change) => ({
-      type: change.type,
-      order: { id: change.doc.id, ...change.doc.data() } as Order,
-    }));
-    onNext(orders, changes);
-  });
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const orders = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Order);
+      const changes = snapshot.docChanges().map((change) => ({
+        type: change.type,
+        order: { id: change.doc.id, ...change.doc.data() } as Order,
+      }));
+      onNext(orders, changes);
+    },
+    (err) => {
+      console.warn("Live orders subscription notice:", err?.message || err);
+    }
+  );
 }
 
 // ─── Categories ──────────────────────────────────────────

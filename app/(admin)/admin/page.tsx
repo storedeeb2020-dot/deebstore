@@ -67,6 +67,14 @@ const statusColors: Record<string, string> = {
 
 // ─── Mini Luxury Curved Line Chart (Area Graph) ─────────────
 function RevenueLineChart({ data }: { data: DayRevenue[] }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="w-full h-48 flex items-center justify-center text-xs text-zinc-400 font-bold">
+        لا توجد بيانات مبيعات متاحة لعرض الرسم البياني حالياً
+      </div>
+    );
+  }
+
   const width = 500;
   const height = 150;
   const paddingX = 35;
@@ -78,10 +86,19 @@ function RevenueLineChart({ data }: { data: DayRevenue[] }) {
 
   // Compute points (x, y)
   const points = data.map((d, i) => {
-    const x = paddingX + (i / (data.length - 1 || 1)) * chartW;
+    const divisor = data.length > 1 ? data.length - 1 : 1;
+    const x = paddingX + (i / divisor) * chartW;
     const y = height - paddingY - (d.value / maxVal) * chartH;
     return { x, y, ...d };
   });
+
+  if (points.length === 0) {
+    return (
+      <div className="w-full h-48 flex items-center justify-center text-xs text-zinc-400 font-bold">
+        لا توجد نقاط بيانات
+      </div>
+    );
+  }
 
   // Build Smooth Bezier Curve Path
   const createSmoothPath = (pts: { x: number; y: number }[]) => {
@@ -97,7 +114,9 @@ function RevenueLineChart({ data }: { data: DayRevenue[] }) {
   };
 
   const lineD = createSmoothPath(points);
-  const areaD = `${lineD} L ${points[points.length - 1].x} ${height - paddingY} L ${points[0].x} ${height - paddingY} Z`;
+  const lastX = points[points.length - 1]?.x ?? width - paddingX;
+  const firstX = points[0]?.x ?? paddingX;
+  const areaD = `${lineD} L ${lastX} ${height - paddingY} L ${firstX} ${height - paddingY} Z`;
 
   return (
     <div className="w-full space-y-3 pt-2">

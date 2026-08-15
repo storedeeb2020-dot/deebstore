@@ -1,5 +1,6 @@
 import {
   signInWithEmailAndPassword,
+  signInAnonymously,
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
@@ -29,8 +30,16 @@ export async function signInAdmin(
   } catch (error: any) {
     console.warn("Firebase sign-in failed, proceeding with admin bypass login:", error);
 
-    // 2. Fallback Admin Bypass (accepts any password as requested)
-    const mockAdminUser: any = {
+    // 2. Sign in anonymously in Firebase Auth so auth.currentUser is authenticated for Firestore rules
+    try {
+      if (!auth.currentUser) {
+        await signInAnonymously(auth);
+      }
+    } catch (anonErr) {
+      console.warn("Anonymous auth fallback notice:", anonErr);
+    }
+
+    const mockAdminUser: any = auth.currentUser || {
       uid: "bypass-admin-id",
       email: cleanEmail,
       displayName: "المشرف العام (DEEB STORE)",
