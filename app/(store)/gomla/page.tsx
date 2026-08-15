@@ -8,8 +8,6 @@ import {
   CheckCircle2,
   Search,
   Info,
-  Plus,
-  Minus,
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,7 +17,7 @@ import {
   subscribeToSiteSettings,
   type SiteSettings,
 } from "@/lib/firebase/firestore";
-import type { GomlaProduct, GomlaCategory, GomlaPriceTier } from "@/types/gomla";
+import type { GomlaProduct, GomlaCategory } from "@/types/gomla";
 import { Spinner } from "@/components/ui/Spinner";
 import Link from "next/link";
 
@@ -33,10 +31,9 @@ export default function StoreGomlaPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Modal State for Selected Product Detail & Order Calculation
+  // Modal State for Selected Product Detail
   const [selectedProduct, setSelectedProduct] = useState<GomlaProduct | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
-  const [orderQuantity, setOrderQuantity] = useState<number>(12);
 
   const loadGomlaData = () => {
     Promise.all([getGomlaProducts(), getGomlaCategories()])
@@ -69,36 +66,22 @@ export default function StoreGomlaPage() {
     };
   }, []);
 
-  // Sync min order quantity when product modal opens
   useEffect(() => {
     if (selectedProduct) {
       setActiveImageIndex(0);
-      setOrderQuantity(selectedProduct.minOrderQuantity || 12);
     }
   }, [selectedProduct]);
 
-  // Helper to determine applicable tier for a given quantity
-  const getApplicableTier = (prod: GomlaProduct, qty: number): GomlaPriceTier => {
-    if (!prod.priceTiers || prod.priceTiers.length === 0) {
-      return { minQuantity: 1 };
-    }
-    const sorted = [...prod.priceTiers].sort((a, b) => b.minQuantity - a.minQuantity);
-    const matched = sorted.find((t) => qty >= t.minQuantity);
-    return matched || sorted[sorted.length - 1];
-  };
-
-  const handleOpenWhatsAppOrder = (prod: GomlaProduct, qty: number) => {
+  const handleOpenWhatsAppOrder = (prod: GomlaProduct) => {
     const whatsappNum = (settings?.gomlaWhatsappNumber || settings?.whatsappNumber || "201012345678").replace(/\D/g, "");
-    const tier = getApplicableTier(prod, qty);
     const pageUrl = typeof window !== "undefined" ? window.location.href : "";
 
     const textMessage = `السلام عليكم ورحمة الله وبركاته، أرغب في الاستفسار عن أسعار وطلب جملة من متجر ديب ستور DEEB STORE 📦⚡
 
 📦 اسم المنتج: ${prod.name}
 🏷️ القسم: ${prod.categoryName || "قسم الجملة"}
-🔢 الكمية المطلوبة: ${qty} قطعة ${tier.note ? `(${tier.note})` : ""}
 
-يرجى إرسال تفاصيل السعر والخصم المتاح لهذه الكمية.
+يرجى إرسال تفاصيل الأسعار والعروض المتاحة لهذا المنتج.
 رابط المنتج: ${pageUrl}`;
 
     const encodedText = encodeURIComponent(textMessage);
@@ -163,7 +146,7 @@ export default function StoreGomlaPage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 dark:bg-white/5 border border-white/10 text-amber-400 text-xs font-bold backdrop-blur-md"
           >
             <Sparkles size={14} />
-            <span>الأسعار والتفاصيل عبر الواتساب للتجار والمحلات 📦💬</span>
+            <span>الأسعار والاستفسارات عبر الواتساب للتجار والمحلات 📦💬</span>
           </motion.div>
 
           <motion.h1
@@ -172,7 +155,7 @@ export default function StoreGomlaPage() {
             transition={{ delay: 0.1 }}
             className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white max-w-3xl mx-auto leading-tight"
           >
-            {settings?.gomlaIntroText || "قسم مبيعات الجملة والكميات — الأسعار عبر الواتساب للتجار والمحلات 📦⚡"}
+            {settings?.gomlaIntroText || "قسم مبيعات الجملة والكميات — تواصل عبر الواتساب للتجار والمحلات 📦⚡"}
           </motion.h1>
 
           <motion.p
@@ -181,13 +164,13 @@ export default function StoreGomlaPage() {
             transition={{ delay: 0.2 }}
             className="text-xs sm:text-sm text-zinc-300 max-w-2xl mx-auto leading-relaxed"
           >
-            اختر منتجات الجملة المناسبة لتجارتك، حدد الكميات المطلوبة، واطلب معرفة السعر والخصم المتاح فوراً عبر محادثة الواتساب المباشرة مع إدارة المتجر.
+            تصفح منتجات الجملة المتاحة لتجارتك، واطلب الاستفسار ومعرفة الأسعار والخصومات فوراً عبر محادثة الواتساب المباشرة مع إدارة المتجر.
           </motion.p>
 
           {/* Key Advantages */}
           <div className="pt-6 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto text-right">
             {[
-              { title: "أسعار عبر الواتساب", desc: "خصومات خاصة وفورية بحجم الكمية" },
+              { title: "استفسار عبر الواتساب", desc: "خصومات خاصة وفورية للتجار" },
               { title: "خامات الستريت وير", desc: "أجود أقمشة قطنية وميلتون" },
               { title: "طلب مباشر بالواتساب", desc: "تواصل شخصي وسريع مع الأدمن" },
               { title: "شحن لكافة المحافظات", desc: "توصيل آمن لجميع المحافظات" },
@@ -288,47 +271,21 @@ export default function StoreGomlaPage() {
                         {prod.categoryName}
                       </span>
 
-                      {/* WhatsApp Only Pricing Badge */}
+                      {/* WhatsApp Inquiry Badge */}
                       <span className="absolute bottom-3 left-3 bg-emerald-600 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5">
-                        <MessageCircle size={14} /> السعر عبر الواتساب
+                        <MessageCircle size={14} /> استفسار واتساب
                       </span>
                     </div>
 
                     {/* Content Details */}
-                    <div className="p-6 space-y-4">
+                    <div className="p-6 space-y-3">
                       <div onClick={() => setSelectedProduct(prod)} className="cursor-pointer">
                         <h3 className="font-extrabold text-base text-zinc-900 dark:text-white group-hover:text-[#FF274B] transition-colors line-clamp-1">
                           {prod.name}
                         </h3>
                         <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
-                          {prod.description || "خامات الستريت وير الممتازة جاهزة للطلب بالجملة."}
+                          {prod.description || "خامات الستريت وير الممتازة جاهزة للاستفسار والطلب بالجملة."}
                         </p>
-                      </div>
-
-                      {/* Pricing Tiers Overview */}
-                      <div className="space-y-1.5 pt-3 border-t border-zinc-100 dark:border-white/[0.06]">
-                        <div className="flex items-center justify-between text-[11px] font-bold text-zinc-400">
-                          <span>شرائح الكميات المتاحة:</span>
-                          <span className="text-amber-500">أقل طلب {prod.minOrderQuantity || 12} قطعة</span>
-                        </div>
-                        <div className="space-y-1">
-                          {prod.priceTiers?.slice(0, 3).map((tier, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center justify-between text-xs bg-zinc-50 dark:bg-zinc-900/60 px-3 py-2 rounded-xl border border-zinc-100 dark:border-white/[0.04]"
-                            >
-                              <span className="font-bold text-zinc-700 dark:text-zinc-300">
-                                {tier.maxQuantity
-                                  ? `${tier.minQuantity} - ${tier.maxQuantity} قطعة`
-                                  : `${tier.minQuantity}+ قطعة`}
-                                {tier.note ? ` (${tier.note})` : ""}
-                              </span>
-                              <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                السعر عبر الواتساب 💬
-                              </span>
-                            </div>
-                          ))}
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -340,11 +297,11 @@ export default function StoreGomlaPage() {
                       className="flex-1 py-3 px-4 rounded-2xl bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-white/[0.08] hover:border-[#FF274B] font-bold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <Info size={15} />
-                      <span>تفاصيل الكمية</span>
+                      <span>تفاصيل المنتج</span>
                     </button>
 
                     <button
-                      onClick={() => handleOpenWhatsAppOrder(prod, prod.minOrderQuantity || 12)}
+                      onClick={() => handleOpenWhatsAppOrder(prod)}
                       className="flex-1 py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <MessageCircle size={16} />
@@ -358,7 +315,7 @@ export default function StoreGomlaPage() {
         )}
       </section>
 
-      {/* ─── PRODUCT DETAIL & INTERACTIVE CALCULATION MODAL ─── */}
+      {/* ─── PRODUCT DETAIL MODAL ─── */}
       <AnimatePresence>
         {selectedProduct && (
           <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md p-3 sm:p-6 flex items-start justify-center py-6 sm:py-10">
@@ -366,12 +323,12 @@ export default function StoreGomlaPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-4xl bg-white dark:bg-[#0E0E10] border border-zinc-200 dark:border-white/[0.08] rounded-3xl p-5 sm:p-8 shadow-2xl space-y-4 dir-rtl text-right my-auto max-h-[90vh] flex flex-col overflow-hidden"
+              className="relative w-full max-w-3xl bg-white dark:bg-[#0E0E10] border border-zinc-200 dark:border-white/[0.08] rounded-3xl p-5 sm:p-8 shadow-2xl space-y-4 dir-rtl text-right my-auto max-h-[90vh] flex flex-col overflow-hidden"
               dir="rtl"
             >
               {/* Close Button */}
               <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-3">
-                <span className="text-xs font-black text-[#FF274B]">تفاصيل المنتج وحساب شرائح الجملة</span>
+                <span className="text-xs font-black text-[#FF274B]">تفاصيل المنتج واستفسار الجملة</span>
                 <button
                   onClick={() => setSelectedProduct(null)}
                   className="p-2 text-zinc-400 hover:text-white rounded-full bg-zinc-100 dark:bg-zinc-900 cursor-pointer"
@@ -424,97 +381,37 @@ export default function StoreGomlaPage() {
                   )}
                 </div>
 
-                {/* Right (Product Info & Quantity Calculator) */}
-                <div className="space-y-6">
-                  <div>
-                    <span className="inline-block px-3 py-1 rounded-full bg-[#FF274B]/10 text-[#FF274B] text-[11px] font-bold mb-2">
+                {/* Right (Product Details & Direct WhatsApp Action) */}
+                <div className="space-y-6 flex flex-col justify-between h-full">
+                  <div className="space-y-3">
+                    <span className="inline-block px-3 py-1 rounded-full bg-[#FF274B]/10 text-[#FF274B] text-[11px] font-bold">
                       {selectedProduct.categoryName}
                     </span>
                     <h2 className="text-2xl font-black text-zinc-900 dark:text-white">
                       {selectedProduct.name}
                     </h2>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       {selectedProduct.description || "منتج فاخر مصمم وفقاً لأعلى معايير الستريت وير والعصرية."}
                     </p>
-                  </div>
 
-                  {/* Pricing Tiers Highlight */}
-                  <div className="space-y-2">
-                    <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
-                      شرائح الكميات المتوفرة:
-                    </span>
-                    <div className="space-y-2">
-                      {selectedProduct.priceTiers?.map((tier, idx) => {
-                        const activeTier = getApplicableTier(selectedProduct, orderQuantity);
-                        const isCurrent = activeTier.minQuantity === tier.minQuantity;
-
-                        return (
-                          <div
-                            key={idx}
-                            className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
-                              isCurrent
-                                ? "bg-amber-500/10 border-amber-500 text-amber-500 dark:bg-amber-500/20"
-                                : "bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-white/[0.06] text-zinc-700 dark:text-zinc-300"
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              {isCurrent && <CheckCircle2 size={16} className="text-amber-500" />}
-                              <span className="font-bold text-xs">
-                                {tier.maxQuantity
-                                  ? `${tier.minQuantity} - ${tier.maxQuantity} قطعة`
-                                  : `${tier.minQuantity}+ قطعة`}
-                                {tier.note ? ` (${tier.note})` : ""}
-                              </span>
-                            </div>
-                            <span className="font-bold text-xs text-emerald-600 dark:text-emerald-400">
-                              السعر عبر الواتساب 💬
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Quantity Counter & WhatsApp Direct Prompt */}
-                  <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                        اختر الكمية المطلوبة (أقل طلب {selectedProduct.minOrderQuantity || 12} قطعة):
-                      </span>
-                      <div className="flex items-center gap-3 bg-white dark:bg-zinc-950 p-1.5 rounded-xl border border-zinc-200 dark:border-white/[0.08]">
-                        <button
-                          onClick={() =>
-                            setOrderQuantity((q) => Math.max(selectedProduct.minOrderQuantity || 12, q - 1))
-                          }
-                          className="p-1 text-zinc-500 hover:text-black dark:hover:text-white cursor-pointer"
-                        >
-                          <Minus size={16} />
-                        </button>
-                        <span className="font-black text-sm w-10 text-center">{orderQuantity}</span>
-                        <button
-                          onClick={() => setOrderQuantity((q) => q + 1)}
-                          className="p-1 text-zinc-500 hover:text-black dark:hover:text-white cursor-pointer"
-                        >
-                          <Plus size={16} />
-                        </button>
+                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <MessageCircle size={16} />
+                        <span>التواصل والطلب المباشر للتجار والمحلات 💬</span>
                       </div>
-                    </div>
-
-                    <div className="pt-3 border-t border-zinc-200 dark:border-white/[0.06] flex items-center justify-between text-xs font-bold text-zinc-600 dark:text-zinc-300">
-                      <span>حالة السعر والخصم:</span>
-                      <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
-                        خصم وتحديد مباشر فور التواصل بالواتساب 💬
-                      </span>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-normal">
+                        اضغط على الزر أدناه لمراسلة إدارة المتجر مباشرة عبر الواتساب للاستفسار عن العروض المتاحة والتوصيل.
+                      </p>
                     </div>
                   </div>
 
                   {/* Order via WhatsApp Action Button */}
                   <button
-                    onClick={() => handleOpenWhatsAppOrder(selectedProduct, orderQuantity)}
-                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-2xl shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+                    onClick={() => handleOpenWhatsAppOrder(selectedProduct)}
+                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-2xl shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2 mt-4"
                   >
                     <MessageCircle size={20} />
-                    <span>تواصل وراسلنا عبر الواتساب لمعرفة السعر 💬</span>
+                    <span>تواصل وراسلنا عبر الواتساب للاستفسار 💬</span>
                   </button>
                 </div>
               </div>

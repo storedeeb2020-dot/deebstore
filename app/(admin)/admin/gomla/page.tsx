@@ -484,17 +484,18 @@ export default function AdminGomlaPage() {
                           {prod.priceTiers?.map((tier, idx) => (
                             <div
                               key={idx}
-                              className="flex items-center justify-between text-xs bg-zinc-50 dark:bg-zinc-900/60 px-3 py-1.5 rounded-lg border border-zinc-100 dark:border-white/[0.04]"
+                              className="flex items-center justify-between text-xs bg-zinc-50 dark:bg-zinc-900/60 px-3 py-2 rounded-lg border border-zinc-100 dark:border-white/[0.04]"
                             >
                               <span className="font-bold text-zinc-700 dark:text-zinc-300">
                                 {tier.maxQuantity
                                   ? `${tier.minQuantity} - ${tier.maxQuantity} قطعة`
                                   : `${tier.minQuantity}+ قطعة`}
-                                {tier.note ? ` (${tier.note})` : ""}
                               </span>
-                              <span className="font-bold text-emerald-500">
-                                عبر الواتساب 💬
-                              </span>
+                              {tier.note && (
+                                <span className="font-bold text-amber-500 text-[11px]">
+                                  {tier.note}
+                                </span>
+                              )}
                             </div>
                           ))}
                         </div>
