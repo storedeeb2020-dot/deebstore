@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { onAuthStateChanged, type User } from "firebase/auth";
+import { onAuthStateChanged, signInAnonymously, type User } from "firebase/auth";
 import { auth } from "@/lib/firebase/config";
 
 interface AuthContextType {
@@ -44,7 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (fbUser) {
         setUser(fbUser);
       } else {
-        setUser(checkBypassUser());
+        const bypassUser = checkBypassUser();
+        setUser(bypassUser);
+        // Proactively sign in anonymously in background so Firestore security rules never reject requests
+        signInAnonymously(auth).catch(() => {});
       }
       setLoading(false);
     });

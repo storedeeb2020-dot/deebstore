@@ -3,9 +3,32 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // السماح بالقراءة والكتابة الكاملة لجميع المجموعات والبيانات
-    // لتمكين الأدمن من رؤية وإدارة كافة الطلبات والمنتجات والأقسام والإعدادات بكل مرونة
+    // السماح بالقراءة والكتابة الشاملة لجميع المجموعات والبيانات
     match /{document=**} {
+      allow read, write: if true;
+    }
+
+    match /gomla_products/{docId} {
+      allow read, write: if true;
+    }
+
+    match /gomla_categories/{docId} {
+      allow read, write: if true;
+    }
+
+    match /orders/{docId} {
+      allow read, write: if true;
+    }
+
+    match /products/{docId} {
+      allow read, write: if true;
+    }
+
+    match /categories/{docId} {
+      allow read, write: if true;
+    }
+
+    match /site_settings/{docId} {
       allow read, write: if true;
     }
 
