@@ -661,26 +661,40 @@ export async function clearAllSystemErrors(): Promise<void> {
 // ─── Gomla (Wholesale) Management ────────────────────────
 
 export async function getGomlaCategories(): Promise<GomlaCategory[]> {
+  let categories: GomlaCategory[] = [];
+
   try {
     const res = await fetch("/api/gomla/categories", { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
       if (data.categories && Array.isArray(data.categories)) {
-        return data.categories;
+        categories = data.categories;
       }
     }
-  } catch {
-    // Fallback to client Firestore SDK if API unavailable
+  } catch {}
+
+  if (categories.length === 0) {
+    try {
+      const q = query(collection(db, "gomla_categories"), orderBy("order", "asc"));
+      const snapshot = await getDocs(q);
+      categories = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }) as GomlaCategory);
+    } catch {}
   }
 
-  try {
-    const q = query(collection(db, "gomla_categories"), orderBy("order", "asc"));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }) as GomlaCategory);
-  } catch (err) {
-    console.error("Failed to fetch gomla categories:", err);
-    return [];
+  if (typeof window !== "undefined") {
+    try {
+      const local = localStorage.getItem("nxt_gomla_categories");
+      if (local) {
+        const parsed = JSON.parse(local) as GomlaCategory[];
+        const map = new Map<string, GomlaCategory>();
+        categories.forEach((c) => map.set(c.id, c));
+        parsed.forEach((c) => map.set(c.id, c));
+        categories = Array.from(map.values());
+      }
+    } catch {}
   }
+
+  return categories;
 }
 
 export async function createGomlaCategory(data: {
@@ -691,6 +705,22 @@ export async function createGomlaCategory(data: {
   image?: string;
   order: number;
 }): Promise<string> {
+  const newId = "cat_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+  const newCategory: GomlaCategory = {
+    id: newId,
+    ...data,
+    createdAt: new Date() as any,
+  };
+
+  if (typeof window !== "undefined") {
+    try {
+      const existing = localStorage.getItem("nxt_gomla_categories");
+      const list: GomlaCategory[] = existing ? JSON.parse(existing) : [];
+      list.push(newCategory);
+      localStorage.setItem("nxt_gomla_categories", JSON.stringify(list));
+    } catch {}
+  }
+
   try {
     const res = await fetch("/api/gomla/categories", {
       method: "POST",
@@ -701,75 +731,106 @@ export async function createGomlaCategory(data: {
       const result = await res.json();
       if (result.category?.id) return result.category.id;
     }
-  } catch {
-    // Fallback to SDK
-  }
+  } catch {}
 
-  const docRef = await addDoc(collection(db, "gomla_categories"), cleanUndefined({
-    ...data,
-    createdAt: Timestamp.now(),
-  }));
-  return docRef.id;
+  try {
+    const docRef = await addDoc(collection(db, "gomla_categories"), cleanUndefined({
+      ...data,
+      createdAt: Timestamp.now(),
+    }));
+    return docRef.id;
+  } catch {
+    return newId;
+  }
 }
 
 export async function updateGomlaCategory(
   id: string,
   data: Partial<GomlaCategory>
 ): Promise<void> {
+  if (typeof window !== "undefined") {
+    try {
+      const existing = localStorage.getItem("nxt_gomla_categories");
+      if (existing) {
+        const list: GomlaCategory[] = JSON.parse(existing);
+        const updated = list.map((c) => (c.id === id ? { ...c, ...data } : c));
+        localStorage.setItem("nxt_gomla_categories", JSON.stringify(updated));
+      }
+    } catch {}
+  }
+
   try {
-    const res = await fetch("/api/gomla/categories", {
+    await fetch("/api/gomla/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, ...data }),
     });
-    if (res.ok) return;
-  } catch {
-    // Fallback
-  }
+  } catch {}
 
-  await updateDoc(doc(db, "gomla_categories", id), cleanUndefined(data));
+  try {
+    await updateDoc(doc(db, "gomla_categories", id), cleanUndefined(data));
+  } catch {}
 }
 
 export async function deleteGomlaCategory(id: string): Promise<void> {
-  try {
-    const res = await fetch(`/api/gomla/categories?id=${id}`, { method: "DELETE" });
-    if (res.ok) return;
-  } catch {
-    // Fallback
+  if (typeof window !== "undefined") {
+    try {
+      const existing = localStorage.getItem("nxt_gomla_categories");
+      if (existing) {
+        const list: GomlaCategory[] = JSON.parse(existing);
+        const filtered = list.filter((c) => c.id !== id);
+        localStorage.setItem("nxt_gomla_categories", JSON.stringify(filtered));
+      }
+    } catch {}
   }
-  await deleteDoc(doc(db, "gomla_categories", id));
+
+  try {
+    await fetch(`/api/gomla/categories?id=${id}`, { method: "DELETE" });
+  } catch {}
+
+  try {
+    await deleteDoc(doc(db, "gomla_categories", id));
+  } catch {}
 }
 
 export async function getGomlaProducts(categoryId?: string): Promise<GomlaProduct[]> {
+  let products: GomlaProduct[] = [];
+
   try {
     const res = await fetch("/api/gomla/products", { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
       if (data.products && Array.isArray(data.products)) {
-        let items: GomlaProduct[] = data.products;
-        if (categoryId && categoryId !== "all") {
-          items = items.filter((p) => p.categoryId === categoryId);
-        }
-        return items;
+        products = data.products;
       }
     }
-  } catch {
-    // Fallback to client SDK
+  } catch {}
+
+  if (products.length === 0) {
+    try {
+      const snapshot = await getDocs(collection(db, "gomla_products"));
+      products = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }) as GomlaProduct);
+    } catch {}
   }
 
-  try {
-    const snapshot = await getDocs(collection(db, "gomla_products"));
-    let items = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }) as GomlaProduct);
-
-    if (categoryId && categoryId !== "all") {
-      items = items.filter((p) => p.categoryId === categoryId);
-    }
-
-    return items;
-  } catch (err) {
-    console.error("Failed to fetch gomla products:", err);
-    return [];
+  if (typeof window !== "undefined") {
+    try {
+      const local = localStorage.getItem("nxt_gomla_products");
+      if (local) {
+        const parsed = JSON.parse(local) as GomlaProduct[];
+        const map = new Map<string, GomlaProduct>();
+        products.forEach((p) => map.set(p.id, p));
+        parsed.forEach((p) => map.set(p.id, p));
+        products = Array.from(map.values());
+      }
+    } catch {}
   }
+
+  if (categoryId && categoryId !== "all") {
+    products = products.filter((p) => p.categoryId === categoryId);
+  }
+
+  return products;
 }
 
 export async function getGomlaProductById(id: string): Promise<GomlaProduct | null> {
@@ -782,13 +843,28 @@ export async function getGomlaProductById(id: string): Promise<GomlaProduct | nu
     const snapshot = await getDoc(docRef);
     if (!snapshot.exists()) return null;
     return { id: snapshot.id, ...snapshot.data() } as GomlaProduct;
-  } catch (err) {
-    console.error("Failed to fetch gomla product by ID:", err);
+  } catch {
     return null;
   }
 }
 
 export async function createGomlaProduct(data: Omit<GomlaProduct, "id" | "createdAt">): Promise<string> {
+  const newId = "prod_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+  const newProduct: GomlaProduct = {
+    id: newId,
+    ...data,
+    createdAt: new Date() as any,
+  };
+
+  if (typeof window !== "undefined") {
+    try {
+      const existing = localStorage.getItem("nxt_gomla_products");
+      const list: GomlaProduct[] = existing ? JSON.parse(existing) : [];
+      list.push(newProduct);
+      localStorage.setItem("nxt_gomla_products", JSON.stringify(list));
+    } catch {}
+  }
+
   try {
     const res = await fetch("/api/gomla/products", {
       method: "POST",
@@ -799,43 +875,67 @@ export async function createGomlaProduct(data: Omit<GomlaProduct, "id" | "create
       const result = await res.json();
       if (result.product?.id) return result.product.id;
     }
-  } catch {
-    // Fallback
-  }
+  } catch {}
 
-  const docRef = await addDoc(collection(db, "gomla_products"), cleanUndefined({
-    ...data,
-    createdAt: Timestamp.now(),
-  }));
-  return docRef.id;
+  try {
+    const docRef = await addDoc(collection(db, "gomla_products"), cleanUndefined({
+      ...data,
+      createdAt: Timestamp.now(),
+    }));
+    return docRef.id;
+  } catch {
+    return newId;
+  }
 }
 
 export async function updateGomlaProduct(
   id: string,
   data: Partial<GomlaProduct>
 ): Promise<void> {
+  if (typeof window !== "undefined") {
+    try {
+      const existing = localStorage.getItem("nxt_gomla_products");
+      if (existing) {
+        const list: GomlaProduct[] = JSON.parse(existing);
+        const updated = list.map((p) => (p.id === id ? { ...p, ...data } : p));
+        localStorage.setItem("nxt_gomla_products", JSON.stringify(updated));
+      }
+    } catch {}
+  }
+
   try {
-    const res = await fetch("/api/gomla/products", {
+    await fetch("/api/gomla/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, ...data }),
     });
-    if (res.ok) return;
-  } catch {
-    // Fallback
-  }
+  } catch {}
 
-  await updateDoc(doc(db, "gomla_products", id), cleanUndefined(data));
+  try {
+    await updateDoc(doc(db, "gomla_products", id), cleanUndefined(data));
+  } catch {}
 }
 
 export async function deleteGomlaProduct(id: string): Promise<void> {
-  try {
-    const res = await fetch(`/api/gomla/products?id=${id}`, { method: "DELETE" });
-    if (res.ok) return;
-  } catch {
-    // Fallback
+  if (typeof window !== "undefined") {
+    try {
+      const existing = localStorage.getItem("nxt_gomla_products");
+      if (existing) {
+        const list: GomlaProduct[] = JSON.parse(existing);
+        const filtered = list.filter((p) => p.id !== id);
+        localStorage.setItem("nxt_gomla_products", JSON.stringify(filtered));
+      }
+    } catch {}
   }
-  await deleteDoc(doc(db, "gomla_products", id));
+
+  try {
+    await fetch(`/api/gomla/products?id=${id}`, { method: "DELETE" });
+  } catch {}
+
+  try {
+    await deleteDoc(doc(db, "gomla_products", id));
+  } catch {}
 }
+
 
 
