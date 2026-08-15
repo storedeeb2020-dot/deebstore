@@ -27,6 +27,7 @@ import {
   UserCheck,
   UserPlus,
   X,
+  Package,
 } from "lucide-react";
 import { getSiteSettings, updateSiteSettings, type SiteSettings, type GlobalSizeChart } from "@/lib/firebase/firestore";
 import { changeAdminPassword, signOut } from "@/lib/firebase/auth";
@@ -37,7 +38,7 @@ import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 import { db } from "@/lib/firebase/config";
 import { collection, query, orderBy, getDocs, limit, deleteDoc, doc } from "firebase/firestore";
 
-type SettingsTab = "hero" | "brand" | "payments" | "sizeCharts" | "contact" | "about" | "legal" | "announcement" | "chatAnalytics" | "telegram" | "security";
+type SettingsTab = "hero" | "brand" | "payments" | "gomla" | "sizeCharts" | "contact" | "about" | "legal" | "announcement" | "chatAnalytics" | "telegram" | "security";
 
 export default function AdminSettingsPage() {
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("payments");
 
   useEffect(() => {
-    if (tabParam && ["hero", "brand", "payments", "sizeCharts", "contact", "about", "legal", "announcement", "chatAnalytics", "telegram", "security"].includes(tabParam)) {
+    if (tabParam && ["hero", "brand", "payments", "gomla", "sizeCharts", "contact", "about", "legal", "announcement", "chatAnalytics", "telegram", "security"].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -269,6 +270,9 @@ export default function AdminSettingsPage() {
             codEnabled: data.codEnabled ?? true,
             freeShippingEnabled: data.freeShippingEnabled ?? true,
             freeShippingThreshold: data.freeShippingThreshold ?? 500,
+            gomlaEnabled: data.gomlaEnabled ?? true,
+            gomlaWhatsappNumber: data.gomlaWhatsappNumber || data.whatsappNumber || "",
+            gomlaIntroText: data.gomlaIntroText || "قسم مبيعات الجملة والكميات — أسعار خاصة بالتجار والمحلات 📦⚡",
             sizeCharts: data.sizeCharts || [],
           }));
         }
@@ -378,6 +382,7 @@ export default function AdminSettingsPage() {
 
   const tabs = [
     { id: "payments", label: "وسائل الدفع والتفعيل", icon: CreditCard },
+    { id: "gomla", label: "قسم ومبيعات الجملة 📦", icon: Package },
     { id: "telegram", label: "إشعارات تليجرام 📲", icon: Send },
     { id: "security", label: "تغيير كلمة المرور 🔐", icon: Lock },
     { id: "sizeCharts", label: "جدول المقاسات العامة", icon: Ruler },
@@ -562,7 +567,72 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        {/* TAB 3: PAYMENTS CMS */}
+        {/* TAB: GOMLA WHOLESALE */}
+        {activeTab === "gomla" && (
+          <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-4">
+              <div className="flex items-center gap-2">
+                <Package size={20} className="text-[#FF274B]" />
+                <h2 className="font-black text-base text-zinc-900 dark:text-white">
+                  إعدادات مبيعات الجملة ورقم الواتساب الخاص للتجار
+                </h2>
+              </div>
+              <a
+                href="/admin/gomla"
+                className="text-xs font-bold bg-[#FF274B]/10 text-[#FF274B] border border-[#FF274B]/20 px-3 py-1 rounded-full hover:bg-[#FF274B] hover:text-white transition-all"
+              >
+                انتقال لإدارة منتجات الجملة ←
+              </a>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                  تفعيل قسم الجملة بالموقع
+                  {settings.gomlaEnabled ? (
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">مُفعل حالياً</span>
+                  ) : (
+                    <span className="text-[10px] bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">معطل حالياً</span>
+                  )}
+                </h3>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
+                  إظهار خيار قسم الجملة في الهيدر والماوس والـ Footer لزوار المتجر.
+                </p>
+              </div>
+              <ToggleSwitch
+                checked={!!settings.gomlaEnabled}
+                onChange={(val) => setSettings({ ...settings, gomlaEnabled: val })}
+                size="md"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                رقم واتساب المبيعات المخصص لطلبات الجملة
+              </label>
+              <input
+                type="text"
+                value={settings.gomlaWhatsappNumber ?? ""}
+                placeholder="201012345678"
+                onChange={(e) => setSettings({ ...settings, gomlaWhatsappNumber: e.target.value })}
+                className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#FF274B]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                النص الترحيبي لصفحة الجملة
+              </label>
+              <input
+                type="text"
+                value={settings.gomlaIntroText ?? ""}
+                placeholder="قسم مبيعات الجملة والكميات — أسعار خاصة بالتجار والمحلات 📦⚡"
+                onChange={(e) => setSettings({ ...settings, gomlaIntroText: e.target.value })}
+                className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs text-zinc-900 dark:text-white font-bold focus:outline-none focus:border-[#FF274B]"
+              />
+            </div>
+          </div>
+        )}
         {activeTab === "payments" && (
           <div className="bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 sm:p-8 shadow-sm dark:shadow-2xl space-y-6">
             <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-4">

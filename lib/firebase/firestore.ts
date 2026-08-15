@@ -19,6 +19,7 @@ import { db } from "./config";
 import type { Product } from "@/types/product";
 import type { Order, OrderStatus, CreateOrderInput } from "@/types/order";
 import type { Category } from "@/types/category";
+import type { GomlaCategory, GomlaProduct } from "@/types/gomla";
 import { deleteFromCloudinary } from "../cloudinary";
 import { sendOrderTelegramAlert } from "../telegram";
 
@@ -444,6 +445,11 @@ export interface SiteSettings {
   telegramEnabled?: boolean;       // تفعيل/إيقاف إشعارات تليجرام
   telegramBotToken?: string;      // توكين البوت من BotFather
   telegramChatId?: string;        // معرف الشات أو الجروب
+
+  // Wholesale / Gomla CMS
+  gomlaEnabled?: boolean;         // تفعيل/إيقاف قسم الجملة بالموقع
+  gomlaWhatsappNumber?: string;   // رقم واتساب الجملة الخاص بتلقي الطلبات
+  gomlaIntroText?: string;        // نص ترحيبي لقسم الجملة
 }
 
 export async function getSiteSettings(): Promise<SiteSettings | null> {
@@ -645,3 +651,97 @@ export async function clearAllSystemErrors(): Promise<void> {
   const deletePromises = snapshot.docs.map((docItem) => deleteDoc(docItem.ref));
   await Promise.all(deletePromises);
 }
+
+// ─── Gomla (Wholesale) Management ────────────────────────
+
+export async function getGomlaCategories(): Promise<GomlaCategory[]> {
+  try {
+    const q = query(collection(db, "gomla_categories"), orderBy("order", "asc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }) as GomlaCategory);
+  } catch (err) {
+    console.error("Failed to fetch gomla categories:", err);
+    return [];
+  }
+}
+
+export async function createGomlaCategory(data: {
+  name: string;
+  nameAr: string;
+  slug: string;
+  description?: string;
+  image?: string;
+  order: number;
+}): Promise<string> {
+  const docRef = await addDoc(collection(db, "gomla_categories"), cleanUndefined({
+    ...data,
+    createdAt: Timestamp.now(),
+  }));
+  return docRef.id;
+}
+
+export async function updateGomlaCategory(
+  id: string,
+  data: Partial<GomlaCategory>
+): Promise<void> {
+  await updateDoc(doc(db, "gomla_categories", id), cleanUndefined(data));
+}
+
+export async function deleteGomlaCategory(id: string): Promise<void> {
+  await deleteDoc(doc(db, "gomla_categories", id));
+}
+
+export async function getGomlaProducts(categoryId?: string): Promise<GomlaProduct[]> {
+  try {
+    const snapshot = await getDocs(collection(db, "gomla_products"));
+    let items = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }) as GomlaProduct);
+    
+    if (categoryId && categoryId !== "all") {
+      items = items.filter((p) => p.categoryId === categoryId);
+    }
+    
+    const getMillis = (val: any): number => {
+      if (!val) return 0;
+      if (typeof val.toMillis === "function") return val.toMillis();
+      if (typeof val.getTime === "function") return val.getTime();
+      return 0;
+    };
+    items.sort((a, b) => getMillis(b.createdAt) - getMillis(a.createdAt));
+    return items;
+  } catch (err) {
+    console.error("Failed to fetch gomla products:", err);
+    return [];
+  }
+}
+
+export async function getGomlaProductById(id: string): Promise<GomlaProduct | null> {
+  try {
+    const docRef = doc(db, "gomla_products", id);
+    const snapshot = await getDoc(docRef);
+    if (!snapshot.exists()) return null;
+    return { id: snapshot.id, ...snapshot.data() } as GomlaProduct;
+  } catch (err) {
+    console.error("Failed to fetch gomla product by ID:", err);
+    return null;
+  }
+}
+
+export async function createGomlaProduct(data: Omit<GomlaProduct, "id" | "createdAt">): Promise<string> {
+  const docRef = await addDoc(collection(db, "gomla_products"), cleanUndefined({
+    ...data,
+    createdAt: Timestamp.now(),
+  }));
+  return docRef.id;
+}
+
+export async function updateGomlaProduct(
+  id: string,
+  data: Partial<GomlaProduct>
+): Promise<void> {
+  await updateDoc(doc(db, "gomla_products", id), cleanUndefined(data));
+}
+
+export async function deleteGomlaProduct(id: string): Promise<void> {
+  await deleteDoc(doc(db, "gomla_products", id));
+}
+

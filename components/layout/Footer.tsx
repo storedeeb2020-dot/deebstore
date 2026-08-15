@@ -95,6 +95,8 @@ export function Footer() {
             <ul className="space-y-3 text-sm text-zinc-600 dark:text-gray-400">
               {[
                 { href: "/#products", label: "التشكيلة العصرية" },
+                { href: "/shop?bestSeller=true", label: "الأكثر مبيعاً 🔥" },
+                { href: "/gomla", label: "قسم الجملة والكميات 📦" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link

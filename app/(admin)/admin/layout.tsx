@@ -37,6 +37,7 @@ import {
   Info,
   Shield,
   Bot,
+  Package,
 } from "lucide-react";
 import { signOut } from "@/lib/firebase/auth";
 import { subscribeToLiveOrders } from "@/lib/firebase/firestore";
@@ -49,6 +50,7 @@ import { Spinner } from "@/components/ui/Spinner";
 const navItems = [
   { href: "/admin", label: "لوحة التحكم والتحليلات", icon: LayoutGrid },
   { href: "/admin/orders", label: "إدارة الطلبات المباشرة", icon: ShoppingBag },
+  { href: "/admin/gomla", label: "إدارة مبيعات الجملة 📦", icon: Package },
   { href: "/admin/bestsellers", label: "الأكثر مبيعاً 🔥", icon: Flame },
   { href: "/admin/shipping", label: "أسعار الشحن والمحافظات", icon: Truck },
   { href: "/admin/products", label: "إدارة قائمة المنتجات", icon: Boxes },
