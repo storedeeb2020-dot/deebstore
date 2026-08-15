@@ -736,205 +736,209 @@ export default function AdminGomlaPage() {
       {/* ─── ADD / EDIT PRODUCT MODAL ─── */}
       <AnimatePresence>
         {showProductModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md p-3 sm:p-6 flex items-start justify-center py-6 sm:py-10">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-3xl bg-white dark:bg-[#0E0E10] border border-zinc-200 dark:border-white/[0.08] rounded-3xl p-6 sm:p-8 my-8 shadow-2xl space-y-6 dir-rtl text-right"
+              className="relative w-full max-w-3xl bg-white dark:bg-[#0E0E10] border border-zinc-200 dark:border-white/[0.08] rounded-3xl p-5 sm:p-8 shadow-2xl space-y-4 dir-rtl text-right my-auto max-h-[90vh] flex flex-col overflow-hidden"
               dir="rtl"
             >
-              {/* Close Button */}
-              <button
-                onClick={() => setShowProductModal(false)}
-                className="absolute top-6 left-6 p-2 text-zinc-400 hover:text-white rounded-full bg-zinc-100 dark:bg-zinc-900 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-
-              <div>
-                <h2 className="text-xl font-black text-zinc-900 dark:text-white flex items-center gap-2">
-                  <Package className="text-[#FF274B]" size={24} />
-                  {editingProductId ? "تعديل بيانات منتج الجملة" : "إضافة منتج جملة جديد 📦"}
-                </h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                  أدخل اسم المنتج، اختر القسم، وارفع الصور، ثم حدد الشرائح والملاحظات للتواصل عبر الواتساب.
-                </p>
+              {/* Close Button & Header */}
+              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-4">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-black text-zinc-900 dark:text-white flex items-center gap-2">
+                    <Package className="text-[#FF274B]" size={22} />
+                    {editingProductId ? "تعديل بيانات منتج الجملة" : "إضافة منتج جملة جديد 📦"}
+                  </h2>
+                  <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    أدخل اسم المنتج، اختر القسم، وارفع الصور، ثم حدد الشرائح والملاحظات للتواصل عبر الواتساب.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowProductModal(false)}
+                  className="p-2 text-zinc-400 hover:text-white rounded-full bg-zinc-100 dark:bg-zinc-900 cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
               </div>
 
-              <form onSubmit={handleSaveProduct} className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Product Name */}
+              {/* Scrollable Form Body */}
+              <form onSubmit={handleSaveProduct} className="flex flex-col flex-1 overflow-hidden space-y-4">
+                <div className="space-y-5 overflow-y-auto pr-1 sm:pr-2 flex-1 max-h-[60vh] sm:max-h-[68vh] scrollbar-thin">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Product Name */}
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                        اسم منتج الجملة *
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="مثال: هودي أوفرسايز ميلتون فاخر (جملة)"
+                        value={prodName}
+                        onChange={(e) => setProdName(e.target.value)}
+                        className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs font-bold focus:outline-none focus:border-[#FF274B]"
+                      />
+                    </div>
+
+                    {/* Category Dropdown */}
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                        قسم الجملة التابع له *
+                      </label>
+                      <select
+                        value={prodCategoryId}
+                        onChange={(e) => setProdCategoryId(e.target.value)}
+                        className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs font-bold focus:outline-none focus:border-[#FF274B]"
+                      >
+                        <option value="">اختر القسم...</option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.nameAr || cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Main Image Uploader */}
                   <div>
                     <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                      اسم منتج الجملة *
+                      الصورة الرئيسية للمنتج الجملة *
                     </label>
-                    <input
-                      type="text"
-                      placeholder="مثال: هودي أوفرسايز ميلتون فاخر (جملة)"
-                      value={prodName}
-                      onChange={(e) => setProdName(e.target.value)}
+                    <ImageUploader
+                      multiple={false}
+                      images={prodMainImage ? [prodMainImage] : []}
+                      onChange={(imgs) => setProdMainImage(imgs[0] || "")}
+                    />
+                  </div>
+
+                  {/* Secondary Gallery Images */}
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                      صور المعرض الإضافية (اختياري)
+                    </label>
+                    <ImageUploader
+                      multiple={true}
+                      images={prodGalleryImages}
+                      onChange={setProdGalleryImages}
+                    />
+                  </div>
+
+                  {/* Description / Fabric details */}
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                      الوصف وتفاصيل الخامة والدرستات
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="تفاصيل الخامة (قطن 100%)، الألوان المتاحة بالدرستة، المقاسات M-L-XL-XXL..."
+                      value={prodDescription}
+                      onChange={(e) => setProdDescription(e.target.value)}
                       className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs font-bold focus:outline-none focus:border-[#FF274B]"
                     />
                   </div>
 
-                  {/* Category Dropdown */}
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                      قسم الجملة التابع له *
-                    </label>
-                    <select
-                      value={prodCategoryId}
-                      onChange={(e) => setProdCategoryId(e.target.value)}
-                      className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs font-bold focus:outline-none focus:border-[#FF274B]"
-                    >
-                      <option value="">اختر القسم...</option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.nameAr || cat.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                  {/* Dynamic Quantities Tiers Builder (NO Numeric Price Inputs) */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] space-y-4">
+                    <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-3">
+                      <div>
+                        <h3 className="text-xs font-black text-[#FF274B] flex items-center gap-1.5">
+                          <Layers size={16} />
+                          شرائح الكميات والملاحظات (Quantity Tiers)
+                        </h3>
+                        <p className="text-[11px] text-zinc-500 mt-0.5">
+                          حدد شرائح الكميات والملاحظات (مثال: من 12 إلى 49 قطعة - درستة). التواصل والأسعار عبر الواتساب فقط.
+                        </p>
+                      </div>
 
-                {/* Main Image Uploader */}
-                <div>
-                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                    الصورة الرئيسية للمنتج الجملة *
-                  </label>
-                  <ImageUploader
-                    multiple={false}
-                    images={prodMainImage ? [prodMainImage] : []}
-                    onChange={(imgs) => setProdMainImage(imgs[0] || "")}
-                  />
-                </div>
-
-                {/* Secondary Gallery Images */}
-                <div>
-                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                    صور المعرض الإضافية (اختياري)
-                  </label>
-                  <ImageUploader
-                    multiple={true}
-                    images={prodGalleryImages}
-                    onChange={setProdGalleryImages}
-                  />
-                </div>
-
-                {/* Description / Fabric details */}
-                <div>
-                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                    الوصف وتفاصيل الخامة والدرستات
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder="تفاصيل الخامة (قطن 100%)، الألوان المتاحة بالدرستة، المقاسات M-L-XL-XXL..."
-                    value={prodDescription}
-                    onChange={(e) => setProdDescription(e.target.value)}
-                    className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs font-bold focus:outline-none focus:border-[#FF274B]"
-                  />
-                </div>
-
-                {/* Dynamic Quantities Tiers Builder (NO Numeric Price Inputs) */}
-                <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] space-y-4">
-                  <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-3">
-                    <div>
-                      <h3 className="text-xs font-black text-[#FF274B] flex items-center gap-1.5">
-                        <Layers size={16} />
-                        شرائح الكميات والملاحظات (Quantity Tiers)
-                      </h3>
-                      <p className="text-[11px] text-zinc-500 mt-0.5">
-                        حدد شرائح الكميات والملاحظات (مثال: من 12 إلى 49 قطعة - درستة). التواصل والأسعار عبر الواتساب فقط.
-                      </p>
+                      <button
+                        type="button"
+                        onClick={handleAddTier}
+                        className="px-3 py-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-bold hover:bg-emerald-500 hover:text-white transition-all cursor-pointer flex items-center gap-1"
+                      >
+                        <Plus size={14} />
+                        إضافة شريحة
+                      </button>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={handleAddTier}
-                      className="px-3.5 py-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-bold hover:bg-emerald-500 hover:text-white transition-all cursor-pointer flex items-center gap-1"
-                    >
-                      <Plus size={14} />
-                      إضافة شريحة
-                    </button>
-                  </div>
-
-                  <div className="space-y-3">
-                    {priceTiers.map((tier, idx) => (
-                      <div
-                        key={idx}
-                        className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl items-center"
-                      >
-                        <div>
-                          <label className="block text-[10px] font-bold text-zinc-400 mb-1">الحد الأدنى (قطعة)</label>
-                          <input
-                            type="number"
-                            value={tier.minQuantity}
-                            onChange={(e) => handleUpdateTier(idx, "minQuantity", Number(e.target.value))}
-                            className="w-full px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-lg text-xs font-bold"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] font-bold text-zinc-400 mb-1">الحد الأقصى (اختياري)</label>
-                          <input
-                            type="number"
-                            placeholder="بدون حد أقصى"
-                            value={tier.maxQuantity ?? ""}
-                            onChange={(e) =>
-                              handleUpdateTier(
-                                idx,
-                                "maxQuantity",
-                                e.target.value ? Number(e.target.value) : undefined
-                              )
-                            }
-                            className="w-full px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-lg text-xs font-bold"
-                          />
-                        </div>
-
-                        <div className="flex items-center gap-2 pt-4 sm:pt-0">
-                          <div className="w-full">
-                            <label className="block text-[10px] font-bold text-zinc-400 mb-1">ملاحظة الشريحة</label>
+                    <div className="space-y-3">
+                      {priceTiers.map((tier, idx) => (
+                        <div
+                          key={idx}
+                          className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl items-center"
+                        >
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-400 mb-1">الحد الأدنى (قطعة)</label>
                             <input
-                              type="text"
-                              placeholder="مثال: درستة (12 قطعة)"
-                              value={tier.note || ""}
-                              onChange={(e) => handleUpdateTier(idx, "note", e.target.value)}
-                              className="w-full px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-lg text-[11px] font-bold"
+                              type="number"
+                              value={tier.minQuantity}
+                              onChange={(e) => handleUpdateTier(idx, "minQuantity", Number(e.target.value))}
+                              className="w-full px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-lg text-xs font-bold"
                             />
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveTier(idx)}
-                            className="p-2 text-zinc-400 hover:text-red-500 cursor-pointer pt-5"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-400 mb-1">الحد الأقصى (اختياري)</label>
+                            <input
+                              type="number"
+                              placeholder="بدون حد أقصى"
+                              value={tier.maxQuantity ?? ""}
+                              onChange={(e) =>
+                                handleUpdateTier(
+                                  idx,
+                                  "maxQuantity",
+                                  e.target.value ? Number(e.target.value) : undefined
+                                )
+                              }
+                              className="w-full px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-lg text-xs font-bold"
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-2 pt-4 sm:pt-0">
+                            <div className="w-full">
+                              <label className="block text-[10px] font-bold text-zinc-400 mb-1">ملاحظة الشريحة</label>
+                              <input
+                                type="text"
+                                placeholder="مثال: درستة (12 قطعة)"
+                                value={tier.note || ""}
+                                onChange={(e) => handleUpdateTier(idx, "note", e.target.value)}
+                                className="w-full px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-lg text-[11px] font-bold"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveTier(idx)}
+                              className="p-2 text-zinc-400 hover:text-red-500 cursor-pointer pt-5"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Switches */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] flex items-center justify-between">
+                      <span className="text-xs font-bold">المنتج متوفر للجملة حالياً</span>
+                      <ToggleSwitch checked={prodInStock} onChange={setProdInStock} size="sm" />
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] flex items-center justify-between">
+                      <span className="text-xs font-bold">تميز المنتج بأعلى الصفحة 🔥</span>
+                      <ToggleSwitch checked={prodFeatured} onChange={setProdFeatured} size="sm" />
+                    </div>
                   </div>
                 </div>
 
-                {/* Switches */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] flex items-center justify-between">
-                    <span className="text-xs font-bold">المنتج متوفر للجملة حالياً</span>
-                    <ToggleSwitch checked={prodInStock} onChange={setProdInStock} size="sm" />
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] flex items-center justify-between">
-                    <span className="text-xs font-bold">تميز المنتج بأعلى الصفحة 🔥</span>
-                    <ToggleSwitch checked={prodFeatured} onChange={setProdFeatured} size="sm" />
-                  </div>
-                </div>
-
-                {/* Submit Modal */}
-                <div className="pt-4 border-t border-zinc-200 dark:border-white/[0.06] flex items-center justify-end gap-3">
+                {/* Sticky Pinned Modal Footer */}
+                <div className="pt-3 border-t border-zinc-200 dark:border-white/[0.06] flex items-center justify-end gap-3 bg-white dark:bg-[#0E0E10]">
                   <button
                     type="button"
                     onClick={() => setShowProductModal(false)}
-                    className="px-6 py-2.5 rounded-xl border border-zinc-200 dark:border-white/[0.08] text-xs font-bold"
+                    className="px-6 py-2.5 rounded-xl border border-zinc-200 dark:border-white/[0.08] text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
                   >
                     إلغاء
                   </button>

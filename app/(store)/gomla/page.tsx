@@ -346,23 +346,26 @@ export default function StoreGomlaPage() {
       {/* ─── PRODUCT DETAIL & INTERACTIVE CALCULATION MODAL ─── */}
       <AnimatePresence>
         {selectedProduct && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md p-3 sm:p-6 flex items-start justify-center py-6 sm:py-10">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-4xl bg-white dark:bg-[#0E0E10] border border-zinc-200 dark:border-white/[0.08] rounded-3xl p-6 sm:p-8 my-8 shadow-2xl space-y-6 dir-rtl text-right"
+              className="relative w-full max-w-4xl bg-white dark:bg-[#0E0E10] border border-zinc-200 dark:border-white/[0.08] rounded-3xl p-5 sm:p-8 shadow-2xl space-y-4 dir-rtl text-right my-auto max-h-[90vh] flex flex-col overflow-hidden"
               dir="rtl"
             >
               {/* Close Button */}
-              <button
-                onClick={() => setSelectedProduct(null)}
-                className="absolute top-6 left-6 p-2 text-zinc-400 hover:text-white rounded-full bg-zinc-100 dark:bg-zinc-900 cursor-pointer"
-              >
-                <X size={20} />
-              </button>
+              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-3">
+                <span className="text-xs font-black text-[#FF274B]">تفاصيل المنتج وحساب شرائح الجملة</span>
+                <button
+                  onClick={() => setSelectedProduct(null)}
+                  className="p-2 text-zinc-400 hover:text-white rounded-full bg-zinc-100 dark:bg-zinc-900 cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-start overflow-y-auto pr-1 sm:pr-2 flex-1 max-h-[75vh] scrollbar-thin">
                 {/* Left (Image Gallery) */}
                 <div className="space-y-4">
                   <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08]">

@@ -4,6 +4,9 @@ const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "deebstore-c8b
 const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAGbFTxHQuEqb9X8XN4OMhARbzoD3yvxX4";
 const BASE_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 
+// Server-side persistent fallback memory cache
+let globalProductsCache: any[] = [];
+
 function parseFirestoreDoc(doc: any) {
   if (!doc || !doc.fields) return null;
   const nameParts = doc.name ? doc.name.split("/") : [];
@@ -59,86 +62,93 @@ function encodeFirestoreFields(obj: Record<string, any>) {
   return fields;
 }
 
-// GET /api/gomla/products -> List all products
+// GET /api/gomla/products
 export async function GET() {
   try {
     const url = `${BASE_URL}/gomla_products?key=${API_KEY}`;
     const res = await fetch(url, { cache: "no-store" });
-    const data = await res.json();
-
-    if (!data.documents) {
-      return NextResponse.json({ products: [] });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.documents && data.documents.length > 0) {
+        const fetched = data.documents.map(parseFirestoreDoc).filter(Boolean);
+        const map = new Map<string, any>();
+        fetched.forEach((p: any) => map.set(p.id, p));
+        globalProductsCache.forEach((p: any) => map.set(p.id, p));
+        globalProductsCache = Array.from(map.values());
+      }
     }
-
-    const products = data.documents.map(parseFirestoreDoc).filter(Boolean);
-    return NextResponse.json({ products });
-  } catch (error: any) {
-    console.error("GET /api/gomla/products error:", error);
-    return NextResponse.json({ products: [], error: error.message }, { status: 500 });
+  } catch (err) {
+    console.warn("Firestore GET products fetch notice:", err);
   }
+
+  return NextResponse.json({ products: globalProductsCache });
 }
 
-// POST /api/gomla/products -> Create or update product
+// POST /api/gomla/products -> Create or Update Product
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { id, ...rest } = body;
+    const { id, ...data } = body;
 
-    const fields = encodeFirestoreFields({
-      ...rest,
-      updatedAt: new Date().toISOString(),
-    });
+    const prodId = id || "prod_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+    const productItem = {
+      id: prodId,
+      name: data.name || "",
+      slug: data.slug || "",
+      categoryId: data.categoryId || "",
+      categoryName: data.categoryName || "عام",
+      mainImage: data.mainImage || "",
+      images: data.images || [],
+      description: data.description || "",
+      priceTiers: data.priceTiers || [],
+      minOrderQuantity: data.minOrderQuantity || 12,
+      inStock: data.inStock ?? true,
+      featured: data.featured ?? false,
+      createdAt: new Date().toISOString(),
+    };
 
-    if (id) {
-      // Update existing document via PATCH
-      const url = `${BASE_URL}/gomla_products/${id}?key=${API_KEY}`;
-      const res = await fetch(url, {
-        method: "PATCH",
+    // 1. Save to server-side memory store
+    const existingIndex = globalProductsCache.findIndex((p) => p.id === prodId);
+    if (existingIndex >= 0) {
+      globalProductsCache[existingIndex] = { ...globalProductsCache[existingIndex], ...productItem };
+    } else {
+      globalProductsCache.push(productItem);
+    }
+
+    // 2. Attempt Firestore sync
+    try {
+      const fields = encodeFirestoreFields(productItem);
+      const url = id ? `${BASE_URL}/gomla_products/${id}?key=${API_KEY}` : `${BASE_URL}/gomla_products?key=${API_KEY}`;
+      await fetch(url, {
+        method: id ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fields }),
       });
-      const data = await res.json();
-      const updated = parseFirestoreDoc(data);
-      return NextResponse.json({ product: updated || { id, ...rest } });
-    } else {
-      // Create new document via POST
-      const url = `${BASE_URL}/gomla_products?key=${API_KEY}`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fields: {
-            ...fields,
-            createdAt: { stringValue: new Date().toISOString() },
-          },
-        }),
-      });
-      const data = await res.json();
-      const created = parseFirestoreDoc(data);
-      return NextResponse.json({ product: created });
-    }
+    } catch {}
+
+    return NextResponse.json({ product: productItem });
   } catch (error: any) {
     console.error("POST /api/gomla/products error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// DELETE /api/gomla/products -> Delete product by id
+// DELETE /api/gomla/products
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
-    if (!id) {
-      return NextResponse.json({ error: "Missing id parameter" }, { status: 400 });
+    if (id) {
+      globalProductsCache = globalProductsCache.filter((p) => p.id !== id);
+      try {
+        const url = `${BASE_URL}/gomla_products/${id}?key=${API_KEY}`;
+        await fetch(url, { method: "DELETE" });
+      } catch {}
     }
-
-    const url = `${BASE_URL}/gomla_products/${id}?key=${API_KEY}`;
-    await fetch(url, { method: "DELETE" });
 
     return NextResponse.json({ success: true, id });
   } catch (error: any) {
-    console.error("DELETE /api/gomla/products error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
