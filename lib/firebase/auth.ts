@@ -1,6 +1,5 @@
 import {
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
@@ -8,7 +7,7 @@ import {
   onAuthStateChanged,
   type User,
 } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "./config";
 
 export async function signInAdmin(

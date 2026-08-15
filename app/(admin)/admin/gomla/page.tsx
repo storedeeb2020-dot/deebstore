@@ -10,21 +10,15 @@ import {
   Sliders,
   Phone,
   Save,
-  Check,
   X,
-  Layers,
   Sparkles,
   DollarSign,
-  Tag,
-  Eye,
-  Info,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   getGomlaCategories,
   createGomlaCategory,
-  updateGomlaCategory,
   deleteGomlaCategory,
   getGomlaProducts,
   createGomlaProduct,
@@ -56,7 +50,6 @@ export default function AdminGomlaPage() {
 
   // Gomla Categories State
   const [categories, setCategories] = useState<GomlaCategory[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState(false);
   const [newCatName, setNewCatName] = useState("");
   const [newCatNameAr, setNewCatNameAr] = useState("");
   const [newCatDesc, setNewCatDesc] = useState("");
@@ -65,7 +58,6 @@ export default function AdminGomlaPage() {
 
   // Gomla Products State
   const [products, setProducts] = useState<GomlaProduct[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(false);
   const [selectedCatFilter, setSelectedCatFilter] = useState("all");
 
   // Product Form Modal state
@@ -234,7 +226,11 @@ export default function AdminGomlaPage() {
     setPriceTiers(priceTiers.filter((_, i) => i !== index));
   };
 
-  const handleUpdateTier = (index: number, field: keyof GomlaPriceTier, value: any) => {
+  const handleUpdateTier = (
+    index: number,
+    field: keyof GomlaPriceTier,
+    value: number | string | undefined
+  ) => {
     const updated = [...priceTiers];
     updated[index] = { ...updated[index], [field]: value };
     setPriceTiers(updated);
@@ -709,7 +705,7 @@ export default function AdminGomlaPage() {
               />
             </div>
             <p className="text-[11px] text-zinc-400 mt-1.5">
-              عندما يضغط العميل على زر "اطلب جملة عبر الواتساب"، سيفتح تطبيق الواتساب مباشرة للدردشة مع هذا الرقم المكتوب.
+              عندما يضغط العميل على زر &quot;اطلب جملة عبر الواتساب&quot;، سيفتح تطبيق الواتساب مباشرة للدردشة مع هذا الرقم المكتوب.
             </p>
           </div>
 

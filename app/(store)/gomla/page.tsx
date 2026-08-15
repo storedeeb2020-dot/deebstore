@@ -6,18 +6,11 @@ import {
   MessageCircle,
   Sparkles,
   CheckCircle2,
-  Phone,
   Search,
-  Filter,
   Info,
-  ChevronRight,
-  Layers,
-  ShoppingBag,
-  ArrowRight,
   Plus,
   Minus,
   X,
-  Share2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -28,9 +21,7 @@ import {
 } from "@/lib/firebase/firestore";
 import type { GomlaProduct, GomlaCategory, GomlaPriceTier } from "@/types/gomla";
 import { Spinner } from "@/components/ui/Spinner";
-import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
-import { toast } from "sonner";
 
 export default function StoreGomlaPage() {
   const [loading, setLoading] = useState(true);
