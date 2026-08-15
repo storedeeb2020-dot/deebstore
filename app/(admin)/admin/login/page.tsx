@@ -11,8 +11,8 @@ import { signInAdmin } from "@/lib/firebase/auth";
 import { toast } from "sonner";
 
 const loginSchema = z.object({
-  email: z.string().email("الرجاء إدخال بريد إلكتروني صحيح"),
-  password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
+  email: z.string().min(1, "الرجاء إدخال البريد الإلكتروني"),
+  password: z.string().min(1, "الرجاء إدخال كلمة المرور"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -26,7 +26,12 @@ export default function AdminLoginPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "storedeeb2020@gmail.com",
+    },
+  });
 
   const onSubmit = async (data: LoginForm) => {
     setLoading(true);
@@ -36,16 +41,7 @@ export default function AdminLoginPage() {
       router.push("/admin");
     } catch (err: any) {
       console.error("Admin Login Error:", err);
-
-      let message = "بيانات الدخول غير صحيحة";
-      if (err?.code === "auth/unauthorized-domain") {
-        message = "الدومين غير مصرح له في Firebase Console (Authorized Domains).";
-      } else if (err?.code === "auth/invalid-credential" || err?.code === "auth/user-not-found" || err?.code === "auth/wrong-password") {
-        message = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
-      } else if (err instanceof Error && err.message) {
-        message = err.message;
-      }
-      toast.error(message);
+      toast.error("حدث خطأ أثناء تسجيل الدخول");
     } finally {
       setLoading(false);
     }
