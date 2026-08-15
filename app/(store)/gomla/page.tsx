@@ -65,7 +65,7 @@ export default function StoreGomlaPage() {
   // Helper to determine applicable tier for a given quantity
   const getApplicableTier = (prod: GomlaProduct, qty: number): GomlaPriceTier => {
     if (!prod.priceTiers || prod.priceTiers.length === 0) {
-      return { minQuantity: 1, pricePerUnit: 0 };
+      return { minQuantity: 1 };
     }
     const sorted = [...prod.priceTiers].sort((a, b) => b.minQuantity - a.minQuantity);
     const matched = sorted.find((t) => qty >= t.minQuantity);
