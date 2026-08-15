@@ -5,17 +5,7 @@ const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAGbFTxHQuEqb9
 const BASE_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 
 // Server-side persistent fallback memory cache
-let globalCategoriesCache: any[] = [
-  {
-    id: "cat_default_streetwear",
-    name: "Streetwear",
-    nameAr: "قسم الستريت وير للجملة 📦",
-    slug: "streetwear-gomla",
-    description: "تشكيلة هوديز وسويت شيرتات خامات ميلتون فاخرة جاهزة لطلبات التجار والمحلات",
-    order: 0,
-    createdAt: new Date().toISOString(),
-  },
-];
+let globalCategoriesCache: any[] = [];
 
 function parseFirestoreDoc(doc: any) {
   if (!doc || !doc.fields) return null;
@@ -68,7 +58,7 @@ function encodeFirestoreFields(obj: Record<string, any>) {
   return fields;
 }
 
-// GET /api/gomla/categories
+// GET /api/gomla/categories -> List all categories with strict deduplication
 export async function GET() {
   try {
     const url = `${BASE_URL}/gomla_categories?key=${API_KEY}`;
@@ -77,10 +67,15 @@ export async function GET() {
       const data = await res.json();
       if (data.documents && data.documents.length > 0) {
         const fetched = data.documents.map(parseFirestoreDoc).filter(Boolean);
-        // Merge with local server cache
         const map = new Map<string, any>();
-        fetched.forEach((c: any) => map.set(c.id, c));
-        globalCategoriesCache.forEach((c: any) => map.set(c.id, c));
+        fetched.forEach((c: any) => {
+          const key = (c.slug || c.nameAr || c.name || c.id).toLowerCase().trim();
+          map.set(key, c);
+        });
+        globalCategoriesCache.forEach((c: any) => {
+          const key = (c.slug || c.nameAr || c.name || c.id).toLowerCase().trim();
+          if (!map.has(key)) map.set(key, c);
+        });
         globalCategoriesCache = Array.from(map.values());
       }
     }
@@ -88,7 +83,14 @@ export async function GET() {
     console.warn("Firestore GET categories fetch notice:", err);
   }
 
-  return NextResponse.json({ categories: globalCategoriesCache });
+  // Deduplicate cache
+  const dedupMap = new Map<string, any>();
+  globalCategoriesCache.forEach((c: any) => {
+    const key = (c.slug || c.nameAr || c.name || c.id).toLowerCase().trim();
+    dedupMap.set(key, c);
+  });
+
+  return NextResponse.json({ categories: Array.from(dedupMap.values()) });
 }
 
 // POST /api/gomla/categories -> Create or Update Category
@@ -109,15 +111,19 @@ export async function POST(req: Request) {
       createdAt: new Date().toISOString(),
     };
 
-    // 1. Add to server-side memory store
-    const existingIndex = globalCategoriesCache.findIndex((c) => c.id === catId);
+    // Deduplicated update in memory cache
+    const catKey = (categoryItem.slug || categoryItem.nameAr || categoryItem.name).toLowerCase().trim();
+    const existingIndex = globalCategoriesCache.findIndex(
+      (c) => (c.slug || c.nameAr || c.name).toLowerCase().trim() === catKey || c.id === catId
+    );
+
     if (existingIndex >= 0) {
       globalCategoriesCache[existingIndex] = { ...globalCategoriesCache[existingIndex], ...categoryItem };
     } else {
       globalCategoriesCache.push(categoryItem);
     }
 
-    // 2. Attempt Firestore sync
+    // Attempt Firestore sync
     try {
       const fields = encodeFirestoreFields(categoryItem);
       const url = id ? `${BASE_URL}/gomla_categories/${id}?key=${API_KEY}` : `${BASE_URL}/gomla_categories?key=${API_KEY}`;

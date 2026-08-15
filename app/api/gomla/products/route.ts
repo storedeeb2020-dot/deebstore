@@ -62,7 +62,7 @@ function encodeFirestoreFields(obj: Record<string, any>) {
   return fields;
 }
 
-// GET /api/gomla/products
+// GET /api/gomla/products -> List all products with strict deduplication
 export async function GET() {
   try {
     const url = `${BASE_URL}/gomla_products?key=${API_KEY}`;
@@ -72,8 +72,14 @@ export async function GET() {
       if (data.documents && data.documents.length > 0) {
         const fetched = data.documents.map(parseFirestoreDoc).filter(Boolean);
         const map = new Map<string, any>();
-        fetched.forEach((p: any) => map.set(p.id, p));
-        globalProductsCache.forEach((p: any) => map.set(p.id, p));
+        fetched.forEach((p: any) => {
+          const key = (p.slug || p.name || p.id).toLowerCase().trim();
+          map.set(key, p);
+        });
+        globalProductsCache.forEach((p: any) => {
+          const key = (p.slug || p.name || p.id).toLowerCase().trim();
+          if (!map.has(key)) map.set(key, p);
+        });
         globalProductsCache = Array.from(map.values());
       }
     }
@@ -81,7 +87,14 @@ export async function GET() {
     console.warn("Firestore GET products fetch notice:", err);
   }
 
-  return NextResponse.json({ products: globalProductsCache });
+  // Deduplicate cache
+  const dedupMap = new Map<string, any>();
+  globalProductsCache.forEach((p: any) => {
+    const key = (p.slug || p.name || p.id).toLowerCase().trim();
+    dedupMap.set(key, p);
+  });
+
+  return NextResponse.json({ products: Array.from(dedupMap.values()) });
 }
 
 // POST /api/gomla/products -> Create or Update Product
@@ -107,15 +120,19 @@ export async function POST(req: Request) {
       createdAt: new Date().toISOString(),
     };
 
-    // 1. Save to server-side memory store
-    const existingIndex = globalProductsCache.findIndex((p) => p.id === prodId);
+    // Deduplicated update in memory cache
+    const prodKey = (productItem.slug || productItem.name).toLowerCase().trim();
+    const existingIndex = globalProductsCache.findIndex(
+      (p) => (p.slug || p.name).toLowerCase().trim() === prodKey || p.id === prodId
+    );
+
     if (existingIndex >= 0) {
       globalProductsCache[existingIndex] = { ...globalProductsCache[existingIndex], ...productItem };
     } else {
       globalProductsCache.push(productItem);
     }
 
-    // 2. Attempt Firestore sync
+    // Attempt Firestore sync
     try {
       const fields = encodeFirestoreFields(productItem);
       const url = id ? `${BASE_URL}/gomla_products/${id}?key=${API_KEY}` : `${BASE_URL}/gomla_products?key=${API_KEY}`;

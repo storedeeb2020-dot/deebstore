@@ -686,15 +686,19 @@ export async function getGomlaCategories(): Promise<GomlaCategory[]> {
       const local = localStorage.getItem("nxt_gomla_categories");
       if (local) {
         const parsed = JSON.parse(local) as GomlaCategory[];
-        const map = new Map<string, GomlaCategory>();
-        categories.forEach((c) => map.set(c.id, c));
-        parsed.forEach((c) => map.set(c.id, c));
-        categories = Array.from(map.values());
+        categories = [...categories, ...parsed];
       }
     } catch {}
   }
 
-  return categories;
+  // Strict deduplication by slug or nameAr
+  const map = new Map<string, GomlaCategory>();
+  categories.forEach((cat) => {
+    const key = (cat.slug || cat.nameAr || cat.name || cat.id).toLowerCase().trim();
+    map.set(key, cat);
+  });
+
+  return Array.from(map.values());
 }
 
 export async function createGomlaCategory(data: {
@@ -705,19 +709,23 @@ export async function createGomlaCategory(data: {
   image?: string;
   order: number;
 }): Promise<string> {
+  const catSlug = data.slug || data.name || data.nameAr;
   const newId = "cat_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
   const newCategory: GomlaCategory = {
     id: newId,
     ...data,
+    slug: catSlug,
     createdAt: new Date() as any,
   };
 
   if (typeof window !== "undefined") {
     try {
       const existing = localStorage.getItem("nxt_gomla_categories");
-      const list: GomlaCategory[] = existing ? JSON.parse(existing) : [];
+      let list: GomlaCategory[] = existing ? JSON.parse(existing) : [];
+      list = list.filter((c) => (c.slug || c.nameAr || c.id) !== catSlug);
       list.push(newCategory);
       localStorage.setItem("nxt_gomla_categories", JSON.stringify(list));
+      window.dispatchEvent(new Event("gomla-data-updated"));
     } catch {}
   }
 
@@ -725,7 +733,7 @@ export async function createGomlaCategory(data: {
     const res = await fetch("/api/gomla/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, slug: catSlug }),
     });
     if (res.ok) {
       const result = await res.json();
@@ -736,6 +744,7 @@ export async function createGomlaCategory(data: {
   try {
     const docRef = await addDoc(collection(db, "gomla_categories"), cleanUndefined({
       ...data,
+      slug: catSlug,
       createdAt: Timestamp.now(),
     }));
     return docRef.id;
@@ -755,6 +764,7 @@ export async function updateGomlaCategory(
         const list: GomlaCategory[] = JSON.parse(existing);
         const updated = list.map((c) => (c.id === id ? { ...c, ...data } : c));
         localStorage.setItem("nxt_gomla_categories", JSON.stringify(updated));
+        window.dispatchEvent(new Event("gomla-data-updated"));
       }
     } catch {}
   }
@@ -780,6 +790,7 @@ export async function deleteGomlaCategory(id: string): Promise<void> {
         const list: GomlaCategory[] = JSON.parse(existing);
         const filtered = list.filter((c) => c.id !== id);
         localStorage.setItem("nxt_gomla_categories", JSON.stringify(filtered));
+        window.dispatchEvent(new Event("gomla-data-updated"));
       }
     } catch {}
   }
@@ -818,19 +829,25 @@ export async function getGomlaProducts(categoryId?: string): Promise<GomlaProduc
       const local = localStorage.getItem("nxt_gomla_products");
       if (local) {
         const parsed = JSON.parse(local) as GomlaProduct[];
-        const map = new Map<string, GomlaProduct>();
-        products.forEach((p) => map.set(p.id, p));
-        parsed.forEach((p) => map.set(p.id, p));
-        products = Array.from(map.values());
+        products = [...products, ...parsed];
       }
     } catch {}
   }
 
+  // Strict deduplication by slug or name
+  const map = new Map<string, GomlaProduct>();
+  products.forEach((prod) => {
+    const key = (prod.slug || prod.name || prod.id).toLowerCase().trim();
+    map.set(key, prod);
+  });
+
+  let result = Array.from(map.values());
+
   if (categoryId && categoryId !== "all") {
-    products = products.filter((p) => p.categoryId === categoryId);
+    result = result.filter((p) => p.categoryId === categoryId);
   }
 
-  return products;
+  return result;
 }
 
 export async function getGomlaProductById(id: string): Promise<GomlaProduct | null> {
@@ -849,19 +866,23 @@ export async function getGomlaProductById(id: string): Promise<GomlaProduct | nu
 }
 
 export async function createGomlaProduct(data: Omit<GomlaProduct, "id" | "createdAt">): Promise<string> {
+  const prodSlug = data.slug || data.name;
   const newId = "prod_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
   const newProduct: GomlaProduct = {
     id: newId,
     ...data,
+    slug: prodSlug,
     createdAt: new Date() as any,
   };
 
   if (typeof window !== "undefined") {
     try {
       const existing = localStorage.getItem("nxt_gomla_products");
-      const list: GomlaProduct[] = existing ? JSON.parse(existing) : [];
+      let list: GomlaProduct[] = existing ? JSON.parse(existing) : [];
+      list = list.filter((p) => (p.slug || p.name || p.id) !== prodSlug);
       list.push(newProduct);
       localStorage.setItem("nxt_gomla_products", JSON.stringify(list));
+      window.dispatchEvent(new Event("gomla-data-updated"));
     } catch {}
   }
 
@@ -869,7 +890,7 @@ export async function createGomlaProduct(data: Omit<GomlaProduct, "id" | "create
     const res = await fetch("/api/gomla/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, slug: prodSlug }),
     });
     if (res.ok) {
       const result = await res.json();
@@ -880,6 +901,7 @@ export async function createGomlaProduct(data: Omit<GomlaProduct, "id" | "create
   try {
     const docRef = await addDoc(collection(db, "gomla_products"), cleanUndefined({
       ...data,
+      slug: prodSlug,
       createdAt: Timestamp.now(),
     }));
     return docRef.id;
@@ -899,6 +921,7 @@ export async function updateGomlaProduct(
         const list: GomlaProduct[] = JSON.parse(existing);
         const updated = list.map((p) => (p.id === id ? { ...p, ...data } : p));
         localStorage.setItem("nxt_gomla_products", JSON.stringify(updated));
+        window.dispatchEvent(new Event("gomla-data-updated"));
       }
     } catch {}
   }
@@ -924,6 +947,7 @@ export async function deleteGomlaProduct(id: string): Promise<void> {
         const list: GomlaProduct[] = JSON.parse(existing);
         const filtered = list.filter((p) => p.id !== id);
         localStorage.setItem("nxt_gomla_products", JSON.stringify(filtered));
+        window.dispatchEvent(new Event("gomla-data-updated"));
       }
     } catch {}
   }
@@ -936,6 +960,7 @@ export async function deleteGomlaProduct(id: string): Promise<void> {
     await deleteDoc(doc(db, "gomla_products", id));
   } catch {}
 }
+
 
 
 

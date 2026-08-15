@@ -38,11 +38,7 @@ export default function StoreGomlaPage() {
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [orderQuantity, setOrderQuantity] = useState<number>(12);
 
-  useEffect(() => {
-    const unsub = subscribeToSiteSettings((data) => {
-      if (data) setSettings(data);
-    });
-
+  const loadGomlaData = () => {
     Promise.all([getGomlaProducts(), getGomlaCategories()])
       .then(([prods, cats]) => {
         setProducts(prods);
@@ -50,8 +46,27 @@ export default function StoreGomlaPage() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
+  };
 
-    return () => unsub();
+  useEffect(() => {
+    const unsub = subscribeToSiteSettings((data) => {
+      if (data) setSettings(data);
+    });
+
+    loadGomlaData();
+
+    const handleGomlaDataUpdate = () => {
+      loadGomlaData();
+    };
+
+    window.addEventListener("gomla-data-updated", handleGomlaDataUpdate);
+    window.addEventListener("storage", handleGomlaDataUpdate);
+
+    return () => {
+      unsub();
+      window.removeEventListener("gomla-data-updated", handleGomlaDataUpdate);
+      window.removeEventListener("storage", handleGomlaDataUpdate);
+    };
   }, []);
 
   // Sync min order quantity when product modal opens

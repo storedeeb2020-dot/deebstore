@@ -109,6 +109,18 @@ export default function AdminGomlaPage() {
 
   useEffect(() => {
     loadData();
+
+    const handleUpdate = () => {
+      loadData();
+    };
+
+    window.addEventListener("gomla-data-updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+
+    return () => {
+      window.removeEventListener("gomla-data-updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
   }, []);
 
   // ─── Settings Handler ───
