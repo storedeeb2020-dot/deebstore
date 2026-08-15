@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { getProductBySlug, getProducts, getSiteSettings } from "@/lib/firebase/firestore";
 import { useCart } from "@/features/cart/CartProvider";
 import { useWishlist } from "@/features/wishlist/WishlistProvider";
-import { formatPrice, getDiscountPercentage } from "@/lib/utils";
+import { formatPrice, getDiscountPercentage, formatWhatsAppNumber } from "@/lib/utils";
 import type { Product, ProductVariant } from "@/types/product";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
