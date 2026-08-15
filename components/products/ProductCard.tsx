@@ -196,7 +196,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                     quality={95}
                     crossOrigin="anonymous"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-contain object-top"
+                    className="object-contain p-1 transition-transform duration-500 group-hover:scale-105"
                   />
                 </motion.div>
               ) : (

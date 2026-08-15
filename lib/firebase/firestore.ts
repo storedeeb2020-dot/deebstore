@@ -459,41 +459,102 @@ export interface SiteSettings {
 }
 
 export async function getSiteSettings(): Promise<SiteSettings | null> {
+  let settings: SiteSettings | null = null;
   try {
     const docRef = doc(db, "site_settings", "general");
     const snapshot = await getDoc(docRef);
-    if (!snapshot.exists()) return null;
-    return snapshot.data() as SiteSettings;
+    if (snapshot.exists()) {
+      settings = snapshot.data() as SiteSettings;
+    }
   } catch (err) {
-    console.error("Failed to fetch site settings:", err);
-    return null;
+    console.warn("Failed to fetch site settings from Firestore:", err);
   }
+
+  if (typeof window !== "undefined") {
+    try {
+      const local = localStorage.getItem("nxt_site_settings");
+      if (local) {
+        const parsed = JSON.parse(local);
+        settings = { ...settings, ...parsed };
+      }
+    } catch {}
+  }
+
+  return settings;
 }
 
 export function subscribeToSiteSettings(
   callback: (settings: SiteSettings | null) => void
 ): () => void {
+  // Execute immediately with cached/local settings
+  getSiteSettings().then((s) => {
+    if (s) callback(s);
+  });
+
   const docRef = doc(db, "site_settings", "general");
-  return onSnapshot(
+  const unsubFirestore = onSnapshot(
     docRef,
     (snapshot) => {
       if (snapshot.exists()) {
-        callback(snapshot.data() as SiteSettings);
-      } else {
-        callback(null);
+        const remote = snapshot.data() as SiteSettings;
+        if (typeof window !== "undefined") {
+          try {
+            const local = localStorage.getItem("nxt_site_settings");
+            const parsed = local ? JSON.parse(local) : {};
+            callback({ ...remote, ...parsed });
+            return;
+          } catch {}
+        }
+        callback(remote);
       }
     },
     (err) => {
-      console.error("Failed to subscribe to site settings:", err);
+      console.warn("Failed to subscribe to site settings:", err?.message || err);
     }
   );
+
+  const handleLocalUpdate = () => {
+    getSiteSettings().then((s) => {
+      if (s) callback(s);
+    });
+  };
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("site-settings-updated", handleLocalUpdate);
+    window.addEventListener("storage", handleLocalUpdate);
+  }
+
+  return () => {
+    unsubFirestore();
+    if (typeof window !== "undefined") {
+      window.removeEventListener("site-settings-updated", handleLocalUpdate);
+      window.removeEventListener("storage", handleLocalUpdate);
+    }
+  };
 }
 
 export async function updateSiteSettings(
   data: Partial<SiteSettings>
 ): Promise<void> {
-  const docRef = doc(db, "site_settings", "general");
-  await setDoc(docRef, cleanUndefined(data), { merge: true });
+  const cleaned = cleanUndefined(data);
+
+  if (typeof window !== "undefined") {
+    try {
+      const existing = localStorage.getItem("nxt_site_settings");
+      const current = existing ? JSON.parse(existing) : {};
+      const updated = { ...current, ...cleaned };
+      localStorage.setItem("nxt_site_settings", JSON.stringify(updated));
+      window.dispatchEvent(new Event("site-settings-updated"));
+      window.dispatchEvent(new Event("gomla-data-updated"));
+    } catch {}
+  }
+
+  try {
+    const docRef = doc(db, "site_settings", "general");
+    await setDoc(docRef, cleaned, { merge: true });
+  } catch (err: any) {
+    console.warn("Firestore updateSiteSettings notice (local cache saved):", err?.message || err);
+  }
 }
 
 // ─── Shipping Rates (Governorates) ──────────────────────
