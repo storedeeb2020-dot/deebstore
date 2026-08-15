@@ -58,3 +58,21 @@ export function generateSKU(): string {
   }
   return `DEEB-${code}`;
 }
+
+/** Ensures Egyptian & International WhatsApp phone numbers format correctly for wa.me links (e.g. 01012345678 -> 201012345678) */
+export function formatWhatsAppNumber(phone?: string): string {
+  if (!phone) return "201012345678";
+  let cleaned = phone.replace(/\D/g, "");
+  if (!cleaned) return "201012345678";
+
+  // If local Egyptian format starting with 01 (11 digits: 010, 011, 012, 015...)
+  if (cleaned.startsWith("01") && cleaned.length === 11) {
+    cleaned = "2" + cleaned;
+  } else if (cleaned.startsWith("002")) {
+    cleaned = cleaned.substring(2);
+  } else if (cleaned.startsWith("1") && cleaned.length === 10) {
+    cleaned = "20" + cleaned;
+  }
+
+  return cleaned;
+}

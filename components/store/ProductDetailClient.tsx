@@ -167,6 +167,8 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
 
   const handleWhatsAppOrder = () => {
     if (!product) return;
+    const rawPhone = (product as any)?.whatsappNumber || whatsappNumber;
+    const waPhone = formatWhatsAppNumber(rawPhone);
     const msg = encodeURIComponent(
       `🐺 DEEP STORE - طلب جديد
 المنتج: ${product.name}
@@ -176,7 +178,9 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
 السعر: ${formatPrice(displayPrice)}
 الرابط: ${typeof window !== "undefined" ? window.location.href : ""}`
     );
-    window.open(`https://wa.me/${whatsappNumber}?text=${msg}`, "_blank");
+    if (typeof window !== "undefined") {
+      window.location.href = `https://wa.me/${waPhone}?text=${msg}`;
+    }
   };
 
   const handleShare = async () => {

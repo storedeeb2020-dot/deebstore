@@ -19,6 +19,7 @@ import {
 } from "@/lib/firebase/firestore";
 import type { GomlaProduct, GomlaCategory } from "@/types/gomla";
 import { Spinner } from "@/components/ui/Spinner";
+import { formatWhatsAppNumber } from "@/lib/utils";
 import Link from "next/link";
 
 export default function StoreGomlaPage() {
@@ -73,7 +74,8 @@ export default function StoreGomlaPage() {
   }, [selectedProduct]);
 
   const handleOpenWhatsAppOrder = (prod: GomlaProduct) => {
-    const whatsappNum = (settings?.gomlaWhatsappNumber || settings?.whatsappNumber || "201012345678").replace(/\D/g, "");
+    const rawNum = settings?.gomlaWhatsappNumber || settings?.whatsappNumber || "01012345678";
+    const whatsappNum = formatWhatsAppNumber(rawNum);
     const pageUrl = typeof window !== "undefined" ? window.location.href : "";
 
     const textMessage = `السلام عليكم ورحمة الله وبركاته، أرغب في الاستفسار عن أسعار وطلب جملة من متجر ديب ستور DEEB STORE 📦⚡
@@ -86,7 +88,10 @@ export default function StoreGomlaPage() {
 
     const encodedText = encodeURIComponent(textMessage);
     const whatsappUrl = `https://wa.me/${whatsappNum}?text=${encodedText}`;
-    window.open(whatsappUrl, "_blank");
+
+    if (typeof window !== "undefined") {
+      window.location.href = whatsappUrl;
+    }
   };
 
   // Filter products by category and search
