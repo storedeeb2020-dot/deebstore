@@ -62,12 +62,11 @@ export default function StoreGomlaPage() {
     }
   }, [selectedProduct]);
 
-  // Helper to determine applicable tier and unit price for a given quantity
+  // Helper to determine applicable tier for a given quantity
   const getApplicableTier = (prod: GomlaProduct, qty: number): GomlaPriceTier => {
     if (!prod.priceTiers || prod.priceTiers.length === 0) {
       return { minQuantity: 1, pricePerUnit: 0 };
     }
-    // Sort tiers descending by minQuantity
     const sorted = [...prod.priceTiers].sort((a, b) => b.minQuantity - a.minQuantity);
     const matched = sorted.find((t) => qty >= t.minQuantity);
     return matched || sorted[sorted.length - 1];
@@ -76,17 +75,15 @@ export default function StoreGomlaPage() {
   const handleOpenWhatsAppOrder = (prod: GomlaProduct, qty: number) => {
     const whatsappNum = (settings?.gomlaWhatsappNumber || settings?.whatsappNumber || "201012345678").replace(/\D/g, "");
     const tier = getApplicableTier(prod, qty);
-    const totalPrice = qty * tier.pricePerUnit;
     const pageUrl = typeof window !== "undefined" ? window.location.href : "";
 
-    const textMessage = `السلام عليكم ورحمة الله وبركاته، أرغب في تقديم طلب جملة من متجر ديب ستور DEEB STORE 📦⚡
+    const textMessage = `السلام عليكم ورحمة الله وبركاته، أرغب في الاستفسار عن أسعار وطلب جملة من متجر ديب ستور DEEB STORE 📦⚡
 
 📦 اسم المنتج: ${prod.name}
 🏷️ القسم: ${prod.categoryName || "قسم الجملة"}
-🔢 الكمية المطلوبة: ${qty} قطعة
-💰 سعر القطعة للشريحة: ${tier.pricePerUnit} ج.م ${tier.note ? `(${tier.note})` : ""}
-💵 الإجمالي التقديري للطلب: ${totalPrice} ج.م
+🔢 الكمية المطلوبة: ${qty} قطعة ${tier.note ? `(${tier.note})` : ""}
 
+يرجى إرسال تفاصيل السعر والخصم المتاح لهذه الكمية.
 رابط المنتج: ${pageUrl}`;
 
     const encodedText = encodeURIComponent(textMessage);
@@ -151,7 +148,7 @@ export default function StoreGomlaPage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 dark:bg-white/5 border border-white/10 text-amber-400 text-xs font-bold backdrop-blur-md"
           >
             <Sparkles size={14} />
-            <span>أسعار خاصة للتجار، المحلات، وأصحاب المتاجر 📦⚡</span>
+            <span>الأسعار والتفاصيل عبر الواتساب للتجار والمحلات 📦💬</span>
           </motion.div>
 
           <motion.h1
@@ -160,7 +157,7 @@ export default function StoreGomlaPage() {
             transition={{ delay: 0.1 }}
             className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white max-w-3xl mx-auto leading-tight"
           >
-            {settings?.gomlaIntroText || "قسم مبيعات الجملة والكميات — أسعار خاصة بالتجار والمحلات 📦⚡"}
+            {settings?.gomlaIntroText || "قسم مبيعات الجملة والكميات — الأسعار عبر الواتساب للتجار والمحلات 📦⚡"}
           </motion.h1>
 
           <motion.p
@@ -169,13 +166,13 @@ export default function StoreGomlaPage() {
             transition={{ delay: 0.2 }}
             className="text-xs sm:text-sm text-zinc-300 max-w-2xl mx-auto leading-relaxed"
           >
-            اختر منتجات الجملة المناسبة لتجارتك، اطلع على شرائح الأسعار المتدرجة حسب الكمية، واطلب فوراً عبر التواصل المباشر مع إدارة المتجر على الواتساب.
+            اختر منتجات الجملة المناسبة لتجارتك، حدد الكميات المطلوبة، واطلب معرفة السعر والخصم المتاح فوراً عبر محادثة الواتساب المباشرة مع إدارة المتجر.
           </motion.p>
 
           {/* Key Advantages */}
           <div className="pt-6 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto text-right">
             {[
-              { title: "أسعار تنافسية", desc: "خصومات متدرجة بحجم الكمية" },
+              { title: "أسعار عبر الواتساب", desc: "خصومات خاصة وفورية بحجم الكمية" },
               { title: "خامات الستريت وير", desc: "أجود أقمشة قطنية وميلتون" },
               { title: "طلب مباشر بالواتساب", desc: "تواصل شخصي وسريع مع الأدمن" },
               { title: "شحن لكافة المحافظات", desc: "توصيل آمن لجميع المحافظات" },
@@ -253,10 +250,6 @@ export default function StoreGomlaPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {filteredProducts.map((prod) => {
-              const lowestTierPrice = prod.priceTiers && prod.priceTiers.length > 0
-                ? Math.min(...prod.priceTiers.map((t) => t.pricePerUnit))
-                : 0;
-
               return (
                 <motion.div
                   key={prod.id}
@@ -279,11 +272,11 @@ export default function StoreGomlaPage() {
                       <span className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-amber-400 border border-amber-500/30 text-[10px] font-bold px-3 py-1 rounded-full">
                         {prod.categoryName}
                       </span>
-                      {lowestTierPrice > 0 && (
-                        <span className="absolute bottom-3 left-3 bg-[#FF274B] text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-lg">
-                          يبدأ من {lowestTierPrice} ج.م / قطعة
-                        </span>
-                      )}
+
+                      {/* WhatsApp Only Pricing Badge */}
+                      <span className="absolute bottom-3 left-3 bg-emerald-600 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5">
+                        <MessageCircle size={14} /> السعر عبر الواتساب
+                      </span>
                     </div>
 
                     {/* Content Details */}
@@ -297,10 +290,10 @@ export default function StoreGomlaPage() {
                         </p>
                       </div>
 
-                      {/* Pricing Tiers Preview */}
+                      {/* Pricing Tiers Overview */}
                       <div className="space-y-1.5 pt-3 border-t border-zinc-100 dark:border-white/[0.06]">
                         <div className="flex items-center justify-between text-[11px] font-bold text-zinc-400">
-                          <span>شرائح الكميات والأسعار:</span>
+                          <span>شرائح الكميات المتاحة:</span>
                           <span className="text-amber-500">أقل طلب {prod.minOrderQuantity || 12} قطعة</span>
                         </div>
                         <div className="space-y-1">
@@ -315,8 +308,8 @@ export default function StoreGomlaPage() {
                                   : `${tier.minQuantity}+ قطعة`}
                                 {tier.note ? ` (${tier.note})` : ""}
                               </span>
-                              <span className="font-black text-[#FF274B]">
-                                {tier.pricePerUnit} ج.م
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                السعر عبر الواتساب 💬
                               </span>
                             </div>
                           ))}
@@ -332,7 +325,7 @@ export default function StoreGomlaPage() {
                       className="flex-1 py-3 px-4 rounded-2xl bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-white/[0.08] hover:border-[#FF274B] font-bold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <Info size={15} />
-                      <span>تفاصيل السعر</span>
+                      <span>تفاصيل الكمية</span>
                     </button>
 
                     <button
@@ -340,7 +333,7 @@ export default function StoreGomlaPage() {
                       className="flex-1 py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <MessageCircle size={16} />
-                      <span>اطلب جملة 💬</span>
+                      <span>استفسر عبر الواتساب 💬</span>
                     </button>
                   </div>
                 </motion.div>
@@ -430,7 +423,7 @@ export default function StoreGomlaPage() {
                   {/* Pricing Tiers Highlight */}
                   <div className="space-y-2">
                     <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
-                      جدول شرائح الأسعار المتوفرة:
+                      شرائح الكميات المتوفرة:
                     </span>
                     <div className="space-y-2">
                       {selectedProduct.priceTiers?.map((tier, idx) => {
@@ -440,7 +433,7 @@ export default function StoreGomlaPage() {
                         return (
                           <div
                             key={idx}
-                            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                            className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
                               isCurrent
                                 ? "bg-amber-500/10 border-amber-500 text-amber-500 dark:bg-amber-500/20"
                                 : "bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-white/[0.06] text-zinc-700 dark:text-zinc-300"
@@ -455,15 +448,17 @@ export default function StoreGomlaPage() {
                                 {tier.note ? ` (${tier.note})` : ""}
                               </span>
                             </div>
-                            <span className="font-black text-sm">{tier.pricePerUnit} ج.م / قطعة</span>
+                            <span className="font-bold text-xs text-emerald-600 dark:text-emerald-400">
+                              السعر عبر الواتساب 💬
+                            </span>
                           </div>
                         );
                       })}
                     </div>
                   </div>
 
-                  {/* Quantity Counter & Total Calculator */}
-                  <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] space-y-4">
+                  {/* Quantity Counter & WhatsApp Direct Prompt */}
+                  <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
                         اختر الكمية المطلوبة (أقل طلب {selectedProduct.minOrderQuantity || 12} قطعة):
@@ -487,20 +482,12 @@ export default function StoreGomlaPage() {
                       </div>
                     </div>
 
-                    {/* Calculated Summary */}
-                    {(() => {
-                      const currentTier = getApplicableTier(selectedProduct, orderQuantity);
-                      const estimatedTotal = orderQuantity * currentTier.pricePerUnit;
-
-                      return (
-                        <div className="pt-3 border-t border-zinc-200 dark:border-white/[0.06] flex items-center justify-between text-xs font-bold">
-                          <span>إجمالي المبلغ التقديري للطلب:</span>
-                          <span className="text-lg font-black text-[#FF274B]">
-                            {estimatedTotal.toLocaleString()} ج.م
-                          </span>
-                        </div>
-                      );
-                    })()}
+                    <div className="pt-3 border-t border-zinc-200 dark:border-white/[0.06] flex items-center justify-between text-xs font-bold text-zinc-600 dark:text-zinc-300">
+                      <span>حالة السعر والخصم:</span>
+                      <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
+                        خصم وتحديد مباشر فور التواصل بالواتساب 💬
+                      </span>
+                    </div>
                   </div>
 
                   {/* Order via WhatsApp Action Button */}
@@ -509,7 +496,7 @@ export default function StoreGomlaPage() {
                     className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-2xl shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     <MessageCircle size={20} />
-                    <span>ارسل الطلب للواتساب الآن 💬</span>
+                    <span>تواصل وراسلنا عبر الواتساب لمعرفة السعر 💬</span>
                   </button>
                 </div>
               </div>

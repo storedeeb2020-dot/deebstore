@@ -3,8 +3,7 @@ import { Timestamp } from "firebase/firestore";
 export interface GomlaPriceTier {
   minQuantity: number;
   maxQuantity?: number;
-  pricePerUnit: number;
-  note?: string; // e.g. "درستة 12 قطعة" or "كميات كبيرة"
+  note?: string; // e.g. "درستة 12 قطعة" or "كميات كبرى للتجار"
 }
 
 export interface GomlaCategory {

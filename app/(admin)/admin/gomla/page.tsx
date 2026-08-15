@@ -12,7 +12,7 @@ import {
   Save,
   X,
   Sparkles,
-  DollarSign,
+  Layers,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,7 +44,7 @@ export default function AdminGomlaPage() {
   const [settings, setSettings] = useState<SiteSettings>({
     gomlaEnabled: true,
     gomlaWhatsappNumber: "",
-    gomlaIntroText: "قسم مبيعات الجملة والكميات — أسعار خاصة بالتجار والمحلات 📦⚡",
+    gomlaIntroText: "قسم مبيعات الجملة والكميات — تواصل عبر الواتساب للأسعار والطلبات 📦⚡",
   });
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -72,8 +72,8 @@ export default function AdminGomlaPage() {
   const [prodInStock, setProdInStock] = useState(true);
   const [prodFeatured, setProdFeatured] = useState(false);
   const [priceTiers, setPriceTiers] = useState<GomlaPriceTier[]>([
-    { minQuantity: 12, maxQuantity: 49, pricePerUnit: 150, note: "درستة 12 قطعة" },
-    { minQuantity: 50, pricePerUnit: 130, note: "كميات محلات (50+ قطعة)" },
+    { minQuantity: 12, maxQuantity: 49, note: "درستة (12 قطعة)" },
+    { minQuantity: 50, note: "كميات كبرى للتجار (50+ قطعة)" },
   ]);
   const [submittingProduct, setSubmittingProduct] = useState(false);
 
@@ -93,7 +93,7 @@ export default function AdminGomlaPage() {
           ...siteData,
           gomlaEnabled: siteData.gomlaEnabled ?? true,
           gomlaWhatsappNumber: siteData.gomlaWhatsappNumber || siteData.whatsappNumber || "",
-          gomlaIntroText: siteData.gomlaIntroText || "قسم مبيعات الجملة والكميات — أسعار خاصة بالتجار والمحلات 📦⚡",
+          gomlaIntroText: siteData.gomlaIntroText || "قسم مبيعات الجملة والكميات — تواصل عبر الواتساب للأسعار والطلبات 📦⚡",
         }));
       }
 
@@ -189,8 +189,8 @@ export default function AdminGomlaPage() {
     setProdInStock(true);
     setProdFeatured(false);
     setPriceTiers([
-      { minQuantity: 12, maxQuantity: 49, pricePerUnit: 150, note: "درستة 12 قطعة" },
-      { minQuantity: 50, pricePerUnit: 130, note: "كميات كبيرة (50+ قطعة)" },
+      { minQuantity: 12, maxQuantity: 49, note: "درستة (12 قطعة)" },
+      { minQuantity: 50, note: "كميات كبرى (50+ قطعة)" },
     ]);
     setShowProductModal(true);
   };
@@ -214,13 +214,13 @@ export default function AdminGomlaPage() {
     const newMin = lastTier ? (lastTier.maxQuantity ? lastTier.maxQuantity + 1 : lastTier.minQuantity + 20) : 12;
     setPriceTiers([
       ...priceTiers,
-      { minQuantity: newMin, pricePerUnit: 100, note: `كمية أكبر (${newMin}+ قطعة)` },
+      { minQuantity: newMin, note: `كمية أسرع (${newMin}+ قطعة)` },
     ]);
   };
 
   const handleRemoveTier = (index: number) => {
     if (priceTiers.length <= 1) {
-      toast.error("يجب إضافة شريحة سعر واحدة على الأقل للمنتج الجملة");
+      toast.error("يجب إدخال شريحة كمية واحدة على الأقل للمنتج الجملة");
       return;
     }
     setPriceTiers(priceTiers.filter((_, i) => i !== index));
@@ -248,10 +248,6 @@ export default function AdminGomlaPage() {
     }
     if (!prodMainImage) {
       toast.error("يرجى رفع الصورة الرئيسية للمنتج الجملة");
-      return;
-    }
-    if (priceTiers.length === 0) {
-      toast.error("يرجى تحديد شريحة أسعار واحدة على الأقل حسب الكمية");
       return;
     }
 
@@ -332,7 +328,7 @@ export default function AdminGomlaPage() {
             منتجات، أقسام، وإعدادات الواتساب للتجار
           </h1>
           <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
-            أضف منتجات الجملة وحدد الأسعار حسب الكميات واربط طلب العميل مباشرة برقم الواتساب الخاص بك.
+            أضف منتجات الجملة بالصور والوصف وتفاصيل الكميات. التواصل والأسعار تتم بالكامل عبر الواتساب.
           </p>
         </div>
 
@@ -420,7 +416,7 @@ export default function AdminGomlaPage() {
               <Package size={48} className="mx-auto text-zinc-400" />
               <h3 className="text-base font-bold">لا توجد منتجات جملة مضافة بعد</h3>
               <p className="text-xs text-zinc-500 max-w-md mx-auto">
-                قم بإضافة منتج جملة جديد وتحديد شرائح الأسعار لتمكين العملاء والتجار من الطلب مباشرة عبر الواتساب.
+                قم بإضافة منتج جملة جديد لتمكين العملاء والتجار من التواصل والطلب مباشرة عبر الواتساب.
               </p>
               <button
                 onClick={openNewProductModal}
@@ -467,10 +463,10 @@ export default function AdminGomlaPage() {
                         </p>
                       </div>
 
-                      {/* Tiers Pricing Table Preview */}
+                      {/* Quantities Tiers Preview */}
                       <div className="space-y-1.5 pt-2 border-t border-zinc-100 dark:border-white/[0.06]">
                         <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
-                          شرائح الأسعار حسب الكمية:
+                          شرائح الكميات المتاحة:
                         </span>
                         <div className="space-y-1">
                           {prod.priceTiers?.map((tier, idx) => (
@@ -484,8 +480,8 @@ export default function AdminGomlaPage() {
                                   : `${tier.minQuantity}+ قطعة`}
                                 {tier.note ? ` (${tier.note})` : ""}
                               </span>
-                              <span className="font-black text-[#FF274B]">
-                                {tier.pricePerUnit} ج.م / قطعة
+                              <span className="font-bold text-emerald-500">
+                                عبر الواتساب 💬
                               </span>
                             </div>
                           ))}
@@ -503,7 +499,7 @@ export default function AdminGomlaPage() {
                           : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
                       }`}
                     >
-                      {prod.inStock ? "متوفر بالجملة" : "نفذت الكمية"}
+                      {prod.inStock ? "متوفر للجملة" : "نفذت الكمية"}
                     </span>
 
                     <div className="flex items-center gap-2">
@@ -604,7 +600,7 @@ export default function AdminGomlaPage() {
           {/* Existing Categories List */}
           <div className="lg:col-span-2 bg-white dark:bg-[#0E0E10] rounded-3xl border border-zinc-200 dark:border-white/[0.06] p-6 space-y-4">
             <h2 className="font-black text-sm text-zinc-900 dark:text-white uppercase tracking-wider">
-              أقسام الجملة المتاحة حالياً ({categories.length})
+              أقسان الجملة المتاحة حالياً ({categories.length})
             </h2>
 
             {categories.length === 0 ? (
@@ -659,7 +655,7 @@ export default function AdminGomlaPage() {
             <div className="flex items-center gap-2">
               <Sliders size={20} className="text-[#FF274B]" />
               <h2 className="font-black text-base text-zinc-900 dark:text-white">
-                إعدادات قسم الجملة ورقم الواتساب الخاص بالطلبات
+                إعدادات قسم الجملة ورقم الواتساب الخاص للتجار
               </h2>
             </div>
             <span className="text-xs font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-3 py-1 rounded-full">
@@ -716,7 +712,7 @@ export default function AdminGomlaPage() {
             </label>
             <input
               type="text"
-              placeholder="قسم مبيعات الجملة والكميات — أسعار خاصة بالتجار والمحلات 📦⚡"
+              placeholder="قسم مبيعات الجملة والكميات — تواصل عبر الواتساب للأسعار والطلبات 📦⚡"
               value={settings.gomlaIntroText || ""}
               onChange={(e) => setSettings({ ...settings, gomlaIntroText: e.target.value })}
               className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/[0.08] rounded-xl text-xs font-bold text-zinc-900 dark:text-white focus:outline-none focus:border-[#FF274B]"
@@ -762,7 +758,7 @@ export default function AdminGomlaPage() {
                   {editingProductId ? "تعديل بيانات منتج الجملة" : "إضافة منتج جملة جديد 📦"}
                 </h2>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                  أدخل اسم المنتج، اختر القسم، وارفع الصور، ثم أضف شرائح الأسعار المتغيرة حسب الكميات.
+                  أدخل اسم المنتج، اختر القسم، وارفع الصور، ثم حدد الشرائح والملاحظات للتواصل عبر الواتساب.
                 </p>
               </div>
 
@@ -840,16 +836,16 @@ export default function AdminGomlaPage() {
                   />
                 </div>
 
-                {/* Dynamic Price Tiers Builder */}
+                {/* Dynamic Quantities Tiers Builder (NO Numeric Price Inputs) */}
                 <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/[0.06] space-y-4">
                   <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-3">
                     <div>
                       <h3 className="text-xs font-black text-[#FF274B] flex items-center gap-1.5">
-                        <DollarSign size={16} />
-                        جدول الأسعار حسب الكميات (Quantity Pricing Tiers)
+                        <Layers size={16} />
+                        شرائح الكميات والملاحظات (Quantity Tiers)
                       </h3>
                       <p className="text-[11px] text-zinc-500 mt-0.5">
-                        حدد سعر القطعة بالجنيه لكل شريحة كمية (مثال: من 12 إلى 49 قطعة بسعر 150ج).
+                        حدد شرائح الكميات والملاحظات (مثال: من 12 إلى 49 قطعة - درستة). التواصل والأسعار عبر الواتساب فقط.
                       </p>
                     </div>
 
@@ -867,7 +863,7 @@ export default function AdminGomlaPage() {
                     {priceTiers.map((tier, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-1 sm:grid-cols-4 gap-3 p-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl items-center"
+                        className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.08] rounded-xl items-center"
                       >
                         <div>
                           <label className="block text-[10px] font-bold text-zinc-400 mb-1">الحد الأدنى (قطعة)</label>
@@ -896,28 +892,21 @@ export default function AdminGomlaPage() {
                           />
                         </div>
 
-                        <div>
-                          <label className="block text-[10px] font-bold text-zinc-400 mb-1">سعر القطعة (ج.م)</label>
-                          <input
-                            type="number"
-                            value={tier.pricePerUnit}
-                            onChange={(e) => handleUpdateTier(idx, "pricePerUnit", Number(e.target.value))}
-                            className="w-full px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-lg text-xs font-bold text-[#FF274B]"
-                          />
-                        </div>
-
                         <div className="flex items-center gap-2 pt-4 sm:pt-0">
-                          <input
-                            type="text"
-                            placeholder="ملاحظة (مثل: درستة)"
-                            value={tier.note || ""}
-                            onChange={(e) => handleUpdateTier(idx, "note", e.target.value)}
-                            className="w-full px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-lg text-[11px] font-bold"
-                          />
+                          <div className="w-full">
+                            <label className="block text-[10px] font-bold text-zinc-400 mb-1">ملاحظة الشريحة</label>
+                            <input
+                              type="text"
+                              placeholder="مثال: درستة (12 قطعة)"
+                              value={tier.note || ""}
+                              onChange={(e) => handleUpdateTier(idx, "note", e.target.value)}
+                              className="w-full px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] rounded-lg text-[11px] font-bold"
+                            />
+                          </div>
                           <button
                             type="button"
                             onClick={() => handleRemoveTier(idx)}
-                            className="p-2 text-zinc-400 hover:text-red-500 cursor-pointer"
+                            className="p-2 text-zinc-400 hover:text-red-500 cursor-pointer pt-5"
                           >
                             <Trash2 size={16} />
                           </button>
