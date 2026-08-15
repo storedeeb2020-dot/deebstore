@@ -1,6 +1,5 @@
 import {
   signInWithEmailAndPassword,
-  signInAnonymously,
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
@@ -15,44 +14,29 @@ export async function signInAdmin(
   email: string,
   password: string
 ): Promise<User> {
-  const cleanEmail = email.trim().toLowerCase() || "storedeeb2020@gmail.com";
+  const cleanEmail = email.trim().toLowerCase();
 
-  // 1. Attempt standard Firebase Auth sign-in
+  if (!cleanEmail || !password) {
+    throw new Error("يرجى إدخال البريد الإلكتروني وكلمة المرور.");
+  }
+
+  // Strictly authenticate via Firebase Auth API using real credentials (NO BYPASS FALLBACK)
   try {
     const credential = await signInWithEmailAndPassword(auth, cleanEmail, password);
-    const user = credential.user;
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem("nxt_admin_bypass", JSON.stringify(user));
-      window.dispatchEvent(new Event("admin-bypass-login"));
-    }
-    return user;
+    return credential.user;
   } catch (error: any) {
-    console.warn("Firebase sign-in failed, proceeding with admin bypass login:", error);
-
-    // 2. Sign in anonymously in Firebase Auth so auth.currentUser is authenticated for Firestore rules
-    try {
-      if (!auth.currentUser) {
-        await signInAnonymously(auth);
-      }
-    } catch (anonErr) {
-      console.warn("Anonymous auth fallback notice:", anonErr);
+    console.error("Firebase Auth sign-in failed:", error);
+    let errorMsg = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+    if (
+      error.code === "auth/user-not-found" ||
+      error.code === "auth/wrong-password" ||
+      error.code === "auth/invalid-credential"
+    ) {
+      errorMsg = "بيانات الاعتماد غير صحيحة. يرجى التأكد من البريد الإلكتروني وكلمة المرور المسجلة في الفايربيس.";
+    } else if (error.code === "auth/too-many-requests") {
+      errorMsg = "تم حظر محاولات الدخول الفاشلة مؤقتاً بكثرة المحاولات. يرجى المحاولة لاحقاً.";
     }
-
-    const mockAdminUser: any = auth.currentUser || {
-      uid: "bypass-admin-id",
-      email: cleanEmail,
-      displayName: "المشرف العام (DEEB STORE)",
-      emailVerified: true,
-      isAnonymous: false,
-    };
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem("nxt_admin_bypass", JSON.stringify(mockAdminUser));
-      window.dispatchEvent(new Event("admin-bypass-login"));
-    }
-
-    return mockAdminUser as User;
+    throw new Error(errorMsg);
   }
 }
 
@@ -60,13 +44,8 @@ export async function signOut(): Promise<void> {
   if (typeof window !== "undefined") {
     localStorage.removeItem("nxt_admin_session");
     localStorage.removeItem("nxt_admin_bypass");
-    window.dispatchEvent(new Event("admin-bypass-login"));
   }
-  try {
-    await firebaseSignOut(auth);
-  } catch (e) {
-    console.error("Sign out error:", e);
-  }
+  await firebaseSignOut(auth);
 }
 
 export async function changeAdminPassword(currentPassword: string, newPassword: string): Promise<void> {
@@ -78,31 +57,26 @@ export async function changeAdminPassword(currentPassword: string, newPassword: 
   }
 
   const user = auth.currentUser;
-  if (user && user.email) {
-    try {
-      const credential = EmailAuthProvider.credential(user.email, currentPassword);
-      await reauthenticateWithCredential(user, credential);
-      await updatePassword(user, newPassword);
-      return;
-    } catch (e) {
-      console.warn("Firebase password update failed, setting local bypass password:", e);
-    }
+  if (!user || !user.email) {
+    throw new Error("لم يتم العثور على جلسة مستخدم نشطة في الفايربيس.");
   }
 
-  if (typeof window !== "undefined") {
-    localStorage.setItem("nxt_admin_custom_pwd", newPassword);
-  }
+  const credential = EmailAuthProvider.credential(user.email, currentPassword);
+  await reauthenticateWithCredential(user, credential);
+  await updatePassword(user, newPassword);
 }
 
 export async function isAdmin(uid: string): Promise<boolean> {
-  if (typeof window !== "undefined" && localStorage.getItem("nxt_admin_bypass")) {
-    return true;
-  }
   if (auth.currentUser?.email === "storedeeb2020@gmail.com") {
     return true;
   }
-  const adminDoc = await getDoc(doc(db, "admins", uid));
-  return adminDoc.exists();
+  if (!uid) return false;
+  try {
+    const adminDoc = await getDoc(doc(db, "admins", uid));
+    return adminDoc.exists();
+  } catch {
+    return false;
+  }
 }
 
 export { onAuthStateChanged, auth };

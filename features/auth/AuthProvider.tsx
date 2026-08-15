@@ -24,46 +24,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkBypassUser = (): User | null => {
-    if (typeof window !== "undefined") {
-      const bypass = localStorage.getItem("nxt_admin_bypass");
-      if (bypass) {
-        try {
-          return JSON.parse(bypass) as User;
-        } catch {
-          return null;
-        }
-      }
-    }
-    return null;
-  };
-
   useEffect(() => {
-    // Listen to standard Firebase Auth state
+    // Strictly rely on genuine Firebase Auth session
     const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
-      if (fbUser) {
-        setUser(fbUser);
-      } else {
-        const bypassUser = checkBypassUser();
-        setUser(bypassUser);
-      }
+      setUser(fbUser);
       setLoading(false);
     });
 
-    const handleStorageChange = () => {
-      if (!auth.currentUser) {
-        setUser(checkBypassUser());
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("admin-bypass-login", handleStorageChange);
-
-    return () => {
-      unsubscribe();
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("admin-bypass-login", handleStorageChange);
-    };
+    return () => unsubscribe();
   }, []);
 
   return (

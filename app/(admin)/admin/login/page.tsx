@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
       router.push("/admin");
     } catch (err: any) {
       console.error("Admin Login Error:", err);
-      toast.error("حدث خطأ أثناء تسجيل الدخول");
+      toast.error(err.message || "حدث خطأ أثناء تسجيل الدخول. يرجى التأكد من كلمة المرور.");
     } finally {
       setLoading(false);
     }

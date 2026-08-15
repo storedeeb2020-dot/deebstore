@@ -3,33 +3,57 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // السماح بالقراءة والكتابة الشاملة لجميع المجموعات والبيانات
+    // دالة تحقق حازمة: التأكد من تسجيل الدخول بحساب مالك المتجر الأوسط والوحيد (storedeeb2020@gmail.com)
+    function isOwnerAdmin() {
+      return request.auth != null && request.auth.token.email == 'storedeeb2020@gmail.com';
+    }
+
+    // القاعدة العامة لجميع البيانات: القراءة متاحة للموقع، الكتابة والتعديل محصورة لصاحب الإيميل فقط
     match /{document=**} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isOwnerAdmin();
     }
 
-    match /gomla_products/{docId} {
-      allow read, write: if true;
-    }
-
-    match /gomla_categories/{docId} {
-      allow read, write: if true;
-    }
-
-    match /orders/{docId} {
-      allow read, write: if true;
-    }
-
+    // المنتجات الرئيسية: قراءة للجميع، تعديل وإضافة للأدمن فقط
     match /products/{docId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isOwnerAdmin();
     }
 
+    // الأقسام الرئيسية: قراءة للجميع، تعديل وإضافة للأدمن فقط
     match /categories/{docId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isOwnerAdmin();
     }
 
+    // منتجات الجملة: قراءة للجميع، تعديل وإضافة للأدمن فقط
+    match /gomla_products/{docId} {
+      allow read: if true;
+      allow write: if isOwnerAdmin();
+    }
+
+    // أقسام الجملة: قراءة للجميع، تعديل وإضافة للأدمن فقط
+    match /gomla_categories/{docId} {
+      allow read: if true;
+      allow write: if isOwnerAdmin();
+    }
+
+    // إعدادات الموقع والواتساب: قراءة للجميع، تعديل للأدمن فقط
     match /site_settings/{docId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isOwnerAdmin();
+    }
+
+    // طلبات الشراء: يُسمح لجميع الزوار بتقديم طلب جديد، والتعديل والحذف حصري للأدمن فقط
+    match /orders/{docId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isOwnerAdmin();
+    }
+
+    // بيانات المشرفين: حصرية 100% لمالك الإيميل فقط
+    match /admins/{docId} {
+      allow read, write: if isOwnerAdmin();
     }
 
   }
